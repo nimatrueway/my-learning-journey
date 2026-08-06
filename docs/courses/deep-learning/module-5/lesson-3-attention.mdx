@@ -1,0 +1,80 @@
+---
+title: "5.3 — Attention: look at everything at once"
+description: "The idea that replaced memory with eyesight and took over AI."
+---
+
+import AttentionViz from '@site/src/components/AttentionViz';
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 5.3 — Attention: look at everything at once ⏱️ ~15 min
+
+<Meme quote="The ability to observe without evaluating is the highest form of intelligence." author="Jiddu Krishnamurti — accidentally naming the attention mechanism" />
+
+## The hook
+
+The RNN's tragedy: by the time it reads "it," the "cat" has faded from memory.
+
+The attention insight is almost insulting in its simplicity: **why remember, when you can look?** Keep every word available, and let each word *look back at all the others* whenever it needs to.
+
+## Watch words look at each other 🎮
+
+Every word computes how *relevant* every other word is to it, then blends their meanings — weighted by relevance. Click "it":
+
+<AttentionViz />
+
+**Things to try:**
+
+1. Click **"it"** → 55% of its attention goes to **"cat"**. The pronoun resolves itself by *looking*, across any distance, at full strength. No fading. The RNN problem — deleted.
+2. Click **"drank"** → attends to "cat" (who drank?) and "milk" (drank what?). The verb gathers its subject and object.
+3. Click **"thirsty"** → looks at "cat" and "it". Adjectives hunt for their owners.
+4. Click the boring words ("the") → mostly self-attention. Nothing to gather; carry on.
+
+After one attention pass, each word's vector is no longer just its dictionary meaning — it's meaning **in context**. The vector for "it" now literally contains cat-ness. (Remember embedding-land's confused "mouse" from 5.1? Attention is what disambiguates it: nearby "cheese" vs nearby "USB".)
+
+<Meme top="RNN: what was word 1 again??" visual="👁️👁️👁️👁️👁️" bottom="attention: I see everything, always, simultaneously" />
+
+## How relevance is computed (the Q/K/V bit, humanely)
+
+Each word plays three roles, produced by three small learned layers:
+
+- **Query** — what I'm looking for ("I'm a pronoun; seeking: a recent noun, ideally furry")
+- **Key** — how I advertise myself ("I'm a noun! An animal! Very concrete!")
+- **Value** — what I actually hand over if you attend to me (my meaning)
+
+Relevance = how well my query matches your key (a dot product — the same similarity math from 5.1!). Softmax the scores into percentages, then blend everyone's **values** by those percentages. That blend is the word's new, context-aware vector.
+
+And the two RNN complaints? Fading memory: gone — every word attends to every other *directly*. No parallelism: gone — all words compute their attention **simultaneously**. One matrix multiply. GPUs weep with joy.
+
+<details>
+<summary>🤓 The actual math (optional — skip freely)</summary>
+
+The most famous equation in modern AI:
+
+$$\text{Attention}(Q, K, V) = \text{softmax}\!\left(\frac{QK^\top}{\sqrt{d_k}}\right)V$$
+
+- $QK^\top$ — every query dotted with every key: an $n \times n$ table of raw relevance scores
+- $\sqrt{d_k}$ — a scale-down so the dot products don't grow huge and saturate softmax (lesson 1.4's flat zones strike again)
+- $\text{softmax}$ — each row becomes percentages summing to 1 (the numbers you clicked through in the widget)
+- $\cdot\,V$ — blend the value vectors by those percentages
+
+Cost: the $n \times n$ table means attention is $O(n^2)$ in sequence length — why long-context LLMs are expensive, and why "efficient attention" is a research industry.
+
+</details>
+
+## Recap 📌
+
+- Attention replaces *memory* with *direct lookup*: every word sees every word, no fading
+- Query ("what I seek") × Key ("what I offer") → relevance %; blend Values accordingly
+- Fully parallel — the property that made trillion-parameter models economically possible
+
+## Quiz
+
+<Quiz
+  question="In 'The cat drank the milk because it was thirsty', how does attention connect 'it' to 'cat'?"
+  options={[
+    {text: '\u2018Cat\u2019 was kept alive in a running memory until \u2018it\u2019 arrived', feedback: "That's the RNN way — the fading-bars sadness from last lesson. Attention's whole rebellion is refusing to carry memory at all. Try again."},
+    {text: '\u2018It\u2019s query matches \u2018cat\u2019s key, so \u2018it\u2019 blends in a big helping of cat\u2019s value — a direct look, at full strength, regardless of distance', correct: true, feedback: "Flawless. And 'regardless of distance' is the killer feature: word 5000 reaches word 1 exactly as crisply as its neighbor. RNNs never stood a chance."},
+    {text: 'The words are processed in reverse order so \u2018it\u2019 comes first', feedback: "Creative, but no — reversing just relocates the problem (now 'cat' can't see 'thirsty'). Attention's answer is no order-dependence at all: everyone sees everyone. Try again."},
+  ]}
+/>

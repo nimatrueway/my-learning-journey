@@ -1,0 +1,78 @@
+---
+title: "2.1 — Loss: a score for how wrong you are"
+description: "Before a network can improve, it needs a single number that says how bad it is."
+---
+
+import LossExplorer from '@site/src/components/LossExplorer';
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 2.1 — Loss: a score for how wrong you are ⏱️ ~10 min
+
+<Meme quote="If you cannot measure it, you cannot improve it." author="Lord Kelvin — patron saint of loss functions" />
+
+## The hook
+
+You can't improve what you can't score. Before any learning happens, we need to compress "how wrong is this model?" into **one single number**. That number is the **loss**, and the entire learning process exists only to shrink it.
+
+## Be the optimizer 🎮
+
+Below: data points and a line with two knobs. Your job: make the loss as small as you can. You are now a gradient descent algorithm (a slow, biological one).
+
+<LossExplorer />
+
+**Things to try:**
+
+1. Get the loss under **0.15**. Feel how you did it: nudge a knob, watch the number, keep changes that helped. Congratulations — you've reinvented optimization.
+2. Set slope to **−2** → the red dashed sticks (the errors) get huge. Loss explodes.
+3. Notice: the red sticks are *squared* into the score, so one giant error hurts way more than several small ones.
+
+<Meme top="me adjusting sliders to minimize a number" visual="🎛️🧍" bottom="literally what a $100M GPU cluster does all day" />
+
+## The two losses you'll actually meet
+
+- **MSE (mean squared error)** — for predicting numbers (house price, temperature). What the widget uses: average of squared misses.
+- **Cross-entropy** — for predicting categories (cat vs dog). Punishes the model for being *confidently wrong*. You'll meet it in Module 3.
+
+That covers ~90% of everyday deep learning. Everything else is a remix.
+
+## The tiny code version
+
+```python
+import torch.nn.functional as F
+
+predictions = model(x)
+loss = F.mse_loss(predictions, targets)   # one number. that's the whole score.
+```
+
+<details>
+<summary>🤓 The actual math (optional — skip freely)</summary>
+
+MSE over $n$ examples:
+
+$$L = \frac{1}{n}\sum_{i=1}^{n} (\hat{y}_i - y_i)^2$$
+
+- $\hat{y}_i$ — the model's prediction ("y-hat")
+- $y_i$ — the true answer
+- The square does two jobs: makes all errors positive (misses in both directions count), and punishes big misses disproportionately — missing by 4 costs 16, missing by 1 costs 1.
+
+Squaring also makes $L$ smooth and differentiable, which matters enormously in the next lesson: you can't roll a ball down a cliff-face full of corners.
+
+</details>
+
+## Recap 📌
+
+- **Loss** = one number scoring how wrong the model is; training = shrinking it
+- MSE for numbers, cross-entropy for categories — that's 90% of real life
+- You just optimized by hand; gradient descent automates your slider-nudging
+
+## Quiz
+
+<Quiz
+  question="Your model predicts [2, 2, 2] and the truth is [2, 2, 8]. Why does MSE hate this so much?"
+  options={[
+    {text: 'Because two predictions were exactly right, which MSE finds suspicious', feedback: "MSE has no concept of suspicion — correct predictions contribute exactly 0 to the loss. It's the third one doing all the damage. Try again."},
+    {text: 'The single miss of 6 gets squared into 36 — one big error dominates the score', correct: true, feedback: "Exactly: (0 + 0 + 36)/3 = 12. Squaring makes big misses catastrophically expensive — the model would rather be slightly wrong everywhere than very wrong once."},
+    {text: 'MSE always hates everything', feedback: "MSE is a fair judge with one bias: squared errors. A perfect prediction gets exactly 0. It has feelings, but they're mathematically consistent. Try again."},
+  ]}
+/>

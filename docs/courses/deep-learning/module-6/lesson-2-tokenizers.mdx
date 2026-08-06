@@ -1,0 +1,64 @@
+---
+title: "6.2 — Tokenizers: how text really enters the model"
+description: "LLMs don't read words or letters — they read tokens, and it explains their weirdest failures."
+---
+
+import TokenizerViz from '@site/src/components/TokenizerViz';
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 6.2 — Tokenizers: how text really enters the model ⏱️ ~10 min
+
+<Meme quote="The beginning of wisdom is the definition of terms." author="Socrates — a tokenizer would split that into 9 tokens" />
+
+## The hook
+
+Ever seen an LLM confidently fail to count the letters in "strawberry"? Or choke on arithmetic with long numbers? The culprit is the very first stage of the pipeline — how text gets chopped up before the model ever sees it.
+
+## Chop chop 🎮
+
+Models don't read words (vocabulary too big — every typo and rare name would need its own embedding) or letters (sequences too long — remember O(n²)?). The compromise: **subword tokens**, frequency-based chunks. Type and watch:
+
+<TokenizerViz />
+
+**Things to try:**
+
+1. Type `the cat sat` → common words = one token each. Efficient.
+2. Type `unbelievable` → splits into pieces like `un`+`believ`+`able`. The model *composes* rare words from parts — like you sounding out a new word.
+3. Type `supercalifragilistic` → confetti. Rare = many tokens = more expensive AND harder to reason about.
+4. Type a long number like `3141592653` → chopped into arbitrary chunks. Now you know why LLMs are shaky at digit-level arithmetic: they literally can't see individual digits consistently.
+
+<Meme top="how many r's in strawberry?" visual="🍓" bottom="the model never saw letters — it saw token #12355. it's guessing from vibes" />
+
+## How the chunks get chosen
+
+The standard algorithm (**BPE** — byte-pair encoding) is greedy and simple: start from single characters, repeatedly merge the most frequent adjacent pair into a new token, stop at ~50k–100k vocabulary. Common strings earn their own token; rare strings stay in pieces. The tokenizer is *fitted to a corpus* before training — it's the one part of the pipeline not learned by backprop.
+
+Each token ID then hits the lesson-5.1 embedding table, and the transformer takes over. Full pipeline, end to end:
+
+```text
+"unbelievable"  →  [un, believ, able]     tokenizer (this lesson)
+                →  [1204, 8842, 763]      token IDs
+                →  three vectors          embedding table (5.1)
+                →  context-aware vectors  N transformer blocks (6.1)
+                →  next-token probs       softmax head (4.3)
+```
+
+You can now trace text → prediction with no magic anywhere in the chain. Practical corollary: **context windows and API prices are measured in tokens** — a rule of thumb for English is ~¾ of a word per token.
+
+## Recap 📌
+
+- LLMs read subword tokens — a compromise between huge vocabularies and long sequences
+- BPE builds the vocabulary by merging frequent pairs; common = 1 token, rare = confetti
+- Letter-counting and digit-arithmetic failures are tokenizer artifacts, not stupidity
+
+## Quiz
+
+<Quiz
+  question="Why can a model that writes flawless essays fail to count the r's in 'strawberry'?"
+  options={[
+    {text: 'Counting requires a special math module LLMs lack', feedback: "LLMs handle plenty of counting-shaped tasks when the items are visible as separate tokens. The strawberry problem is about what's VISIBLE, not about missing machinery. Try again."},
+    {text: 'The model sees \u2018strawberry\u2019 as one or two token IDs — the individual letters were never in its input', correct: true, feedback: "Right — it's like asking how many bricks are in a house you've only seen from a plane. Spell it 's-t-r-a-w-b-e-r-r-y' and each letter becomes its own token — suddenly the model counts fine."},
+    {text: 'The training data contained no fruit', feedback: "The internet is, if anything, oversupplied with strawberry content. The model knows PLENTY about strawberries — as token-level facts. Letter-level facts got destroyed in tokenization. Try again."},
+  ]}
+/>

@@ -1,0 +1,59 @@
+---
+title: "5.2 — RNNs: reading one word at a time"
+description: "The old way to read sequences — and the memory problem that doomed it."
+---
+
+import RNNViz from '@site/src/components/RNNViz';
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 5.2 — RNNs: reading one word at a time ⏱️ ~10 min
+
+<Meme quote="Those who cannot remember the past are condemned to repeat it." author="George Santayana — dedicating this one to RNNs" />
+
+## The hook
+
+Sentences have variable length, but networks want fixed-size inputs. The classic fix (pre-2017): read one word at a time, carrying a running **memory** — like you're doing with this very sentence.
+
+That memory has a fatal flaw. Let's watch it fail.
+
+## Read along 🎮
+
+A **recurrent neural network** (RNN) keeps a fixed-size *hidden state* — its memory. Each new word gets blended in… and everything old fades a little. Feed the sentence and watch the bars:
+
+<RNNViz />
+
+**Things to try:**
+
+1. Read up to "glass" → "cat" is already fading fast.
+2. Read to the end → the sentence's *punchline* ("it was bored") needs to know **who** "it" is… and "cat" is nearly gone from memory. Who was bored? The glass? The table?
+3. Reset and count: after just 5–6 words, the first word's signal is under 5%.
+
+The blend-and-fade is the whole mechanism — and the whole problem. Each step *squeezes the entire past* into the same fixed-size box, and old information gets crushed to make room.
+
+<Meme top="RNN reading a long paragraph" visual="🐱💭…💨" bottom="by sentence 3, the cat has left the memory" />
+
+## Why it fades (and why training hurts too)
+
+The forgetting curve isn't the only issue. Remember blame-flow from lesson 2.3? To learn "word 1 explains word 12," blame must flow backwards through *11 blend steps* — multiplied by a factor at each step. Multiply 11 numbers less than 1 → blame vanishes. Long-range learning starves. (Sound familiar? It's lesson 1.4's vanishing gradient, wearing a scarf.)
+
+Band-aids were invented — **LSTM** and **GRU** add learnable "what to keep / what to forget" gates, and they genuinely help — but the fundamental squeeze remains: an entire book has to fit through a fixed-size pipe, one word at a time. Also: step 12 can't start until step 11 finishes. No parallelism. GPUs hate it.
+
+Keep those two complaints in your pocket: **fading memory** and **no parallelism**. The next lesson dissolves both with one idea.
+
+## Recap 📌
+
+- RNN = read sequentially, blending each word into a fixed-size fading memory
+- Long-range links fail twice: old info gets crushed, and blame vanishes through many steps
+- LSTM/GRU = better forgetting, same squeeze; and sequential = slow on GPUs
+
+## Quiz
+
+<Quiz
+  question="Why do RNNs struggle to connect 'it' back to 'cat' 10 words earlier?"
+  options={[
+    {text: 'RNNs can\u2019t process pronouns', feedback: "RNNs handle pronouns fine when the referent is nearby — 'the cat licked its paw' is easy. The struggle is DISTANCE, not grammar. Try again."},
+    {text: 'The memory is a fixed-size box that gets re-blended every step — after 10 blends, \u2018cat\u2019 is mostly gone (and blame can\u2019t flow back through 10 steps either)', correct: true, feedback: "Both barrels: information fades forward AND gradients vanish backward. Ten multiplications each way, everything shrinks. Next lesson: what if we just… didn't do it this way?"},
+    {text: 'Ten words exceeds the maximum RNN memory limit', feedback: "There's no hard cutoff — it's a gradual fade, not a wall. Word 10 isn't forbidden, just… mostly evaporated. Like your memory of Tuesday's lunch. Try again."},
+  ]}
+/>

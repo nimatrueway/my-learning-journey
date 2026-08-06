@@ -1,0 +1,87 @@
+---
+title: "6.1 — The transformer, assembled from parts you know"
+description: "The architecture behind every modern LLM — and you already know every piece."
+---
+
+import TransformerViz from '@site/src/components/TransformerViz';
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 6.1 — The transformer, assembled from parts you know ⏱️ ~15 min
+
+<Meme quote="If I have seen further it is by standing on the shoulders of Giants." author="Isaac Newton — also this lesson, standing on Modules 1–5" />
+
+## The hook
+
+The transformer — the architecture behind ChatGPT, Claude, Gemini, all of them — sounds like it should be terrifying. Plot twist: **you already know every component.** This lesson is IKEA assembly, and you've held every part.
+
+## Follow a token through 🎮
+
+Step through what happens to text inside a transformer:
+
+<TransformerViz />
+
+**Things to try:**
+
+1. Step through all stages once, slowly. Name where you met each one (answers below).
+2. Notice the loop: the attention+FFN block repeats N times. GPT-2: 12 blocks. Big modern LLMs: near 100.
+3. The final stage is just… a probability over next tokens. The whole tower exists to make one very educated guess.
+
+**The parts inventory:**
+
+| Transformer stage | Where you learned it |
+|---|---|
+| Token embeddings | Lesson 5.1 — words → coordinates |
+| Position embeddings | Lesson 5.4's fine print — attention is order-blind, so *add* each position's learned vector to its token |
+| Self-attention | Lesson 5.3 — every token looks at every token |
+| Feed-forward layer | **Module 1!** A plain dense network, applied to each token |
+| Repeat ×N | Lesson 1.3 — deeper = more steps of "combine and refine" |
+| Output layer | Lesson 4.3 — softmax + cross-entropy over next-token guesses |
+
+That's it. That's the whole thing. The most valuable architecture in history is embeddings + attention + Module-1 networks in a loop.
+
+<Meme top="me, module 1: a neuron is just multiply-and-add" visual="🤯" bottom="me, module 6: GPT is just neurons with a really good address book" />
+
+## The rhythm inside each block
+
+Each of the N blocks does two moves:
+
+- **Attention** — tokens *talk to each other* ("who's relevant to me?") — gathers context
+- **Feed-forward** — each token *thinks alone* (a Module-1 network processes what it gathered)
+
+Gossip, then reflect. Gossip, then reflect. ×96. Two production details make deep stacks trainable: **residual connections** (each block's output is added to its input, so blame flows through a highway — lesson 2.3's vanishing-blame problem, solved by an express lane) and **layer norm** (keeps numbers in a healthy range, cousin of lesson 3.1's input scaling).
+
+**GPT's training objective:** given tokens so far, predict the next one. Cross-entropy loss, sacred five-line loop, unbelievable amounts of text. Your mini-project 5 model, with more floors and more reading.
+
+<details>
+<summary>🤓 The actual math (optional — skip freely)</summary>
+
+One transformer block, in two lines:
+
+$$\mathbf{h} = \mathbf{x} + \text{Attention}(\text{LN}(\mathbf{x}))$$
+$$\mathbf{y} = \mathbf{h} + \text{FFN}(\text{LN}(\mathbf{h}))$$
+
+- The leading $\mathbf{x} +$ and $\mathbf{h} +$ are the **residual connections** — identity highways for both signal and gradient
+- $\text{LN}$ = layer norm, re-centering each token's vector to mean 0, variance 1
+- $\text{FFN}(\mathbf{x}) = W_2\,\text{GELU}(W_1\mathbf{x})$ — literally a Module-1 two-layer network (GELU is ReLU's smoother cousin)
+
+Rough parameter math for GPT-2 small: 12 blocks × (attention + FFN) + embeddings ≈ 124M knobs. Every one trained by the same `loss.backward()` you ran in Module 2.
+
+</details>
+
+## Recap 📌
+
+- Transformer = embeddings + position info + N× (attention → feed-forward) + next-token softmax
+- Attention gathers context between tokens; feed-forward layers (Module 1!) process each token alone
+- Residual connections + layer norm are the plumbing that lets ~100 blocks train without vanishing blame
+
+## Quiz
+
+<Quiz
+  question="Why do transformers need POSITION embeddings when RNNs never did?"
+  options={[
+    {text: 'Transformers process longer sequences, so they need help counting', feedback: "Length isn't it — a 5-token transformer input still needs positions. The issue is a fundamental blindness in attention itself, present at any length. Try again."},
+    {text: 'Attention sees all tokens simultaneously with no notion of order — \u2018dog bites man\u2019 = \u2018man bites dog\u2019 unless position is injected into each embedding', correct: true, feedback: "Exactly. RNNs got order FREE from reading sequentially (at the price of everything else). Attention traded order-awareness for parallelism, then bought order back with position embeddings. Excellent deal."},
+    {text: 'Position embeddings store the model\u2019s long-term memory', feedback: "Nothing in a transformer stores long-term memory — that's the RNN's fading hidden state, which attention gleefully deleted. Positions just label WHERE each token sits. Try again."},
+  ]}
+/>

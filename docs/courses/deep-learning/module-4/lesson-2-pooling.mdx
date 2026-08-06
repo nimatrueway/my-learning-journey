@@ -1,0 +1,63 @@
+---
+title: "4.2 — Pooling: zoom out, keep the good stuff"
+description: "How CNNs shrink images while keeping what matters."
+---
+
+import ConvViz from '@site/src/components/ConvViz';
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 4.2 — Pooling: zoom out, keep the good stuff ⏱️ ~10 min
+
+<Meme quote="Perfection is achieved not when there is nothing more to add, but when there is nothing left to take away." author="Antoine de Saint-Exupéry — the max-pool manifesto" />
+
+## The hook
+
+After a few conv layers you have a stack of big feature maps and a compute bill growing fast. Also, a subtle problem: your edge detector fires at pixel (14, 23) — but do you actually care that it was *exactly* (14, 23)? Or just "upper-left-ish"?
+
+**Pooling** solves both: shrink the map, keep the strongest signals.
+
+## Watch the shrink 🎮
+
+Max pooling takes each 2×2 patch and keeps only the **loudest** value — the image shrinks 8×8 → 4×4, and the bright spots survive:
+
+<ConvViz mode="pool" />
+
+**Things to try:**
+
+1. Slide through the whole image → the output is a quarter the size, but the cat's bright regions are all still there.
+2. Notice what's lost: *exact positions* within each 2×2 patch. What's kept: "something bright was here-ish." That fuzziness is a **feature** — the network becomes tolerant to the cat shifting by a pixel.
+
+<Meme top="the feature map before pooling" visual="🖼️ → 🖼" bottom="same cat, quarter the rent" />
+
+## The classic CNN rhythm 🥁
+
+Real CNNs alternate: **convolve → pool → convolve → pool…** Each round, the image gets *smaller* (pooling) while the features get *smarter* (deeper convs): pixels → edges → textures → ears → cat. Zoom out while leveling up.
+
+```python
+nn.Sequential(
+    nn.Conv2d(1, 16, 3, padding=1), nn.ReLU(),
+    nn.MaxPool2d(2),                    # 28×28 → 14×14
+    nn.Conv2d(16, 32, 3, padding=1), nn.ReLU(),
+    nn.MaxPool2d(2),                    # 14×14 → 7×7
+)
+```
+
+(Modern footnote: some architectures replace pooling with stride-2 convolutions — same zoom-out effect, learnable. The rhythm survives.)
+
+## Recap 📌
+
+- **Max pooling** keeps the loudest value per patch: smaller map, strongest signals survive
+- Losing exact positions buys **shift tolerance** — a cat one pixel left is still a cat
+- The CNN rhythm: convolve (smarter) → pool (smaller) → repeat
+
+## Quiz
+
+<Quiz
+  question="After max pooling, the network no longer knows exactly which pixel fired. Why is that GOOD for a cat classifier?"
+  options={[
+    {text: 'It isn\u2019t good — it\u2019s a necessary evil for speed', feedback: "It does save compute, but that's the side dish. Ask yourself: should 'cat' depend on whether the whisker is at pixel 14 or pixel 15? Try again."},
+    {text: 'Cat-ness doesn\u2019t depend on exact pixel positions — tolerance to small shifts means the same cat photo taken one pixel over still classifies the same', correct: true, feedback: "Exactly. You WANT the network slightly blurry about positions — 'ear-ish thing, upper left' generalizes; 'ear at exactly (14,23)' memorizes. Controlled information loss is the point."},
+    {text: 'It prevents the vanishing gradient problem', feedback: "Different disease — vanishing gradients are about blame fading through deep layers (lesson 2.3), and pooling isn't the cure for that. Try again."},
+  ]}
+/>

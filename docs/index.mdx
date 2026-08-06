@@ -1,0 +1,34 @@
+---
+id: home
+slug: /
+title: Courses
+sidebar_position: 1
+---
+
+<header className="journeyHero">
+  <div className="journeyEyebrow">A growing course library</div>
+  <h1>Learn in public.<br />Keep the useful parts.</h1>
+  <div className="journeyLead">
+    Interactive courses, working notes, and small projects built while learning
+    difficult things properly.
+  </div>
+</header>
+
+## Current courses
+
+<div className="courseGrid">
+  <a className="courseCard" href="courses/deep-learning/">
+    <span className="courseNumber">01</span>
+    <span className="courseStatus">Complete · 6 modules</span>
+    <h3>Deep Learning,<br />No Snoozing</h3>
+    <div className="courseDescription">Neural networks, training, CNNs, attention, and transformers through interactive lessons.</div>
+    <strong>Start course →</strong>
+  </a>
+</div>
+
+## Add the next course
+
+Each course lives in its own directory under `docs/courses/`. Add a directory
+with an `index.md` or `intro.md`, and navigation is generated from its files.
+Use `_category_.json` files when you want to control a course or module label,
+position, and landing page.

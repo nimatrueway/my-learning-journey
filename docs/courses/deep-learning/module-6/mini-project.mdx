@@ -1,0 +1,40 @@
+---
+title: "🛠 Final project: fine-tune your own LLM"
+description: "The graduation exercise: take a real pretrained language model and bend it to your will, on your Mac."
+---
+
+import Meme from '@site/src/components/Meme';
+
+# 🛠 Final project: fine-tune your own LLM ⏱️ ~40 min
+
+<Meme quote="What I cannot create, I do not understand." author="Richard Feynman — time to understand" />
+
+## The mission
+
+Take a real pretrained transformer (distilgpt2 — a small, laptop-friendly GPT-2), watch it autocomplete like a base model, then LoRA-fine-tune it on a custom dataset and watch its personality change. Every concept from all six modules shows up in one script.
+
+```bash
+pip install torch transformers peft datasets
+python notebooks/module-6-mini-project.py
+```
+
+## What you'll do
+
+1. **Meet the base model** — the script prompts it before training; note the "magnificent autocomplete, zero manners" behavior from lesson 6.3
+2. **Attach LoRA adapters** — see `trainable params: <1%` print out (lesson 6.4, live)
+3. **Fine-tune on MPS** — a small built-in instruction dataset teaches it a consistent Q&A style; the sacred five lines run one last time
+4. **Compare before/after** — same prompts, visibly different behavior; that delta is *your* megabytes of adapter
+5. **Make it yours** — swap in your own dataset (edit `TRAINING_DATA`): your writing style, a Q&A persona, anything text
+
+## Success criteria
+
+- [ ] You observed the base model's raw-autocomplete behavior before training
+- [ ] Fine-tuning ran on MPS and loss decreased
+- [ ] Post-training outputs clearly follow the fine-tuned style
+- [ ] You fine-tuned on at least one dataset of your own design
+
+## 🎓 That's the course
+
+You started with one neuron doing multiply-and-add. You ended by fine-tuning a transformer language model on your own machine. Everything in between — loss, gradients, backprop, overfitting, convolutions, attention — is now a tool you own, not a buzzword you nod along to.
+
+Go build something. And when it breaks: overfit one batch first. 🐱

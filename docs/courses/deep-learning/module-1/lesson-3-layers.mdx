@@ -1,0 +1,81 @@
+---
+title: "1.3 — Layers: neurons in a trench coat"
+description: "One neuron is dumb. A team of neurons can draw any shape."
+---
+
+import LayersViz from '@site/src/components/LayersViz';
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 1.3 — Layers: neurons in a trench coat ⏱️ ~10 min
+
+<Meme quote="Great things in business are never done by one person. They're done by a team of people." author="Steve Jobs — also true of neurons" />
+
+## The hook
+
+Lesson 1.1's neuron can only draw one shape: a line with a kink. Impressive for one line of code, useless for recognizing cats.
+
+So how does adding a *second* neuron suddenly unlock… everything?
+
+## Two neurons walk into a layer 🐱🐱
+
+Put neurons side by side and add up their outputs. That's a **layer**. Watch what two ReLU cats can build together that neither could alone:
+
+<LayersViz />
+
+**Things to try:**
+
+1. Defaults → a **bump**. Neither neuron can make a bump alone (each is just a kinked line) — but A minus B? Bump.
+2. Slide A's bias around → the bump's left edge moves.
+3. Slide B's bias → the right edge moves. You are now *sculpting a function* with two lazy cats.
+4. Set both weights negative → the bump flips direction.
+
+Here's the mind-blower: with enough neurons, sums of these bumps can approximate **any function**. Cat detector? A very complicated function from pixels to "yes/no". Layers can build it.
+
+<Meme top="one neuron: draws a kink" visual="🐱 + 🐱 = 🏔️" bottom="two neurons: draws a MOUNTAIN" />
+
+## The tiny code version
+
+```python
+import torch.nn as nn
+
+layer = nn.Linear(1, 2)   # 1 input → 2 neurons
+# that's it — PyTorch stacks all the weights and biases for you
+```
+
+A "hidden layer" is just this: several neurons reading the same input, each with its own knobs, outputs bundled together for the next layer to use.
+
+<details>
+<summary>🤓 The actual math (optional — skip freely)</summary>
+
+A layer computes all its neurons at once using a matrix:
+
+$$\mathbf{h} = f(W\mathbf{x} + \mathbf{b})$$
+
+- $\mathbf{x}$ — input vector
+- $W$ — a matrix holding every neuron's weights (one row per neuron)
+- $\mathbf{b}$ — every neuron's bias, stacked
+- $f$ — activation, applied element-wise
+
+The widget's curve is exactly $y = 1 \cdot \text{relu}(w_1 x + b_1) + (-1) \cdot \text{relu}(w_2 x + b_2)$ — a two-neuron layer followed by a one-neuron output layer with fixed weights $[1, -1]$.
+
+The "any function" claim is a real theorem: the **universal approximation theorem** — one hidden layer with enough neurons can approximate any continuous function as closely as you want.
+
+</details>
+
+## Recap 📌
+
+- A **layer** = several neurons reading the same input, outputs bundled
+- Neurons that are individually dumb combine into arbitrarily smart shapes (bumps → anything)
+- `nn.Linear(in, out)` is a whole layer in one line
+
+## Quiz
+
+<Quiz
+  question="Why can two ReLU neurons make a bump when one can't?"
+  options={[
+    {text: 'Two neurons have twice the learning rate', feedback: "Learning rate is about training speed, not shape. The neurons haven't even started learning yet — this is pure geometry. Try again."},
+    {text: 'Their kinked lines get ADDED, and kinks at different spots can cancel into a bump', correct: true, feedback: "Exactly. One kink up + one kink down (shifted) = rise then fall = bump. Simple pieces, rich combinations — that's the whole game of deep learning."},
+    {text: 'The second neuron uses a fancier activation', feedback: "Nope — both are plain ReLU. Same lazy cats, the magic is purely in adding their outputs. Try again."},
+  ]}
+/>

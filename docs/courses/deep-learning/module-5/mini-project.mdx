@@ -1,0 +1,35 @@
+---
+title: "🛠 Mini-project: a tiny text generator"
+description: "Train a character-level language model on your Mac and watch it learn to spell, then babble."
+---
+
+import Meme from '@site/src/components/Meme';
+
+# 🛠 Mini-project: a tiny text generator ⏱️ ~25 min
+
+<Meme quote="Language is the source code of the mind." author="somebody's pitch deck, probably — let's compile some" />
+
+## The mission
+
+Train a character-level language model — predict the next *letter*, over and over — on a small text corpus, and watch generated text evolve from static noise to word-shaped babble. This is a real language model. GPT is this, scaled up and fed the internet.
+
+```bash
+python notebooks/module-5-mini-project.py
+```
+
+## What you'll do
+
+1. **Run it** — it trains a small model on built-in sample text and prints generated samples every few hundred steps:
+   - step 0: `xq;ke9dj zpw` (noise)
+   - mid-training: `the cot sar on tha mat` (spelling… emerging?)
+   - late: mostly-real words in mostly-plausible order
+2. **Feed it your own text** — point `CORPUS_PATH` at anything: your old essays, code, song lyrics. Watch it learn *your* style.
+3. **Play with temperature** — the sampling knob: low = safe and repetitive, high = creative and unhinged. Find the sweet spot.
+
+## Success criteria
+
+- [ ] Generated text visibly improves from noise → word-like structure
+- [ ] You trained on a custom corpus and recognized its style in the output
+- [ ] You can explain temperature's effect in one sentence
+
+**The big realization to have:** the loss that's shrinking is just cross-entropy (lesson 4.3) on "guess the next character." That humble objective, scaled ~a-billion-x, is the technology everyone is arguing about at dinner parties.

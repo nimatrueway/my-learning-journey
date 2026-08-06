@@ -1,0 +1,70 @@
+---
+title: "3.1 — Datasets & DataLoaders: feeding the beast"
+description: "Batches, shuffling, epochs — how data actually reaches your model."
+---
+
+import BatchViz from '@site/src/components/BatchViz';
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 3.1 — Datasets & DataLoaders: feeding the beast ⏱️ ~12 min
+
+<Meme quote="You are what you eat." author="every nutritionist — and every neural network" />
+
+## The hook
+
+Module 2 fed the model all 100 data points at once. Real datasets have *millions* of examples — they don't fit in memory, and it turns out feeding everything at once isn't even the best way to learn. Enter: batches.
+
+## The buffet system 🍽️
+
+Instead of the whole dataset per step, serve small plates — **batches**. One gradient step per plate. One full pass through all plates = an **epoch**. Shuffle between epochs so the model never sees the same order twice.
+
+<BatchViz />
+
+**Things to try:**
+
+1. Feed batches until the epoch rolls over → notice the samples get **reshuffled**. Same food, new order.
+2. Batch size **1** → each step's gradient comes from a single example. Noisy, twitchy learning (also called SGD in its purest form).
+3. Batch size **12** → smooth, confident gradients — but each step costs more compute and you take fewer steps per epoch.
+
+The industry default: somewhere in 32–512, usually "the biggest that fits in GPU memory."
+
+<Meme top="batch size 1: cat tasting each kibble individually" visual="🐱🍚" bottom="batch size 10000: cat inhaling the whole bowl" />
+
+## The tiny code version
+
+```python
+from torch.utils.data import DataLoader, TensorDataset
+
+dataset = TensorDataset(x, y)
+loader = DataLoader(dataset, batch_size=32, shuffle=True)
+
+for epoch in range(10):
+    for batch_x, batch_y in loader:      # plates, served shuffled
+        pred = model(batch_x)
+        loss = loss_fn(pred, batch_y)
+        loss.backward()
+        optimizer.step()
+        optimizer.zero_grad()
+```
+
+Same sacred five lines — just wrapped in a loop over plates. `DataLoader` handles shuffling, batching, and (with `num_workers`) even loads data in parallel while the GPU chews.
+
+**Why shuffle?** If the model sees all cats then all dogs, it drifts toward "everything is cat" then lurches to "everything is dog." Shuffling keeps each plate representative — gradients stay honest.
+
+## Recap 📌
+
+- **Batch** = small plate of data per gradient step; **epoch** = one full pass
+- Small batches: noisy but cheap steps · big batches: smooth but expensive
+- Always `shuffle=True` for training — ordered data teaches the wrong lesson
+
+## Quiz
+
+<Quiz
+  question="Your dataset is sorted: 5,000 cat pics, then 5,000 dogs. You forget shuffle=True. What happens?"
+  options={[
+    {text: 'Nothing — order can\u2019t matter, the math is the same', feedback: "The math per step is the same, but learning is SEQUENTIAL — for 5,000 straight steps every gradient screams 'cat!', dragging all knobs cat-ward. Then 5,000 steps of whiplash. Try again."},
+    {text: 'The model lurches between \u2018everything is cat\u2019 and \u2018everything is dog\u2019 each epoch', correct: true, feedback: "Exactly — it's like studying for finals by reading only chapter 1 for a month, then only chapter 2. Shuffle your chapters. One checkbox, hours of debugging saved."},
+    {text: 'Training crashes with an error', feedback: "PyTorch happily trains on sorted data with zero complaints — that's what makes this bug evil. No crash, just quietly bad learning. Try again."},
+  ]}
+/>

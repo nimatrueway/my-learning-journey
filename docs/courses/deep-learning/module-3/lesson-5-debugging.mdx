@@ -1,0 +1,70 @@
+---
+title: "3.5 — Debugging training: why is my loss NaN?!"
+description: "A field guide to the ways training breaks, and the checklist that fixes it."
+---
+
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 3.5 — Debugging training: why is my loss NaN?! ⏱️ ~15 min
+
+<Meme quote="It's not a bug — it's an undocumented feature." author="every engineer, seconds before finding the bug" />
+
+## The hook
+
+Regular code fails loudly: exceptions, stack traces, red text. Training fails *silently*: everything runs, no errors, and the model is garbage. Debugging ML is a different sport — here's your field guide, symptom by symptom.
+
+## The symptom table 🩺
+
+| Symptom | Prime suspects | First move |
+|---|---|---|
+| Loss = **NaN** | lr too high; log(0) or division by zero in loss; exploding gradients | Cut lr 10×; check loss inputs |
+| Loss **flat from step 0** | lr ≈ 0; frozen weights; broken labels; dead ReLUs | Overfit-one-batch test (below) |
+| Loss falls, **accuracy random** | Wrong loss function; labels misaligned with inputs; metric bug | Print 5 (input, label, prediction) triples and *look* |
+| Train great, **val terrible** | Overfitting (3.2/3.3); or data leakage / duplicated rows | Check the gap; audit the split |
+| Works locally, **garbage on MPS/GPU** | Model and data on different devices; dtype mismatch | Print `x.device, x.dtype` everywhere |
+
+## The one weird trick: overfit a single batch 🎯
+
+The most powerful ML debugging tool known to science:
+
+```python
+x_small, y_small = next(iter(loader))       # ONE batch
+for step in range(500):
+    loss = loss_fn(model(x_small), y_small) # train on it, over and over
+    loss.backward(); optimizer.step(); optimizer.zero_grad()
+```
+
+A healthy network **must** be able to memorize one batch — loss should crash toward 0 (yes, we're weaponizing overfitting as a diagnostic).
+
+- Loss → 0? Model + loss + optimizer are wired correctly; your problem is data or scale. ✅
+- Loss stuck? The plumbing itself is broken — bug is in model/loss/optimizer wiring. You just cut the search space in half.
+
+<Meme top="loss goes NaN at 3am" visual="🫠" bottom="cut the learning rate 10x and go to bed" />
+
+## The pre-flight checklist ✈️
+
+Before any long training run:
+
+1. **Overfit one batch** — plumbing check (2 minutes, saves days)
+2. **Print shapes** of a batch through the model — silent shape bugs love broadcasting
+3. **Look at 5 raw examples** with your eyeballs — is label 3 actually a cat?
+4. **Start with a known-good lr** (`1e-3` + Adam) before exploring
+5. **Log validation loss from epoch 0** — you can't diagnose what you didn't record
+
+## Recap 📌
+
+- Training fails **silently** — your tests are loss curves, not stack traces
+- **Overfit-one-batch** is the single best diagnostic: separates plumbing bugs from data/scale problems
+- NaN ≈ lr too high (usually); flat-from-start ≈ wiring; train/val gap ≈ memorizing
+
+## Quiz
+
+<Quiz
+  question="New model, loss stuck at exactly the same value from step 0. You try to overfit one batch — still stuck. Where's the bug?"
+  options={[
+    {text: 'Not enough training data', feedback: "You're training on ONE batch — the model only needs to memorize a handful of examples, which any healthy network can do in its sleep. Data quantity is fully ruled out. That's the whole point of the test! Try again."},
+    {text: 'In the plumbing: model, loss wiring, or optimizer (e.g., optimizer got no parameters)', correct: true, feedback: "Correct. If a network can't even memorize one batch, learning isn't happening AT ALL — classic causes: optimizer created before/without model params, backward on the wrong tensor, weights accidentally frozen. The test just saved you from re-collecting data for a plumbing bug."},
+    {text: 'Overfitting', feedback: "Overfitting is when the model learns TOO well (train great, val bad). This model isn't learning at all — opposite disease, opposite treatment. Try again."},
+  ]}
+/>

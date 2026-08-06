@@ -1,0 +1,109 @@
+import {themes as prismThemes} from 'prism-react-renderer';
+import type {Config} from '@docusaurus/types';
+import type * as Preset from '@docusaurus/preset-classic';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+
+const config: Config = {
+  title: 'My Learning Journey',
+  tagline: 'Courses, experiments, and notes from things I am learning',
+  favicon: 'img/favicon.ico',
+
+  future: {
+    v4: true,
+  },
+
+  url: 'https://nimatrueway.github.io',
+  baseUrl: '/my-learning-journey/',
+  organizationName: 'nimatrueway',
+  projectName: 'my-learning-journey',
+  trailingSlash: false,
+  onBrokenLinks: 'throw',
+
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en'],
+  },
+
+  presets: [
+    [
+      'classic',
+      {
+        docs: {
+          sidebarPath: './sidebars.ts',
+          routeBasePath: '/',
+          remarkPlugins: [remarkMath],
+          rehypePlugins: [rehypeKatex],
+        },
+        blog: false,
+        theme: {
+          customCss: './src/css/custom.css',
+        },
+      } satisfies Preset.Options,
+    ],
+  ],
+
+  stylesheets: [
+    {
+      href: 'https://cdn.jsdelivr.net/npm/katex@0.18.1/dist/katex.min.css',
+      type: 'text/css',
+      crossorigin: 'anonymous',
+    },
+  ],
+
+  themeConfig: {
+    colorMode: {
+      defaultMode: 'dark',
+      respectPrefersColorScheme: true,
+    },
+    navbar: {
+      title: 'My Learning Journey',
+      logo: {
+        alt: 'My Learning Journey',
+        src: 'img/logo.svg',
+      },
+      items: [
+        {to: '/', label: 'Courses', position: 'left'},
+        {
+          type: 'docSidebar',
+          sidebarId: 'journeySidebar',
+          label: 'Browse lessons',
+          position: 'left',
+        },
+        {
+          href: 'https://github.com/nimatrueway/my-learning-journey',
+          label: 'GitHub',
+          position: 'right',
+        },
+      ],
+    },
+    footer: {
+      style: 'dark',
+      links: [
+        {
+          title: 'Learn',
+          items: [
+            {label: 'All courses', to: '/'},
+            {label: 'Deep Learning', to: '/courses/deep-learning/'},
+          ],
+        },
+        {
+          title: 'Source',
+          items: [
+            {
+              label: 'GitHub repository',
+              href: 'https://github.com/nimatrueway/my-learning-journey',
+            },
+          ],
+        },
+      ],
+      copyright: `My Learning Journey · ${new Date().getFullYear()}`,
+    },
+    prism: {
+      theme: prismThemes.github,
+      darkTheme: prismThemes.dracula,
+    },
+  } satisfies Preset.ThemeConfig,
+};
+
+export default config;

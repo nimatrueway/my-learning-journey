@@ -1,0 +1,77 @@
+---
+title: "6.4 — Fine-tuning on your Mac"
+description: "LoRA: the trick that turns 'fine-tuning an LLM' from data-center job into laptop job."
+---
+
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 6.4 — Fine-tuning on your Mac ⏱️ ~12 min
+
+<Meme quote="Do what you can, with what you have, where you are." author="Theodore Roosevelt — patron saint of laptop ML" />
+
+## The hook
+
+Full fine-tuning updates every knob — for a 7B-parameter model, the optimizer's bookkeeping alone wants ~50+ GB of memory. Your Mac politely declines.
+
+Enter **LoRA** (Low-Rank Adaptation), the trick that made LLM fine-tuning a laptop activity — and the finale of this course's favorite theme: *freeze the expensive part, train a small cheap part*.
+
+## The idea: sticky notes on a frozen model 📝
+
+Module 4 transfer learning froze the network and replaced the head. LoRA is sneakier: it freezes **everything** and adds tiny *bypass adapters* alongside the big layers.
+
+- Each big frozen weight layer gets a small parallel detour: input → tiny layer A → tiny layer B → added to the frozen layer's output
+- The detour starts as a zero (no effect), and training shapes it into a *correction*
+- The tiny layers are thin — the detour has ~0.1–1% as many knobs as the layer it corrects
+
+Think of it as sticky notes on a textbook: the book (billions of knobs) stays pristine; your notes (millions) say "in *this* context, adjust the answer this way."
+
+<details>
+<summary>🤓 The actual math (optional — skip freely)</summary>
+
+A frozen weight matrix $W$ (say $4096 \times 4096$ ≈ 16.8M knobs) gets a low-rank correction:
+
+$$W' = W + BA$$
+
+where $A$ is $r \times 4096$ and $B$ is $4096 \times r$ with rank $r$ tiny (4–64). At $r=8$: $BA$ is controlled by just $2 \times 8 \times 4096 \approx 65k$ knobs — **0.4%** of $W$ — yet can nudge the full matrix. $B$ starts at zero so training begins exactly at the pretrained behavior and drifts gently away.
+
+The bet: fine-tuning *changes* are low-rank — adapting style/domain needs far fewer degrees of freedom than learning language did. Empirically, the bet pays off almost everywhere.
+
+</details>
+
+## What this buys you
+
+- **Memory:** gradients + optimizer state only for ~0.5% of knobs → a small LLM fine-tunes in a few GB. MPS handles it.
+- **Speed:** hours, not weeks
+- **Portability:** the adapter file is megabytes. Share "my model" as a sticky-note pack; anyone applies it to the same base model.
+- **Swappability:** one base model + N adapters = N specialized models on one disk
+
+```python
+# the entire idea, in PEFT-library form
+from peft import LoraConfig, get_peft_model
+
+model = get_peft_model(base_model, LoraConfig(r=8, lora_alpha=16))
+model.print_trainable_parameters()
+# trainable: 0.24% — your Mac just became an ML lab
+```
+
+The training loop after this? The sacred five lines. Of course it is.
+
+<Meme top="fine-tuning in 2020: rent a GPU cluster" visual="💻🐱" bottom="fine-tuning now: my macbook, one coffee" />
+
+## Recap 📌
+
+- LoRA freezes the whole model and trains tiny bypass adapters (~0.5% of knobs)
+- Starts at zero-effect, learns a low-rank *correction* — pretrained knowledge stays intact
+- Result: LLM fine-tuning in a few GB of memory, on MPS, tonight — adapters are MB-sized and swappable
+
+## Quiz
+
+<Quiz
+  question="Why does LoRA use SO much less memory than full fine-tuning?"
+  options={[
+    {text: 'It compresses the base model to half precision', feedback: "That's quantization — a real trick, often COMBINED with LoRA (see: QLoRA), but a different one. LoRA's savings come from what it refuses to train, not how it stores things. Try again."},
+    {text: 'Gradients and optimizer bookkeeping only exist for the tiny adapters — the frozen 99.5% needs none of it', correct: true, feedback: "Exactly. Training memory is dominated by per-knob overhead (gradient + optimizer state ≈ 3-4 extra copies of every trainable knob). Freeze 99.5% and that overhead evaporates. The knobs you don't train are the memory you don't pay."},
+    {text: 'LoRA deletes the layers it isn\u2019t training', feedback: "Delete the layers and the model would produce beautiful garbage — every frozen layer still runs in the forward pass. They're read-only, not gone. Try again."},
+  ]}
+/>

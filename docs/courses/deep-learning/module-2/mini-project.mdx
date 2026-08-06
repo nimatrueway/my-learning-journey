@@ -1,0 +1,33 @@
+---
+title: "🛠 Mini-project: fit a curve, watch it live"
+description: "Train a real network on your Mac and watch it learn a wave, epoch by epoch."
+---
+
+import Meme from '@site/src/components/Meme';
+
+# 🛠 Mini-project: fit a curve, watch it live ⏱️ ~25 min
+
+<Meme quote="The best way to predict the future is to invent it." author="Alan Kay" />
+
+## The mission
+
+Train a network to learn `y = sin(x)` on your Mac (MPS!), printing an ASCII picture of the fit as it improves — a movie of learning, in your terminal.
+
+```bash
+python notebooks/module-2-mini-project.py
+```
+
+## What you'll do
+
+1. **Run it** — watch the flat clueless line slowly bend into a sine wave over 2,000 epochs
+2. **Break it on purpose** (the real learning):
+   - Set `lr = 5.0` → watch the loss NaN-out (espresso cat)
+   - Comment out `optimizer.zero_grad()` → watch training get weirdly bad (landfill gradients)
+   - Shrink the hidden layer to 2 neurons → watch it underfit (a sine wave needs more than 2 bumps)
+3. **Fix it back** and enjoy a healthy run
+
+## Success criteria
+
+- [ ] Final loss < 0.01 with the default settings
+- [ ] You triggered and *recognized* all three failure modes without reading the comments
+- [ ] You can recite the ritual: forward, loss, backward, step, zero

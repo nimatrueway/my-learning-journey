@@ -1,0 +1,82 @@
+---
+title: "3.3 — Regularization: the anti-memorization toolkit"
+description: "Dropout, weight decay, early stopping — three ways to force understanding over cramming."
+---
+
+import OverfitViz from '@site/src/components/OverfitViz';
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 3.3 — Regularization: the anti-memorization toolkit ⏱️ ~12 min
+
+<Meme quote="Discipline equals freedom." author="Jocko Willink — and constraint equals generalization" />
+
+## The hook
+
+Last lesson's degree-9 model memorized the noise. Obvious fix: use a smaller model? Sometimes. But often you *want* the big model's power — you just want to stop it from cramming.
+
+**Regularization** = keeping the capacity, adding discipline.
+
+## Tame the beast 🎮
+
+Same widget as last lesson, new superpower: the **λ slider** penalizes big, wild coefficients. Crank the degree to 9 (fully memorizing), then slowly raise λ:
+
+<OverfitViz showRegularization />
+
+**Things to try:**
+
+1. Degree 9, λ off → chaos curve, test error terrible (yesterday's disaster).
+2. Degree 9, λ ≈ 1e-3 → the curve *calms down* and test error drops. Same huge capacity — now spent on the pattern, not the noise.
+3. λ = 1 (max) → over-disciplined: the curve flattens toward zero and underfits. Discipline is a dial, not a switch.
+
+<Meme top="model with no regularization" visual="🐱💨" bottom="model with weight decay: 🐱🧘" />
+
+## The real-world toolkit
+
+What the λ slider is, plus its two famous friends:
+
+**1. Weight decay** (what you just used) — add a penalty for big weights to the loss. Big wild weights = wiggly memorization curves; keeping weights small keeps the function smooth.
+
+```python
+optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=0.01)
+```
+
+**2. Dropout** — during training, randomly silence a fraction of neurons *each step*. No neuron can rely on a specific buddy, so no clique can memorize an answer. Team players only.
+
+```python
+nn.Sequential(nn.Linear(784, 256), nn.ReLU(), nn.Dropout(0.5), nn.Linear(256, 10))
+```
+
+**3. Early stopping** — remember lesson 2.5, where validation loss bottomed out then climbed? Just… stop at the bottom. Save a checkpoint whenever validation improves; when it stops improving, quit and keep the best one.
+
+<details>
+<summary>🤓 The actual math (optional — skip freely)</summary>
+
+Weight decay (L2 regularization) changes the loss to:
+
+$$L_{\text{total}} = L_{\text{data}} + \lambda \sum_i w_i^2$$
+
+- $L_{\text{data}}$ — the usual "how wrong am I" loss
+- $\lambda \sum w_i^2$ — a fine proportional to the squared size of every weight
+- $\lambda$ — how mean the fine is (your slider)
+
+Gradient descent now has two masters: fit the data AND keep weights small. Since a wiggly degree-9 curve needs enormous coefficients, the fine mostly punishes memorization. Dropout has a lovely interpretation too: it approximates training an ensemble of many thinned networks and averaging them.
+
+</details>
+
+## Recap 📌
+
+- Regularization = keep the capacity, add discipline: **weight decay, dropout, early stopping**
+- Weight decay fines big weights; dropout bans neuron cliques; early stopping quits while ahead
+- Too much regularization → underfitting; it's a dial you tune by watching validation loss
+
+## Quiz
+
+<Quiz
+  question="Why does randomly silencing neurons during training (dropout) IMPROVE the final model?"
+  options={[
+    {text: 'It makes training faster by computing fewer neurons', feedback: "Dropout actually makes training take LONGER to converge — you're handicapping the network on purpose. The payoff isn't speed. Try again."},
+    {text: 'No neuron can rely on specific teammates, so memorization schemes that need exact neuron cliques can\u2019t form', correct: true, feedback: "Exactly — memorizing 'training photo #3847' requires a conspiracy of specific neurons, and dropout keeps randomly arresting conspirators. Robust, redundant features survive; brittle memorization doesn't."},
+    {text: 'The silenced neurons were the overfit ones', feedback: "The silencing is completely RANDOM — a fresh random set each step, good neurons and bad alike. The magic is what that randomness prevents, not who gets picked. Try again."},
+  ]}
+/>

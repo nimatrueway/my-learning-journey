@@ -1,0 +1,59 @@
+---
+title: "4.5 — Peeking inside: what did it learn to see?"
+description: "CNNs aren't black boxes — open the hood and look at the detectors it invented."
+---
+
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 4.5 — Peeking inside: what did it learn to see? ⏱️ ~12 min
+
+<Meme quote="Trust, but verify." author="Ronald Reagan — also applies to neural networks" />
+
+## The hook
+
+You trained a cat classifier. It scores 95%. But *what did it actually learn*? "The model works" and "the model learned what you think it learned" are very different claims — and the gap between them has embarrassed a lot of teams.
+
+## The layer-by-layer x-ray 🩻
+
+Researchers have visualized what each conv layer's kernels respond to, thousands of times, across many networks. The story is remarkably consistent:
+
+- **Layer 1** — edges and color blobs. Almost identical in *every* vision network ever trained. (Remember the edge-detect kernel you slid in 4.1? Networks invent it on their own, every time.)
+- **Layers 2–3** — combinations: corners, stripes, fur texture, honeycomb patterns
+- **Middle layers** — object parts: eyes, ears, wheels, feathers
+- **Late layers** — whole concepts: faces, cats, keyboards
+
+Nobody asked for this hierarchy. It *emerges* from gradient descent, every time — pixels are best explained by edges, edges by parts, parts by objects.
+
+## The cautionary tale: the husky that was snow 🐺
+
+A famous study trained a wolf-vs-husky classifier. Great accuracy! Then researchers highlighted *which pixels* drove each decision…
+
+The model had learned: **wolf = snow in the background.** Every training wolf photo had snow. The classifier was a snow detector with a wolf-shaped job title. On a husky-in-snow photo: "wolf."
+
+<Meme top="my model: 95% accurate" visual="🐺❄️" bottom="also my model: a snow detector with delusions of grandeur" />
+
+Simple tools that catch this:
+
+- **Saliency maps** — highlight the input pixels that most influenced the verdict (one `backward()` call to the *input* — Module 2 blame, aimed at pixels!)
+- **Grad-CAM** — a coarse heatmap of *where* the model looked
+- **The eyeball test** — always inspect your model's most confident mistakes; that's where the weird lives
+
+If the heatmap glows on the background, you don't have a cat classifier. You have a couch classifier that has met a lot of cats.
+
+## Recap 📌
+
+- CNN layers build an emergent hierarchy: edges → textures → parts → objects
+- High accuracy ≠ right reasons — see: the snow-wolf incident
+- Saliency/Grad-CAM = pointing blame at pixels; always audit *where* the model looks
+
+## Quiz
+
+<Quiz
+  question="Your cat classifier is 96% accurate, but Grad-CAM shows it mostly looks at… sofas. What probably happened?"
+  options={[
+    {text: 'The model discovered cats are secretly sofas', feedback: "Cats are secretly LIQUIDS (peer-reviewed, look it up) — never sofas. The model didn't discover feline truth; it found a lazy shortcut in your data. Try again."},
+    {text: 'Your training cat photos were mostly taken indoors on furniture, so \u2018sofa\u2019 became a shortcut feature', correct: true, feedback: "Exactly — dataset bias. The correlation was real IN YOUR DATA (indoor cats love sofas), so gradient descent grabbed it. Fix the data: more diverse backgrounds, outdoor cats, sofa-without-cat negatives."},
+    {text: 'Grad-CAM is broken', feedback: "Blaming the diagnostic tool — bold strategy. Grad-CAM occasionally blurs, but 'mostly sofas' is a loud, consistent signal. The messenger is fine; the message is about your dataset. Try again."},
+  ]}
+/>

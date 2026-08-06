@@ -1,0 +1,61 @@
+---
+title: "3.4 — Hyperparameters: which knobs matter"
+description: "Learning rate, batch size, model size, epochs — a field guide to the knobs YOU turn."
+---
+
+import TrainingSimulator from '@site/src/components/TrainingSimulator';
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 3.4 — Hyperparameters: which knobs matter ⏱️ ~12 min
+
+<Meme quote="Focus is about saying no." author="Steve Jobs — also how to survive hyperparameter tuning" />
+
+## The hook
+
+The network's weights turn themselves (Module 2). But a second set of knobs — learning rate, batch size, model size, epochs — must be set by *you*, before training starts. These are **hyperparameters**, and 90% of "my model sucks" is one of them being wrong.
+
+Good news: they are not equally important. Here's the priority list.
+
+## The knobs, ranked by blast radius 💣
+
+**🥇 Learning rate — matters 10× more than everything else.**
+Too high: explosion. Too low: glacial. The first thing to tune, always. Rule of thumb: start at `1e-3` with Adam, then try 3× up and 3× down.
+
+**🥈 Model size** — too small underfits, too big overfits (fixable with Module 3 discipline). Start modest, grow if underfitting.
+
+**🥉 Batch size** — mostly a speed/memory tradeoff. Use the biggest that fits. (Subtle wrinkle: bigger batches sometimes want a higher lr.)
+
+**🏅 Epochs** — with early stopping, "as many as validation loss allows." Not really tuned anymore.
+
+Revisit the simulator with fresh eyes — every control except the data is a hyperparameter:
+
+<TrainingSimulator />
+
+**Drill: fastest healthy convergence.** Find the settings that get both curves low *quickest*. Notice how far you can push lr before it destabilizes — and that the answer changes with model size. Hyperparameters interact; that's what makes tuning annoying.
+
+<Meme top="me: carefully tunes 12 hyperparameters" visual="🎛️😤" bottom="senior engineer: just lower the learning rate" />
+
+## How pros actually search
+
+1. **One at a time, log scale.** lr: try `1e-2, 1e-3, 1e-4` — never `0.001 vs 0.0011`.
+2. **Short experiments first.** A bad lr reveals itself in minutes. Don't run 10-hour jobs to learn what 10 minutes could tell you.
+3. **Change one thing per run.** Change two, learn nothing.
+4. **Random search > grid search** when tuning several at once (covers more distinct values of the knobs that matter).
+
+## Recap 📌
+
+- Hyperparameters = knobs YOU set; weights = knobs the network sets
+- Priority: **learning rate ≫ model size > batch size > epochs**
+- Tune on a log scale, one knob at a time, short runs first
+
+## Quiz
+
+<Quiz
+  question="Budget: 4 quick experiments to improve a mediocre model. Best plan?"
+  options={[
+    {text: 'Try 4 different random seeds', feedback: "Seeds shuffle the luck, not the strategy — you'd learn the variance of your setup and improve nothing. There's a knob with a 10× blast radius sitting right there. Try again."},
+    {text: 'Try learning rates 1e-2, 1e-3, 1e-4, then the best one ±3×', correct: true, feedback: "Textbook. Log-scale sweep of the knob that matters most, then refine around the winner. You tune like someone with a GPU bill to pay."},
+    {text: 'Try 4 different batch sizes', feedback: "Batch size is mostly a speed/memory dial — its effect on final quality is small compared to the big one. You'd spend your whole budget adjusting the cupholder. Try again."},
+  ]}
+/>

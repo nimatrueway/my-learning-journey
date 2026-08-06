@@ -1,0 +1,76 @@
+---
+title: "5.1 — Embeddings: words become coordinates"
+description: "Networks eat numbers, not words. The fix created meaning-space."
+---
+
+import EmbeddingViz from '@site/src/components/EmbeddingViz';
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 5.1 — Embeddings: words become coordinates ⏱️ ~12 min
+
+<Meme quote="The limits of my language mean the limits of my world." author="Wittgenstein — before embeddings gave words coordinates" />
+
+## The hook
+
+Every network you've built eats numbers. So what number is the word "cat"?
+
+Naive idea: cat=1, dog=2, pizza=3… but then the math says dog is "between" cat and pizza, and cat+cat=dog. Garbage. Words need a representation where *distance means something*.
+
+## Meaning-space 🗺️
+
+The fix: give every word a **vector** — a list of coordinates — and let training position them so *similar meanings land close together*. Click around:
+
+<EmbeddingViz />
+
+**Things to try:**
+
+1. **cat vs kitten** → similarity ≈ 1. Neighbors. As they should be.
+2. **cat vs car** → alphabetically almost twins, meaning-wise strangers. Embeddings capture *meaning*, not spelling.
+3. Find **keyboard vs mouse** → awkwardly close to the animals? Real embeddings have this exact problem — "mouse" is two things. (Real models fix it with context; wait two lessons.)
+4. **pizza vs sushi** → the food district. Every semantic neighborhood is a district.
+
+<Meme top="cat = 1, dog = 2" visual="🙅" bottom="cat = (0.8, 0.75, …a few hundred more numbers)" />
+
+## Where do the coordinates come from?
+
+Nobody assigns them. An embedding is just a **lookup table of learnable knobs** — word in, vector out — trained by backprop like every other knob in this course. Train on "predict the missing word," and words used in similar contexts get pushed toward similar coordinates. Meaning emerges from usage.
+
+The famous party trick of well-trained embeddings: directions become meanings. `king − man + woman ≈ queen` — there's a "royalty" direction and a "gender" direction in the space. Arithmetic on *meaning*.
+
+```python
+embedding = nn.Embedding(50_000, 300)   # 50k words → 300-dim meaning-space
+vec = embedding(torch.tensor([42]))     # word #42's coordinates — learnable knobs
+```
+
+<details>
+<summary>🤓 The actual math (optional — skip freely)</summary>
+
+The widget's similarity score is **cosine similarity** — the angle between two vectors, ignoring their lengths:
+
+$$\text{sim}(\mathbf{a}, \mathbf{b}) = \frac{\mathbf{a} \cdot \mathbf{b}}{\|\mathbf{a}\|\,\|\mathbf{b}\|}$$
+
+- $\mathbf{a} \cdot \mathbf{b}$ — dot product: big when the vectors point the same way
+- $\|\mathbf{a}\|$ — the vector's length; dividing by lengths leaves pure *direction*
+- Result: +1 same direction, 0 unrelated (perpendicular), −1 opposite
+
+Real embeddings use 300–4,000 dimensions, not 2. Same math — you just can't draw it. (The widget's 2D layout is honest about the idea, not the dimensionality.)
+
+</details>
+
+## Recap 📌
+
+- Embedding = learned lookup table: word → vector, positioned so similar meanings sit close
+- Trained by backprop from context; meaning emerges from usage, not from a dictionary
+- Cosine similarity measures "same direction in meaning-space"
+
+## Quiz
+
+<Quiz
+  question="Why is cat=1, dog=2, pizza=3 a terrible input encoding for a network?"
+  options={[
+    {text: 'The numbers are too small for the GPU', feedback: "GPUs handle tiny numbers all day — half this course runs on values between −1 and 1. Size isn't the crime here; fake geometry is. Try again."},
+    {text: 'It invents false structure — the math would treat dog as \u2018between\u2019 cat and pizza, and 2×cat = dog', correct: true, feedback: "Exactly. Networks do arithmetic on inputs, so accidental arithmetic relationships become accidental beliefs. Embeddings fix it by LEARNING positions where distance = actual meaning-similarity."},
+    {text: 'There are too many words to number them all', feedback: "Counting isn't the bottleneck — embeddings also assign every word an index (it's a lookup table!). The difference is what's BEHIND the index: a fake scalar vs a learned meaning-vector. Try again."},
+  ]}
+/>

@@ -1,0 +1,60 @@
+---
+title: "3.2 — Overfitting: memorizing vs learning"
+description: "The most important failure mode in machine learning, in one interactive picture."
+---
+
+import OverfitViz from '@site/src/components/OverfitViz';
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 3.2 — Overfitting: memorizing vs learning ⏱️ ~10 min
+
+<Meme quote="Any fool can know. The point is to understand." author="attributed to Einstein — the anti-overfitting manifesto" />
+
+## The hook
+
+Remember cramming the night before an exam — memorizing answers without understanding? You aced the practice questions and bombed the real test.
+
+Models do exactly this, and it's the #1 way deep learning fails silently in production.
+
+## Watch a model cram 🎮
+
+Red points: training data (the model sees these). Yellow points: test data (hidden during training). The slider controls how *flexible* the model is:
+
+<OverfitViz />
+
+**Things to try:**
+
+1. **Degree 1** → a straight line. Too stiff — misses the wave in the data. Train AND test errors both bad. (**Underfitting** — the too-dumb disease from lesson 2.5.)
+2. **Degree 3–4** → follows the wave, ignores the noise. Train and test errors both low. 😸 This is *learning*.
+3. **Degree 9** → the curve contorts itself through every red point. Train error ≈ 0… and test error explodes. It memorized the noise. **Overfitting.**
+
+Same data. Same fitting procedure. The only difference is how much *capacity* the model had to waste on memorizing.
+
+<Meme top="degree 9 polynomial the night before the exam" visual="📚🤓☕" bottom="knows every practice answer, understands nothing" />
+
+## The deep learning version
+
+A big neural network is like degree 9 — plenty of capacity to memorize. With mountains of data, memorizing is impossible and capacity goes toward *understanding*. With scarce data… you get a very confident crammer.
+
+The eternal signals (from lesson 2.5):
+
+- Train loss low + validation loss high = **overfitting** → get more data or regularize (next lesson)
+- Both high = **underfitting** → bigger model, train longer
+
+## Recap 📌
+
+- Overfitting = fitting the **noise**, not the **pattern** — great on train, useless on new data
+- More model capacity + less data = higher memorization risk
+- The train/validation gap is your smoke detector — watch it always
+
+## Quiz
+
+<Quiz
+  question="Your cat-photo classifier scores 99.8% on training photos and 61% on new photos. Vibe check?"
+  options={[
+    {text: 'Great model — 99.8% is amazing!', feedback: "That 99.8% is the model grading its own homework after memorizing the answer key. The 61% on NEW photos is the only number reality cares about — barely better than a coin flip. Try again."},
+    {text: 'Massively overfit — it memorized the training photos', correct: true, feedback: "That 38-point gap is a five-alarm fire 🚨 — the model knows its 5,000 training cats personally but has no idea what 'cat' means. Next lesson: the toolkit that fixes this."},
+    {text: 'Underfit — needs a bigger network', feedback: "Underfitting looks like BOTH scores being bad. Here the train score is nearly perfect — capacity clearly isn't the shortage. The problem is what it spent that capacity on: memorizing. Try again."},
+  ]}
+/>

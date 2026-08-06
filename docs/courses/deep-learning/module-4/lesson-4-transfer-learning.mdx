@@ -1,0 +1,70 @@
+---
+title: "4.4 — Transfer learning: standing on giant shoulders"
+description: "Why train eyes from scratch when someone already spent $50k training them for you?"
+---
+
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 4.4 — Transfer learning: standing on giant shoulders ⏱️ ~12 min
+
+<Meme quote="Good artists copy; great artists steal." author="Picasso, allegedly — definitely every ML engineer" />
+
+## The hook
+
+Lesson 4.3's classifier needs thousands of cat photos to learn "edges → textures → ears" from scratch. But wait — edges and textures look the same in *every* photo of *anything*. Why is every model re-learning what edges are?
+
+It shouldn't. **Transfer learning**: take a network pretrained on millions of images, keep its battle-tested eyes, replace only the final verdict layer.
+
+## The heist 🦹
+
+Remember the two machines from 4.3? The feature extractor is the expensive, general part. The classifier head is cheap and task-specific. So:
+
+1. **Steal the eyes** — download a pretrained network (e.g. ResNet18, trained on 1.2M ImageNet photos)
+2. **Freeze them** — no gradient updates; those features are already excellent
+3. **Replace the head** — new small Linear layer for *your* classes
+4. **Train just the head** — often minutes, often with only hundreds of examples
+
+```python
+import torchvision.models as models
+import torch.nn as nn
+
+model = models.resnet18(weights='IMAGENET1K_V1')   # 1. steal the eyes
+
+for param in model.parameters():                    # 2. freeze everything
+    param.requires_grad = False
+
+model.fc = nn.Linear(model.fc.in_features, 2)       # 3. new head: [not-cat, cat]
+# 4. train as usual — only the head's knobs can move
+```
+
+Four lines of setup. The optimizer sees millions of frozen knobs and ~1,000 trainable ones — so each epoch is fast *and* overfitting risk plummets (tiny trainable capacity, remember Module 3?).
+
+<Meme top="training vision from scratch: $50k of GPU time" visual="🐱🕶️" bottom="transfer learning: ctrl+c ctrl+v, 10 minutes" />
+
+## When to unfreeze (fine-tuning)
+
+If your images look *very* different from ImageNet photos (X-rays, satellite images, microscopy), the pretrained features help less. The move: after training the head, **unfreeze** some later conv layers and continue with a *tiny* learning rate (10–100× smaller) — gently reshaping the eyes without destroying them. Early layers (edges, textures) almost never need touching; those are universal.
+
+**Decision rule of thumb:**
+
+- Similar-ish images + little data → freeze all, train head (this lesson)
+- Similar images + lots of data → unfreeze top half, small lr
+- Alien images → unfreeze more, or reconsider the pretrained model
+
+## Recap 📌
+
+- Pretrained conv layers = universal eyes; only the head is task-specific
+- Freeze + replace head = strong results with hundreds (not thousands) of examples
+- Fine-tune deeper layers only when your images differ a lot — and with a tiny lr
+
+## Quiz
+
+<Quiz
+  question="Why does transfer learning dramatically REDUCE overfitting on small datasets?"
+  options={[
+    {text: 'Pretrained models are immune to overfitting', feedback: "Nothing is immune — unfreeze everything and train on 50 photos, and ResNet will happily memorize all 50. The protection comes from something you chose to do. Try again."},
+    {text: 'Freezing leaves only ~1,000 trainable knobs — not enough capacity to memorize your training set', correct: true, feedback: "Exactly. Module 3 taught you: memorization needs spare capacity. A frozen network training only a small head is like taking the exam with one page of notes — you must generalize, you literally can't cram."},
+    {text: 'ImageNet contains all possible cat photos already', feedback: "1.2M images is a lot, but it is not 'all cats' (cats are infinite; this is documented). The benefit isn't having seen YOUR photos — it's having learned universal features. Try again."},
+  ]}
+/>

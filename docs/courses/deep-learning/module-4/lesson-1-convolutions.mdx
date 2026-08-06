@@ -1,0 +1,78 @@
+---
+title: "4.1 — Convolutions: a magnifying glass on pixels"
+description: "How networks see: one tiny pattern-detector, slid across the whole image."
+---
+
+import ConvViz from '@site/src/components/ConvViz';
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 4.1 — Convolutions: a magnifying glass on pixels ⏱️ ~12 min
+
+<Meme quote="Simplicity is about subtracting the obvious and adding the meaningful." author="John Maeda — a convolution kernel in one sentence" />
+
+## The hook
+
+A 1000×1000 photo has a million pixels. Wiring a Module-1-style neuron to *every* pixel means a million weights per neuron — and a pattern learned in the top-left corner wouldn't transfer to the bottom-right. Cats, outrageously, appear in *all* corners of photos.
+
+The fix is one idea: **learn a tiny pattern-detector once, then slide it everywhere.**
+
+## Slide the magnifying glass 🎮
+
+Below: an 8×8 cat (squint) and a 3×3 **kernel** — nine little weights. The kernel slides across the image; at each stop, it multiplies its 9 weights with the 9 pixels under it and sums into one output number:
+
+<ConvViz />
+
+**Things to try:**
+
+1. **edge detect** + slide → the output lights up exactly where pixel values *change sharply* (the cat's outline) and stays dark on flat areas. Nine numbers just found every edge in the image.
+2. **vertical edges** → only edges in one direction light up. Different kernel = different pattern hunted.
+3. **blur** → each output is the neighborhood average. Kernels can smooth, sharpen, detect — all with 9 numbers.
+4. **identity** → output = input. The "do nothing" kernel (weight 1 in the center, 0s around).
+
+Here's the punchline: in a CNN, **nobody designs these kernels.** They start random, and backprop (Module 2!) tunes their 9 weights just like any other knobs. The network *invents* whatever detectors the task needs.
+
+<Meme top="me: handcrafts the perfect edge detector" visual="🧐🔍" bottom="backprop: learned a better one before your coffee cooled" />
+
+## Why this beats a million weights
+
+- **Tiny**: 9 weights instead of a million — and reused at every position
+- **Translation-proof**: a cat-ear detector works wherever the ear shows up
+- **Stackable**: layer 1 kernels find edges → layer 2 finds corners and textures made *of* edges → layer 3 finds ears made of textures → eventually: cat
+
+## The tiny code version
+
+```python
+import torch.nn as nn
+
+conv = nn.Conv2d(in_channels=1, out_channels=16, kernel_size=3)
+# 16 different 3×3 kernels, all learned — 16 pattern-hunters per image
+```
+
+<details>
+<summary>🤓 The actual math (optional — skip freely)</summary>
+
+For a kernel $K$ (3×3) sliding over image $I$, the output at position $(r, c)$ is:
+
+$$O_{r,c} = \sum_{i=0}^{2}\sum_{j=0}^{2} I_{r+i,\,c+j} \cdot K_{i,j}$$
+
+Just a dot product between the kernel and the patch under it — a Module-1 neuron whose "input" is a 9-pixel window, **sharing its weights across every window**. An 8×8 input with a 3×3 kernel yields a 6×6 output (the window can't hang off the edge); add zero-padding around the border if you want to keep 8×8.
+
+</details>
+
+## Recap 📌
+
+- A **convolution** slides one small learned kernel across the image; each stop = one dot product
+- Weight sharing: same 9 numbers everywhere → tiny, translation-proof, stackable
+- The kernels are **learned by backprop**, not designed — the network invents its own detectors
+
+## Quiz
+
+<Quiz
+  question="Why does the same conv layer work whether the cat is in the top-left or bottom-right of the photo?"
+  options={[
+    {text: 'The network memorizes cats in every possible position during training', feedback: "That's exactly the horror show convolutions were invented to avoid — a fully-connected layer WOULD need to re-learn each position. Convs are smarter than brute force. Try again."},
+    {text: 'The kernel physically slides across every position, so its pattern-detector visits everywhere', correct: true, feedback: "Exactly — one detector, all positions, by construction. The fancy term is 'translation equivariance'; drop it at a party and watch people slowly back away."},
+    {text: 'Pooling layers move the cat to the center first', feedback: "Pooling (next lesson!) shrinks and summarizes — it does not perform cat relocation services. The position-independence is baked into the sliding itself. Try again."},
+  ]}
+/>

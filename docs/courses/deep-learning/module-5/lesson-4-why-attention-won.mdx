@@ -1,0 +1,61 @@
+---
+title: "5.4 — Why attention won"
+description: "The 2017 paper that deleted recurrence and accidentally started the LLM era."
+---
+
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 5.4 — Why attention won ⏱️ ~10 min
+
+<Meme quote="The best way to have a good idea is to have a lot of ideas and throw the bad ones away." author="Linus Pauling — in 2017, \u2018recurrence\u2019 was the bad one" />
+
+## The hook
+
+For years, attention was a *side dish* — a helper bolted onto RNNs. Then in 2017, a paper asked the rudest question in ML history: what if we delete the RNN and keep **only** the attention?
+
+The paper was titled *"Attention Is All You Need."* It was correct. Here's the scoreboard.
+
+## The scoreboard 🏆
+
+| | RNN / LSTM | Pure attention (Transformer) |
+|---|---|---|
+| Long-range links | fade over distance | full strength at any distance |
+| Training | word-by-word, sequential 🐌 | all words at once ⚡ |
+| GPU utilization | terrible (waiting in line) | glorious (one big matmul) |
+| Scaling behavior | diminishing returns | keeps improving with size |
+| Blame flow (backprop) | vanishes through steps | direct paths everywhere |
+
+The sneaky-decisive row is **training speed**. Sequential processing meant RNNs couldn't efficiently use bigger GPU clusters — the hardware sat idle waiting for step *t-1*. Attention turned language into one giant parallel matrix party. Suddenly you could profitably throw 10,000 GPUs at text.
+
+## Then came the scaling laws 📈
+
+Once training was parallel, researchers tried making models bigger. And bigger. And the quality just… kept climbing — smoothly, predictably, following mathematical curves (**scaling laws**). No wall in sight.
+
+That predictability changed AI from research into engineering: "10× the compute" became a *budgetable plan* with a forecastable result. GPT-1 (2018) → GPT-2 → GPT-3 (2020) → the chatbot you talked to today: mostly the same architecture, scaled along those curves.
+
+<Meme top="2017: what if attention, but without the RNN" visual="📄💣" bottom="2023: every AI you've heard of is that paper" />
+
+## The fine print (nothing is free)
+
+- Attention is **O(n²)**: every word looks at every word, so 10× longer context = 100× cost. The reason "context length" is a marketing number.
+- Attention has **no built-in sense of order** — "dog bites man" and "man bites dog" look identical to it. The fix (position embeddings) is part of the transformer, next module.
+
+Both fine-print items are exactly what the transformer architecture handles — and that's Module 6.
+
+## Recap 📌
+
+- 2017, *Attention Is All You Need*: delete recurrence, keep attention — it won on every axis
+- Parallelism was the kingmaker: it unlocked massive GPU scaling, then scaling laws made bigger = predictably better
+- Costs accepted: O(n²) in length, and order must be added back manually
+
+## Quiz
+
+<Quiz
+  question="What was the WIN that turned attention from side-dish into the whole meal?"
+  options={[
+    {text: 'Attention is more biologically realistic than RNNs', feedback: "If biological realism picked winners, we'd all be using spiking neural networks (exquisitely brain-like, stubbornly mediocre). The 2017 revolution was won on brutally practical grounds. Try again."},
+    {text: 'Parallel training let attention exploit huge GPU fleets, and quality then scaled predictably with size', correct: true, feedback: "That's the one-two punch: parallelism made scale AFFORDABLE, scaling laws made it WORTH BUYING. Add investor money and you get the entire modern AI era."},
+    {text: 'Attention uses less memory than RNNs', feedback: "Backwards, actually — that O(n²) attention table is a memory HOG compared to an RNN's one little hidden state. Attention won despite costing more per word, because of what it bought. Try again."},
+  ]}
+/>

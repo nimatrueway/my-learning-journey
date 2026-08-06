@@ -1,0 +1,74 @@
+---
+title: "1.4 — Activations: why networks need drama"
+description: "Without nonlinearity, a 100-layer network is just an expensive straight line."
+---
+
+import ActivationGallery from '@site/src/components/ActivationGallery';
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 1.4 — Activations: why networks need drama ⏱️ ~10 min
+
+<Meme quote="If you're not embarrassed by the first version of your product, you've launched too late." author="Reid Hoffman — also how linear models should feel" />
+
+## The hook
+
+Here's a trap that has humbled many an engineer: stack 100 layers with **no activation functions**, and your giant network is mathematically identical to… one single layer. A straight line in a trench coat.
+
+Why? And what exactly do ReLU and friends fix?
+
+## Meet the cast 🎭
+
+<ActivationGallery />
+
+**Things to try:**
+
+1. Select **linear** and read its description. A line. Composing lines gives you—a line. Forever.
+2. Select **relu** — the kink is the drama. That tiny bend is what lets layers build bumps (lesson 1.3).
+3. Select **sigmoid**, drag the input slider to the extremes → the output barely moves. That flatness is called **saturation**, and it starves learning (gradients ≈ 0 out there). Foreshadowing for Module 2.
+4. **tanh** — same S-drama as sigmoid, but centered at 0.
+
+<Meme top="network without activations" visual="📏" bottom="network with activations: 🎢" />
+
+## Why the kink matters
+
+Composition of linear functions is linear: `f(g(x))` where both are lines… is a line. All the depth collapses.
+
+One nonlinear squiggle between layers breaks the collapse. Now each layer genuinely *adds* expressive power, and depth means something.
+
+**Practical defaults (memorize this, it's 95% of real life):**
+
+- Hidden layers → **ReLU** (or its cousins GELU/SiLU in transformers)
+- Output for "probability of yes" → **sigmoid**
+- Output for "pick one of N classes" → softmax (Module 3)
+- Output for "predict a number" → no activation
+
+<details>
+<summary>🤓 The actual math (optional — skip freely)</summary>
+
+The collapse proof is two lines. Two linear layers:
+
+$$W_2(W_1 x + b_1) + b_2 = (W_2 W_1)x + (W_2 b_1 + b_2)$$
+
+That's just $W' x + b'$ — one linear layer. By induction, any depth collapses.
+
+The saturation problem: sigmoid's derivative is $\sigma'(z) = \sigma(z)(1-\sigma(z))$, which maxes out at 0.25 and is nearly **0** for large $|z|$. During backprop, gradients multiply through layers — multiply enough near-zeros and the early layers learn nothing ("vanishing gradients"). ReLU's derivative is exactly 1 for $z>0$, which is why it took over the world.
+
+</details>
+
+## Recap 📌
+
+- No activation ⇒ any depth collapses into a single linear layer
+- The **nonlinearity** (kink/curve) is what makes depth actually useful
+- Default: ReLU in hidden layers; pick outputs by what you're predicting
+
+## Quiz
+
+<Quiz
+  question="You build a 50-layer network with no activation functions. What can it learn?"
+  options={[
+    {text: 'Anything, given enough training', feedback: "Painful but no — you could train it until the sun burns out and it will still only ever draw straight lines. The layers collapse into one. Try again."},
+    {text: 'Only linear relationships — it collapses into a single layer', correct: true, feedback: "Yes. 50 layers of lines = one line with extra steps. You just saved yourself a very expensive way to do linear regression."},
+    {text: 'Nothing at all — it won\u2019t even run', feedback: "It runs fine and even trains — it's just secretly a one-layer model burning 50 layers of compute. Arguably worse than crashing. Try again."},
+  ]}
+/>

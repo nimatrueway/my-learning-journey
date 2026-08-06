@@ -1,0 +1,476 @@
+.widget {
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 12px;
+  padding: 1rem;
+  margin: 1.5rem 0;
+  background: var(--ifm-background-surface-color);
+}
+
+.plot {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  background: var(--ifm-color-emphasis-100);
+}
+
+.axis {
+  stroke: var(--ifm-color-emphasis-400);
+  stroke-width: 1;
+}
+
+.curve {
+  stroke: var(--ifm-color-primary);
+  stroke-width: 3;
+}
+
+.probe {
+  fill: #ff6b6b;
+}
+
+.probeLabel {
+  fill: var(--ifm-font-color-base);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ball {
+  fill: #ffd93d;
+  stroke: #c9a227;
+  stroke-width: 2;
+}
+
+.ballExploded {
+  fill: #ff6b6b;
+  stroke: #b23b3b;
+  stroke-width: 2;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+  align-items: end;
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 150px;
+  flex: 1;
+}
+
+.control input[type='range'] {
+  width: 100%;
+  accent-color: var(--ifm-color-primary);
+}
+
+.buttonRow {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.button,
+.activeButton {
+  border: 1px solid var(--ifm-color-emphasis-400);
+  border-radius: 8px;
+  padding: 0.35rem 0.9rem;
+  cursor: pointer;
+  background: transparent;
+  color: var(--ifm-font-color-base);
+  font-weight: 600;
+}
+
+.activeButton {
+  background: var(--ifm-color-primary);
+  border-color: var(--ifm-color-primary);
+  color: #fff;
+}
+
+.button:hover {
+  background: var(--ifm-color-emphasis-200);
+}
+
+.formula,
+.statusLine {
+  margin: 0.75rem 0 0;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.85rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+/* Quiz */
+.quiz {
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-left: 4px solid var(--ifm-color-primary);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin: 1.5rem 0;
+  background: var(--ifm-background-surface-color);
+}
+
+.quizQuestion {
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.quizOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.quizOption,
+.quizCorrect,
+.quizWrong {
+  text-align: left;
+  border: 1px solid var(--ifm-color-emphasis-400);
+  border-radius: 8px;
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+  background: transparent;
+  color: var(--ifm-font-color-base);
+}
+
+.quizOption:hover {
+  background: var(--ifm-color-emphasis-200);
+}
+
+.quizCorrect {
+  background: rgba(46, 204, 113, 0.15);
+  border-color: #2ecc71;
+}
+
+.quizWrong {
+  background: rgba(255, 107, 107, 0.15);
+  border-color: #ff6b6b;
+}
+
+.quizFeedbackGood,
+.quizFeedbackBad {
+  margin: 0.75rem 0 0;
+  font-weight: 600;
+}
+
+.quizFeedbackGood {
+  color: #2ecc71;
+}
+
+.quizFeedbackBad {
+  color: #ff6b6b;
+}
+
+/* Meme / quote cards */
+.memeCard {
+  border: 2px dashed var(--ifm-color-emphasis-400);
+  border-radius: 12px;
+  padding: 1rem;
+  margin: 1.5rem 0;
+  text-align: center;
+  background: var(--ifm-color-emphasis-100);
+}
+
+.memeVisual {
+  font-size: 3rem;
+  line-height: 1.2;
+  white-space: pre;
+  font-family: var(--ifm-font-family-monospace);
+}
+
+.memeCaption {
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin: 0.25rem 0;
+}
+
+.quoteCard {
+  border-left: 4px solid var(--ifm-color-primary);
+  margin: 1.5rem 0;
+  padding: 0.75rem 1.25rem;
+  background: var(--ifm-color-emphasis-100);
+  border-radius: 0 12px 12px 0;
+}
+
+.quoteCard blockquote {
+  border: none;
+  margin: 0;
+  padding: 0;
+  font-style: italic;
+  font-size: 1.05rem;
+}
+
+.quoteCard figcaption {
+  margin-top: 0.5rem;
+  font-weight: 600;
+  color: var(--ifm-color-emphasis-700);
+}
+
+/* Extra curves & legends */
+.curveGhost {
+  stroke: #6b9bff;
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+}
+
+.curveGhost2 {
+  stroke: #c78bff;
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+}
+
+.curveVal {
+  stroke: #ffd93d;
+  stroke-width: 3;
+}
+
+.legendRow {
+  display: flex;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.legendMain { color: var(--ifm-color-primary); }
+.legendVal { color: #c9a227; }
+.legendGhost { color: #6b9bff; }
+.legendGhost2 { color: #c78bff; }
+.legendProbe { color: #ff6b6b; }
+.legendTest { color: #ffd93d; }
+
+.residual {
+  stroke: #ff6b6b;
+  stroke-width: 2;
+  stroke-dasharray: 3 3;
+}
+
+.contour {
+  stroke: var(--ifm-color-emphasis-400);
+  stroke-width: 1;
+}
+
+.goal {
+  fill: #2ecc71;
+}
+
+.trail {
+  stroke: #ffd93d;
+  stroke-width: 2;
+}
+
+.testPoint {
+  fill: #ffd93d;
+  stroke: #c9a227;
+}
+
+.embedDot {
+  fill: var(--ifm-color-primary);
+}
+
+/* Network diagram */
+.node {
+  fill: var(--ifm-color-primary);
+  opacity: 0.9;
+}
+
+.nodeDead {
+  fill: var(--ifm-color-emphasis-400);
+}
+
+.nodeLabel {
+  fill: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.nodeValue {
+  fill: #fff;
+  font-size: 12px;
+  font-family: var(--ifm-font-family-monospace);
+}
+
+.edge {
+  stroke: var(--ifm-color-emphasis-500);
+  stroke-width: 2;
+}
+
+.edgeLabel {
+  fill: var(--ifm-font-color-base);
+  font-size: 12px;
+  font-family: var(--ifm-font-family-monospace);
+}
+
+/* Stepper (backprop, transformer) */
+.stepperChain {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.chainNode,
+.chainNodeActive {
+  border: 1px solid var(--ifm-color-emphasis-400);
+  border-radius: 8px;
+  padding: 0.25rem 0.6rem;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.85rem;
+}
+
+.chainNodeActive {
+  background: var(--ifm-color-primary);
+  border-color: var(--ifm-color-primary);
+  color: #fff;
+}
+
+.stepperCard {
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+  background: var(--ifm-color-emphasis-100);
+  min-height: 7rem;
+}
+
+.stepperTitle {
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.stepperVisual {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.9rem;
+  background: var(--ifm-color-emphasis-200);
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+}
+
+/* Batch grid */
+.batchGrid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 0.3rem;
+  margin-bottom: 0.75rem;
+}
+
+.batchCell,
+.batchCellActive,
+.batchCellSeen {
+  text-align: center;
+  font-size: 1.3rem;
+  padding: 0.2rem;
+  border-radius: 6px;
+  border: 2px solid transparent;
+}
+
+.batchCellActive {
+  border-color: var(--ifm-color-primary);
+  background: rgba(37, 194, 160, 0.15);
+}
+
+.batchCellSeen {
+  opacity: 0.3;
+}
+
+/* Tokens (RNN, attention, tokenizer) */
+.tokenRow {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin: 0.75rem 0;
+}
+
+.token,
+.tokenActive,
+.tokenFuture {
+  border-radius: 6px;
+  padding: 0.25rem 0.55rem;
+  font-weight: 600;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.3;
+}
+
+.tokenActive {
+  background: var(--ifm-color-primary);
+  border-color: var(--ifm-color-primary);
+  color: #fff;
+}
+
+.tokenFuture {
+  opacity: 0.35;
+}
+
+.tokenPct {
+  font-size: 0.65rem;
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+.tokenChunk {
+  border-radius: 6px;
+  padding: 0.25rem 0.5rem;
+  font-family: var(--ifm-font-family-monospace);
+  font-weight: 700;
+  color: #1c1e21;
+}
+
+/* RNN memory bars */
+.memoryBars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 0.75rem;
+}
+
+.memoryBarRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.memoryBarLabel {
+  width: 5.5rem;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.8rem;
+  text-align: right;
+}
+
+.memoryBarTrack {
+  flex: 1;
+  height: 0.7rem;
+  border-radius: 4px;
+  background: var(--ifm-color-emphasis-200);
+  overflow: hidden;
+}
+
+.memoryBarFill {
+  height: 100%;
+  background: var(--ifm-color-primary);
+  transition: width 0.3s;
+}
+
+/* Grids (conv) */
+.gridRow {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  margin: 0.75rem 0;
+}
+
+/* Text input (tokenizer) */
+.textInput {
+  width: 100%;
+  border: 1px solid var(--ifm-color-emphasis-400);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+}

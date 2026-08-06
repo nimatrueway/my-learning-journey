@@ -1,0 +1,112 @@
+---
+title: "1.1 — A neuron is just a tiny function"
+description: "The whole mystery of neural networks starts with one embarrassingly simple function."
+---
+
+import NeuronPlayground from '@site/src/components/NeuronPlayground';
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 1.1 — A neuron is just a tiny function ⏱️ ~10 min
+
+<Meme quote="If you can't explain it simply, you don't understand it well enough." author="attributed to Einstein (entrepreneurs quote it constantly, so it counts)" />
+
+## The hook
+
+GPT has ~1.8 trillion parameters. Sounds terrifying, right?
+
+Here's the secret: every single one of those parameters lives inside something you could code in **one line of Python**. Master that line, and the rest of this course is just stacking.
+
+## Meet the neuron 🐱
+
+A neuron is a function. That's it. It takes a number in, spits a number out:
+
+```python
+def neuron(x):
+    return activation(weight * x + bias)
+```
+
+Think of it as a **cat deciding whether to get off the couch**:
+
+- `x` — how loudly you shake the treat bag (the input)
+- `weight` — how much this cat *cares* about treats (its personality)
+- `bias` — the cat's base mood today (grumpy = negative bias)
+- `activation` — the final decision: move, or keep ignoring you
+
+If `weight * x + bias` isn't big enough… the cat does not move. Sound familiar? That's ReLU: below the threshold, output is exactly zero. Total indifference.
+
+## Play with it 🎮
+
+Drag the sliders. Seriously — drag every one of them before reading on.
+
+<NeuronPlayground />
+
+**Things to try (2 minutes, do it):**
+
+1. Set weight to **0** → the input stops mattering entirely. Flat line. The cat is dead inside.
+2. Make weight **negative** → the curve flips. Now more treats = *less* interest. Congratulations, you've modeled a contrarian cat.
+3. Switch to **sigmoid** → output gets squashed between 0 and 1. Useful when you want a probability, like "83% chance this is a cat."
+4. Crank bias up → the whole curve shifts. Same personality, better mood.
+
+<Meme top="one neuron" visual="🐱" bottom="1.8 trillion neurons? just 1.8 trillion cats" />
+
+## The tiny code version
+
+The widget above, in real Python:
+
+```python
+def relu(z):
+    return max(0.0, z)
+
+def neuron(x, weight, bias):
+    return relu(weight * x + bias)
+
+neuron(1.5, weight=2.0, bias=-1.0)   # → 2.0
+neuron(0.2, weight=2.0, bias=-1.0)   # → 0.0  (cat did not move)
+```
+
+That's a complete, real neuron. Everything else in deep learning is about (1) using *lots* of these and (2) finding good values for `weight` and `bias` automatically. Number 2 is next lesson.
+
+<details>
+<summary>🤓 The actual math (optional — skip freely)</summary>
+
+A neuron computes $y = f(wx + b)$, where $f$ is the **activation function**. The two you just played with:
+
+**ReLU** (Rectified Linear Unit):
+
+$$\text{ReLU}(z) = \max(0, z)$$
+
+Plain English: "if the number is negative, output 0; otherwise pass it through unchanged." That's why the curve is a flat line that suddenly kinks upward — the kink is exactly where $wx + b = 0$.
+
+**Sigmoid**:
+
+$$\sigma(z) = \frac{1}{1 + e^{-z}}$$
+
+Plain English: a squashing machine. Feed it any number from $-\infty$ to $+\infty$ and it returns something strictly between 0 and 1:
+
+- Big positive $z$ → $e^{-z}$ is tiny → output ≈ 1 ("definitely yes")
+- Big negative $z$ → $e^{-z}$ is huge → output ≈ 0 ("definitely no")
+- $z = 0$ → output exactly 0.5 ("no idea, flip a coin")
+
+That's the S-shape you saw — perfect when you want the output to behave like a probability.
+
+</details>
+
+## Recap 📌
+
+- A neuron = `activation(weight * input + bias)` — one line of code
+- `weight` and `bias` are the **knobs**; changing them changes the neuron's behavior
+- ReLU = "ignore everything below the threshold" (peak cat behavior)
+
+## Quiz
+
+<Quiz
+  question="A ReLU neuron has weight=2 and bias=-6. What does it output for input x=2?"
+  options={[
+    {text: '-2', feedback: "You did the math (2×2−6=−2) but forgot the ReLU. ReLU never lets negatives through — like a bouncer for numbers. Try again."},
+    {text: '0', correct: true, feedback: "2×2−6=−2, and ReLU clamps it to 0. The cat heard the treat bag and chose violence (by not moving). You got it."},
+    {text: '2', feedback: "That's just the input echoed back. The neuron does more work than that — multiply, add, THEN clamp. Try again."},
+  ]}
+/>
+
+**Next:** [1.2 — Learning = adjusting knobs](/courses/deep-learning/module-1/lesson-2-learning) — where the knobs start turning themselves.

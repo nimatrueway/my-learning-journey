@@ -1,0 +1,128 @@
+:root {
+  --ifm-color-primary: #007f78;
+  --ifm-color-primary-dark: #00726c;
+  --ifm-color-primary-darker: #006c66;
+  --ifm-color-primary-darkest: #005953;
+  --ifm-color-primary-light: #008c84;
+  --ifm-color-primary-lighter: #00928a;
+  --ifm-color-primary-lightest: #00a59c;
+  --ifm-background-color: #f7f5ef;
+  --ifm-font-family-base: 'Avenir Next', Avenir, 'Helvetica Neue', sans-serif;
+  --ifm-heading-font-family: Georgia, 'Times New Roman', serif;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: #5fd6ca;
+  --ifm-color-primary-dark: #43cec0;
+  --ifm-color-primary-darker: #35cabd;
+  --ifm-color-primary-darkest: #2ba69b;
+  --ifm-color-primary-light: #7bddd4;
+  --ifm-color-primary-lighter: #89e1d9;
+  --ifm-color-primary-lightest: #b3ece7;
+  --ifm-background-color: #161a1d;
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+.journeyHero {
+  margin: 2rem 0 4rem;
+  padding: clamp(2rem, 6vw, 5.5rem) 0;
+  border-bottom: 1px solid var(--ifm-color-emphasis-300);
+  background-image:
+    linear-gradient(90deg, transparent 49.5%, var(--ifm-color-emphasis-200) 50%, transparent 50.5%),
+    linear-gradient(var(--ifm-color-emphasis-100) 1px, transparent 1px);
+  background-size: 5rem 100%, 100% 2rem;
+}
+
+.journeyEyebrow {
+  margin-bottom: 1rem;
+  color: #d6533c;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.journeyHero h1 {
+  max-width: 14ch;
+  margin-bottom: 1.5rem;
+  font-size: clamp(3rem, 8vw, 6.5rem);
+  line-height: 0.94;
+  letter-spacing: 0;
+}
+
+.journeyLead {
+  max-width: 42rem;
+  margin: 0;
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+}
+
+.courseGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0 4rem;
+}
+
+.courseCard {
+  display: grid;
+  min-height: 22rem;
+  padding: 1.5rem;
+  color: inherit;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-top: 5px solid #d6533c;
+  border-radius: 4px;
+  background: var(--ifm-background-surface-color);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.07);
+  text-decoration: none;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.courseCard:hover {
+  color: inherit;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.13);
+  text-decoration: none;
+  transform: translateY(-4px);
+}
+
+.courseNumber {
+  color: var(--ifm-color-emphasis-500);
+  font-family: var(--ifm-font-family-monospace);
+}
+
+.courseStatus {
+  justify-self: end;
+  margin-top: -1.5rem;
+  color: var(--ifm-color-primary);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.courseCard h3 {
+  align-self: end;
+  margin: 3rem 0 1rem;
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.courseDescription {
+  margin-bottom: 1rem;
+}
+
+.courseCard strong {
+  align-self: end;
+  color: #d6533c;
+}
+
+@media (max-width: 600px) {
+  .journeyHero {
+    margin-top: 0;
+    padding-top: 3rem;
+  }
+
+  .courseCard {
+    min-height: 19rem;
+  }
+}

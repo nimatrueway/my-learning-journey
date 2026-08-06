@@ -1,0 +1,90 @@
+---
+title: "4.3 — Building the \"is it a cat?\" classifier"
+description: "Assemble convs, pools, and a classifier head into the architecture that started it all."
+---
+
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 4.3 — Building the "is it a cat?" classifier ⏱️ ~15 min
+
+<Meme quote="Talk is cheap. Show me the code." author="Linus Torvalds" />
+
+## The hook
+
+Three modules of running gags later, it's time. A complete, real, trainable cat classifier — and you already understand every single line.
+
+## The architecture 🏗️
+
+Every image classifier is two machines bolted together:
+
+1. **Feature extractor** (the conv/pool rhythm) — turns pixels into "what's in here" signals
+2. **Classifier head** (a plain Module-1 network) — turns those signals into a verdict
+
+```python
+import torch.nn as nn
+
+model = nn.Sequential(
+    # ---- feature extractor: pixels → features ----
+    nn.Conv2d(3, 16, 3, padding=1), nn.ReLU(),   # 3 color channels in
+    nn.MaxPool2d(2),                             # 64×64 → 32×32
+    nn.Conv2d(16, 32, 3, padding=1), nn.ReLU(),
+    nn.MaxPool2d(2),                             # 32×32 → 16×16
+    nn.Conv2d(32, 64, 3, padding=1), nn.ReLU(),
+    nn.MaxPool2d(2),                             # 16×16 → 8×8
+
+    # ---- classifier head: features → verdict ----
+    nn.Flatten(),                                # 64 maps of 8×8 → one long vector
+    nn.Linear(64 * 8 * 8, 128), nn.ReLU(),
+    nn.Dropout(0.5),                             # Module 3 discipline
+    nn.Linear(128, 2),                           # two scores: [not-cat, cat]
+)
+```
+
+Read it top to bottom: channels grow (16→32→64: features get *richer*) while the image shrinks (64→8: view gets *wider*). Then `Flatten` hands everything to a boring old dense network for the final call.
+
+**One new face: cross-entropy loss** (promised in lesson 2.1). The model outputs two raw scores; softmax turns them into probabilities; cross-entropy punishes confident wrongness:
+
+```python
+loss_fn = nn.CrossEntropyLoss()   # softmax + punishment, bundled
+```
+
+Being 99% sure of "not-cat" when it's a cat costs enormously more than a hesitant 55%. Confidence is earned, not free.
+
+<Meme top="model: 99.9% sure that's not a cat" visual="🐱" bottom="cross-entropy: that mistake will cost you 6.9 loss units" />
+
+## Training: nothing new under the sun
+
+The sacred five lines, verbatim, plus everything from Module 3 — DataLoaders, shuffling, dropout, watching both loss curves. You know all of this. That's the point of the course.
+
+<details>
+<summary>🤓 The actual math (optional — skip freely)</summary>
+
+Softmax turns raw scores $z_1, z_2$ into probabilities:
+
+$$p_i = \frac{e^{z_i}}{e^{z_1} + e^{z_2}}$$
+
+Cross-entropy then charges the model the negative log of the probability it gave the *true* class:
+
+$$L = -\log(p_{\text{true}})$$
+
+Feel the shape of $-\log$: gave the truth 0.99 → loss 0.01 (cheap). Gave it 0.01 → loss 4.6 (brutal). As $p_{\text{true}} \to 0$, loss $\to \infty$ — confident wrongness approaches infinitely punishable. This is why models trained on cross-entropy learn calibrated humility.
+
+</details>
+
+## Recap 📌
+
+- Image classifier = **conv/pool feature extractor** + **Flatten** + **dense classifier head**
+- Channels grow while the image shrinks: richer features, wider view
+- **Cross-entropy** = the category loss; punishes confident wrongness hardest
+
+## Quiz
+
+<Quiz
+  question="What does nn.Flatten() actually do in the middle of the model?"
+  options={[
+    {text: 'Compresses the image to save memory', feedback: "No compression, no savings — every number survives, they just get rearranged. 64×8×8 numbers in, 4096 numbers out. Same stuff, different shape. Try again."},
+    {text: 'Reshapes the stack of 2D feature maps into one long 1D vector so a Linear layer can eat it', correct: true, feedback: "Exactly — it's an adapter, not a compressor. Conv layers speak 'grid'; Linear layers speak 'vector'. Flatten is the plug between the two halves of every image classifier."},
+    {text: 'Averages the feature maps together', feedback: "That's a different (real) op — global average pooling, used in some modern nets. Flatten is dumber: it just unrolls the grid into a line, losing nothing. Try again."},
+  ]}
+/>

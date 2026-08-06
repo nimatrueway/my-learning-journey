@@ -1,0 +1,86 @@
+---
+title: "1.5 — The forward pass, start to finish"
+description: "Follow one number all the way through a real network. No magic anywhere."
+---
+
+import ForwardPassViz from '@site/src/components/ForwardPassViz';
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 1.5 — The forward pass, start to finish ⏱️ ~12 min
+
+<Meme quote="Simplicity is the ultimate sophistication." author="Leonardo da Vinci (adopted by every startup pitch deck since)" />
+
+## The hook
+
+Time to assemble everything from lessons 1.1–1.4 into one complete, working network, and watch a number travel through it — every multiplication visible. This trip is called the **forward pass**, and it's the same trip whether the network has 4 neurons or 4 billion.
+
+## Watch the number travel 🎢
+
+Input → two hidden neurons (ReLU) → output. Drag the input and watch every node update:
+
+<ForwardPassViz />
+
+**Things to try:**
+
+1. Slide x below **0.5** → neuron h₁ goes gray (asleep — its ReLU outputs 0). Only h₂ carries signal.
+2. Slide x above **1.0** → now h₂ falls asleep instead. Different inputs wake different neurons. This is the network's whole trick: **different neurons handle different regions of the input**.
+3. Around x = 0.75 → both awake, both contributing.
+
+That "which neurons wake up" pattern *is* the computation. A cat photo wakes the pointy-ears neurons; a car photo wakes the wheel neurons.
+
+<Meme top="input enters the network" visual="🔢 → 🐱🐱 → 🔢" bottom="neurons take turns being useful" />
+
+## The tiny code version
+
+The exact network above, in PyTorch:
+
+```python
+import torch
+import torch.nn as nn
+
+model = nn.Sequential(
+    nn.Linear(1, 2),   # input → 2 hidden neurons
+    nn.ReLU(),         # the drama
+    nn.Linear(2, 1),   # hidden → output
+)
+
+x = torch.tensor([[1.0]])
+y = model(x)           # ← THIS is the forward pass. One line.
+```
+
+When people say "run the model" or "inference" — this is all that's happening. Multiply, add, kink, repeat.
+
+<details>
+<summary>🤓 The actual math (optional — skip freely)</summary>
+
+The whole widget as one expression:
+
+$$y = \mathbf{v}^\top \, \text{relu}(\mathbf{w} x + \mathbf{b})$$
+
+with $\mathbf{w} = [2, -1]$, $\mathbf{b} = [-1, 1]$, $\mathbf{v} = [1.5, 2]$. Expanded:
+
+$$y = 1.5 \cdot \text{relu}(2x - 1) + 2 \cdot \text{relu}(-x + 1)$$
+
+A deep network just nests this: $y = f_3(f_2(f_1(x)))$ where each $f_i$ is a layer. "Deep" literally means "more nesting."
+
+</details>
+
+## Recap 📌
+
+- **Forward pass** = input flows through layers: multiply, add, activate, repeat
+- Different inputs wake different neurons — that pattern is the computation
+- `model(x)` in PyTorch runs the whole thing; GPT's forward pass is the same idea, much bigger
+
+## Quiz
+
+<Quiz
+  question="In the widget, why does h₁ 'fall asleep' for small inputs?"
+  options={[
+    {text: 'Its weight is zero for small inputs', feedback: "Weights never change during a forward pass — they're frozen knobs. Something else is silencing the neuron. Try again."},
+    {text: 'Its pre-activation (2x − 1) goes negative, and ReLU clamps negatives to 0', correct: true, feedback: "Precisely. 2x − 1 < 0 when x < 0.5, ReLU says 'nope', output 0. You can now read a neural network like a bedtime story."},
+    {text: 'The output neuron ignores it', feedback: "The output neuron faithfully takes 1.5 × h₁ no matter what — it's just that h₁ itself is sending 0. The silence starts earlier. Try again."},
+  ]}
+/>
+
+**🎉 Module 1 done!** Next up: the [mini-project](/courses/deep-learning/module-1/mini-project) — build this exact network in plain Python, no PyTorch.

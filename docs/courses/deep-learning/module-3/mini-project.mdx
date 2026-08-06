@@ -1,0 +1,35 @@
+---
+title: "🛠 Mini-project: handwritten digits on MPS"
+description: "The 'hello world' of deep learning — train a real classifier on your Mac's GPU."
+---
+
+import Meme from '@site/src/components/Meme';
+
+# 🛠 Mini-project: handwritten digits on MPS ⏱️ ~30 min
+
+<Meme quote="The way to get started is to quit talking and begin doing." author="Walt Disney" />
+
+## The mission
+
+Train a network to read handwritten digits (MNIST — 60,000 images) on your Mac's GPU, using everything from Modules 1–3: DataLoaders, a real train/validation split, dropout, and early-ish stopping.
+
+```bash
+pip install torch torchvision
+python notebooks/module-3-mini-project.py
+```
+
+## What you'll do
+
+1. **Run it** — MNIST downloads automatically (~10 MB); watch train + val accuracy climb past 97%
+2. **Feel the MPS speedup** — the script times one epoch on CPU vs MPS
+3. **Sabotage lab** (pick two):
+   - Remove `nn.Dropout` → watch the train/val gap widen
+   - Sort the training data by label (`shuffle=False` + sorted dataset) → relive lesson 3.1's disaster
+   - Set lr to 1.0 → NaN city, then fix it like a pro (10× cuts)
+4. **Read your loss curves** — the script prints both; diagnose them with lesson 2.5 eyes
+
+## Success criteria
+
+- [ ] Validation accuracy ≥ 97%
+- [ ] You observed the MPS vs CPU timing difference
+- [ ] You ran at least two sabotages and correctly predicted each symptom *before* running

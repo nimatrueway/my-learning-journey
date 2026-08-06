@@ -1,0 +1,68 @@
+---
+title: "2.2 — Gradient descent in 10,000 dimensions"
+description: "The ball rolls downhill even when the hill has more dimensions than you can imagine."
+---
+
+import Descent2D from '@site/src/components/Descent2D';
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 2.2 — Gradient descent in 10,000 dimensions ⏱️ ~12 min
+
+<Meme quote="When something is important enough, you do it even if the odds are not in your favor." author="Elon Musk — the ball, probably, rolling into dimension 10,000" />
+
+## The hook
+
+Lesson 1.2's ball rolled down a 1-D curve — one knob. Real networks have millions of knobs. What does "downhill" even *mean* in a million dimensions?
+
+Answer: exactly the same thing. And there's a classic failure you can only see with 2+ knobs — let's trigger it.
+
+## The ravine 🎮
+
+Two knobs now: w₁ (shallow direction) and w₂ (steep direction). The ellipses are the loss landscape seen from above — a stretched bowl. Green dot = the minimum.
+
+<Descent2D />
+
+**Things to try:**
+
+1. **lr = 0.3**, train → watch it **zigzag**: it bounces across the steep direction while slowly creeping along the shallow one. This is the classic ravine problem.
+2. **lr = 0.5** → the zigzag amplifies and 💥. The steep direction couldn't survive steps that the shallow direction *needed*.
+3. **lr = 0.05** → stable but takes forever crawling along the valley floor.
+
+One learning rate has to serve every direction at once — and directions disagree. This exact tension is why fancier optimizers exist (**Adam**, next lessons, adapts the step size per knob).
+
+<Meme top="steep direction: slow down!!" visual="↕️😵‍💫↔️" bottom="shallow direction: SPEED UP" />
+
+## Scaling to a million knobs
+
+Nothing changes. The gradient is just a list of slopes — one per knob. Each knob steps downhill along *its own* slope, all simultaneously. A million-knob network takes a million-component step. The picture in your head can stay 2-D; the math doesn't care.
+
+<details>
+<summary>🤓 The actual math (optional — skip freely)</summary>
+
+The landscape here is $L(w_1, w_2) = 0.15 w_1^2 + 2 w_2^2$. Its gradient — the vector of slopes:
+
+$$\nabla L = \left[\frac{\partial L}{\partial w_1}, \frac{\partial L}{\partial w_2}\right] = [0.3\,w_1,\; 4\,w_2]$$
+
+The update is the same rule from lesson 1.2, applied to the whole vector: $\mathbf{w} \leftarrow \mathbf{w} - \eta \nabla L$.
+
+Why the zigzag: the steep direction's slope (coefficient 4) is ~13× the shallow one's (0.3). A step size that's calm for $w_1$ *overshoots* $w_2$, which flips its sign each step → bounce, bounce, bounce. Stability requires roughly $\eta < 2/4 = 0.5$ for the steep direction — try lr just under and over 0.5 and watch the theory come true.
+
+</details>
+
+## Recap 📌
+
+- Gradient = a slope per knob; all knobs step downhill simultaneously
+- Ravines cause **zigzagging**: one learning rate can't please steep and shallow directions
+- This is why adaptive optimizers (Adam) exist — per-knob step sizes
+
+## Quiz
+
+<Quiz
+  question="In the ravine, why does raising the learning rate cause a zigzag explosion instead of faster progress?"
+  options={[
+    {text: 'Big steps overshoot the steep direction, bouncing side to side ever higher', correct: true, feedback: "That's it. The steep walls punish big steps with overshoot; the bounce grows each time. Meanwhile the shallow direction was begging for bigger steps. Tragic. Adam fixes this."},
+    {text: 'The gradient becomes wrong at high learning rates', feedback: "The gradient is always correct — it's honest about the slope right where you stand. The problem is taking a HUGE leap based on very local advice. Try again."},
+    {text: 'The loss function changes shape during training', feedback: "This landscape is frozen — same bowl the whole time. (Real networks' landscapes do shift as data batches change, but that's not what's exploding here.) Try again."},
+  ]}
+/>

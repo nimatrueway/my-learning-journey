@@ -1,0 +1,53 @@
+---
+title: "2.5 — Watching a network learn"
+description: "Loss curves are the vital signs of training. Learn to read them like a doctor."
+---
+
+import TrainingSimulator from '@site/src/components/TrainingSimulator';
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 2.5 — Watching a network learn ⏱️ ~10 min
+
+<Meme quote="Sunlight is the best disinfectant." author="Louis Brandeis — also true of plotting your loss" />
+
+## The hook
+
+Training runs for hours. How do you know — at minute 3 — whether it's going well or you're burning GPU money on a corpse? You read the **loss curves**. Two lines that tell you everything.
+
+## The two vital signs 🩺
+
+- **Train loss** — how wrong the model is on data it's *learning from*
+- **Validation loss** — how wrong it is on data it's *never seen* (the only one that counts)
+
+Play doctor. Diagnose each condition:
+
+<TrainingSimulator />
+
+**Reproduce all four diseases (this is the whole lesson — do it):**
+
+1. **Healthy** 😸 — lr ≈ 0.3, right-sized, plenty of data → both curves fall and hug each other.
+2. **Espresso cat** 💥 — lr ≈ 1.0 → loss bounces around instead of falling. Cure: lower lr.
+3. **Too dumb** 😿 — tiny model → both curves plateau high. It literally cannot represent the pattern. Cure: bigger model.
+4. **The memorizer** 🚨 — huge model + a handful of data → train loss dives, validation loss *rises*. The model is memorizing answers, not learning patterns. Cure: Module 3 (all of it).
+
+That gap between the curves has a name — **overfitting** — and it's the villain of the next module.
+
+<Meme top="train loss: 0.001" visual="😍📉 / 😱📈" bottom="validation loss: has left the chat" />
+
+## Recap 📌
+
+- Always plot **train and validation loss** — train alone can lie to you
+- Bouncing = lr too high · both-high plateau = model too weak · diverging curves = memorizing
+- Validation loss is the only score that matters; it's the "will this work in production" number
+
+## Quiz
+
+<Quiz
+  question="Train loss: falling nicely. Validation loss: falling, then climbing for the last 20 epochs. What's happening?"
+  options={[
+    {text: 'The model is still improving — keep training', feedback: "The train curve says yes, but that's the model grading its own homework. The validation curve — the actual exam — is getting WORSE. Trust the exam. Try again."},
+    {text: 'Overfitting: it\u2019s memorizing training data and getting worse at generalizing', correct: true, feedback: "Diagnosis correct, doctor. 🩺 Bonus points: the best model was back at the validation-loss minimum — which is why people save checkpoints and stop early. Module 3 has the full toolkit."},
+    {text: 'The validation data is broken', feedback: "Possible in theory, but it fell normally for most of training — the data didn't break at epoch 80. The MODEL changed: it drifted from learning into memorizing. Try again."},
+  ]}
+/>

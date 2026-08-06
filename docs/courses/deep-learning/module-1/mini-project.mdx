@@ -1,0 +1,34 @@
+---
+title: "🛠 Mini-project: a network from scratch"
+description: "Build a working 2-neuron network in plain Python. No frameworks, no excuses."
+---
+
+import Meme from '@site/src/components/Meme';
+
+# 🛠 Mini-project: a network from scratch ⏱️ ~20 min
+
+<Meme quote="What I cannot create, I do not understand." author="Richard Feynman" />
+
+## The mission
+
+Build the lesson 1.5 network in **plain Python** — no PyTorch, no NumPy — and verify it matches the widget. Then earn the bonus cat.
+
+The skeleton lives in your repo at `notebooks/module-1-mini-project.py`. Run it:
+
+```bash
+python notebooks/module-1-mini-project.py
+```
+
+## What you'll do
+
+1. **Implement** `relu`, `neuron`, and `forward` — about 10 lines total (skeleton provided, with solutions below the fold)
+2. **Verify**: `forward(1.0)` should output `1.5` — cross-check with the lesson 1.5 widget at x = 1.0
+3. **Bonus**: hand-tune the six knobs so the network outputs roughly `x²` for x in [0, 2]. Feel the pain of manual knob-turning — next module, gradients do it for you.
+
+## Success criteria
+
+- [ ] `forward(1.0)` returns 1.5 (±0.01)
+- [ ] You can explain to a rubber duck (or cat) why h₂ is asleep at x = 2
+- [ ] Bonus: your hand-tuned `x²` approximation has error < 0.5 at x ∈ \{0, 1, 2\}
+
+<Meme top="manually tuning 6 knobs: annoying" visual="🎛️🎛️🎛️🎛️🎛️🎛️" bottom="GPT has 1,800,000,000,000 knobs. see you in module 2" />

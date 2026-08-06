@@ -1,0 +1,65 @@
+---
+title: "6.3 — Pretraining vs fine-tuning: how LLMs are raised"
+description: "From reading the internet to following instructions — the lifecycle of a language model."
+---
+
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 6.3 — Pretraining vs fine-tuning: how LLMs are raised ⏱️ ~12 min
+
+<Meme quote="Education is what remains after one has forgotten what one has learned in school." author="Einstein — pretraining in one sentence" />
+
+## The hook
+
+A freshly pretrained GPT is *not* a chatbot. Ask it "What's the capital of France?" and it might reply: `What's the capital of Spain? What's the capital of Italy?` — because on the internet, questions travel in lists. It's a magnificent autocomplete with no idea it's supposed to *answer* you.
+
+Turning that raw text-predictor into a helpful assistant is a multi-stage upbringing.
+
+## Stage 1: Pretraining — reading the internet 📚
+
+- **Task:** predict the next token. That's all. Your mini-project 5, at cosmic scale.
+- **Data:** trillions of tokens — web pages, books, code
+- **Cost:** thousands of GPUs, weeks-to-months, tens of millions of dollars
+- **Result:** a **base model** — vast knowledge of language, facts, code, and reasoning patterns… and zero manners
+
+Why does "predict the next token" produce knowledge at all? Because predicting well *requires* it. To continue `The capital of France is`, you must know Paris. To continue a Python function, you must know Python. Compressed into those knobs is everything that helps guess the next word — which turns out to be almost everything.
+
+## Stage 2: Fine-tuning — teaching manners 🎓
+
+Same training loop, same cross-entropy, but now the data is tens of thousands of curated *conversations*: instruction → good response. The model learns the **shape of being helpful**: answer the question, format nicely, decline the sketchy stuff.
+
+This is Module 4's transfer learning, verbatim: expensive general pretraining (the frozen "eyes"), cheap task-specific adaptation (the new "head"). Same idea, new domain.
+
+**Stage 3 (the polish):** after fine-tuning, models are further tuned on *human preferences* — people rank candidate answers, and the model is nudged toward the ranked-higher kind (RLHF and friends). That's the difference between "technically correct" and "actually pleasant."
+
+<Meme top="base model: has read everything ever written" visual="🎓🐱" bottom="also base model: answers your question with three more questions" />
+
+## Why this matters to *you*
+
+The stages have wildly different price tags:
+
+| Stage | Cost | Who can do it |
+|---|---|---|
+| Pretraining | $10M+ | a handful of companies |
+| Full fine-tuning | hundreds–thousands of $ | funded teams |
+| **LoRA fine-tuning** | **your Mac, tonight** | **you, next lesson** |
+
+You never start from scratch. You take a pretrained model and adapt it — and the cheap way to adapt is where we go next.
+
+## Recap 📌
+
+- Pretraining = next-token prediction on trillions of tokens → knowledge without manners
+- Fine-tuning = same loop on curated conversations → the shape of helpfulness (transfer learning!)
+- Preference tuning = the final polish from human rankings; adaptation is cheap, pretraining is not
+
+## Quiz
+
+<Quiz
+  question="Why does the humble 'predict the next token' objective produce a model that knows facts and writes code?"
+  options={[
+    {text: 'The objective secretly contains a knowledge-graph component', feedback: "No secret components — it really is just cross-entropy on next-token guesses, the same loss from lesson 4.3. The knowledge sneaks in through the back door of what good prediction REQUIRES. Try again."},
+    {text: 'Predicting text well REQUIRES the knowledge in it — you can\u2019t reliably continue \u2018the capital of France is\u2019 without knowing Paris', correct: true, feedback: "Exactly — prediction is a knowledge tax collector. Every fact, convention, and reasoning pattern that lowers loss gets compressed into the knobs. Simple objective, profound side effects."},
+    {text: 'The model memorizes the internet word-for-word', feedback: "Trillions of training tokens vs billions of knobs — it literally cannot fit verbatim (a little memorization of famous passages happens, but it's the exception). It's forced to COMPRESS into patterns — which is exactly what understanding is. Try again."},
+  ]}
+/>

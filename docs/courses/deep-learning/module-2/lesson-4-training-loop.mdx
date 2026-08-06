@@ -1,0 +1,83 @@
+---
+title: "2.4 — Your first real PyTorch training loop"
+description: "Five lines you'll type for the rest of your deep learning life."
+---
+
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 2.4 — Your first real PyTorch training loop ⏱️ ~15 min
+
+<Meme quote="Amateurs talk strategy. Professionals talk logistics." author="adapted from Gen. Omar Bradley — the training loop IS the logistics" />
+
+## The hook
+
+Everything so far — loss, gradients, backprop — assembles into a five-line ritual. This exact ritual trains toy models and GPT alike. Learn it once, type it forever.
+
+## The sacred five lines 🙏
+
+```python
+for x, y in data:
+    pred = model(x)              # 1. forward pass (Module 1)
+    loss = loss_fn(pred, y)     # 2. score the wrongness (lesson 2.1)
+    loss.backward()             # 3. assign blame to every knob (lesson 2.3)
+    optimizer.step()            # 4. every knob steps downhill (lesson 2.2)
+    optimizer.zero_grad()       # 5. wipe the blame for the next round
+```
+
+Say it with me: **forward, loss, backward, step, zero**. That's the entire religion.
+
+## The full, runnable version
+
+A network learning `y = x²` from scratch:
+
+```python
+import torch
+import torch.nn as nn
+
+# data: x and its square
+x = torch.linspace(-2, 2, 100).reshape(-1, 1)
+y = x ** 2
+
+model = nn.Sequential(
+    nn.Linear(1, 16), nn.ReLU(),
+    nn.Linear(16, 1),
+)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+loss_fn = nn.MSELoss()
+
+for epoch in range(500):
+    pred = model(x)
+    loss = loss_fn(pred, y)
+    loss.backward()
+    optimizer.step()
+    optimizer.zero_grad()
+    if epoch % 100 == 0:
+        print(f"epoch {epoch}: loss = {loss.item():.4f}")
+```
+
+Watch the loss shrink from ~2 to ~0.001. Sixteen lazy cats just learned calculus's favorite parabola.
+
+**Two things you haven't met before:**
+
+- **`Adam`** — gradient descent's smarter sibling: it adapts the step size *per knob* (remember the ravine zigzag from lesson 2.2? Adam largely fixes it). Default choice in practice.
+- **`zero_grad()`** — PyTorch *accumulates* gradients by default. Forget this line and each step uses stale blame piled on fresh blame. Symptom: training mysteriously sucks. Everyone forgets it exactly once.
+
+<Meme top="forgetting zero_grad()" visual="🗑️➕🗑️➕🗑️" bottom="training on a landfill of old gradients" />
+
+## Recap 📌
+
+- The ritual: **forward → loss → backward → step → zero** — universal, memorize it
+- **Adam** = per-knob adaptive learning rates; sensible default
+- `zero_grad()` matters because gradients accumulate; forgetting it is a rite of passage
+
+## Quiz
+
+<Quiz
+  question="What actually changes the model's weights?"
+  options={[
+    {text: 'loss.backward()', feedback: "Close but no — backward() only COMPUTES the gradients (assigns blame). It's pure bookkeeping; weights are untouched. The knob-turning is someone else's job. Try again."},
+    {text: 'optimizer.step()', correct: true, feedback: "Yes. step() reads the blame that backward() wrote down and actually nudges every knob downhill. Division of labor: backward = accountant, step = the hand on the dial."},
+    {text: 'model(x)', feedback: "The forward pass is read-only — it just computes predictions with the current knobs. If predicting changed the model, demos would be terrifying. Try again."},
+  ]}
+/>

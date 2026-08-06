@@ -1,0 +1,56 @@
+---
+title: "6.5 — What's next: your map of the field"
+description: "You made it. Here's what you now know, and where the interesting roads lead."
+---
+
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 6.5 — What's next: your map of the field ⏱️ ~10 min
+
+<Meme quote="The journey of a thousand miles begins with a single step." author="Lao Tzu — you just took about thirty of them" />
+
+## What you actually know now
+
+Six modules ago, "deep learning" was a black box. Now trace the whole chain, no magic anywhere:
+
+**Neurons** (multiply-add-squish) → **layers** → **loss** (one number for wrongness) → **gradient descent + backprop** (blame, distributed) → **training discipline** (data splits, overfitting, regularization) → **CNNs** (sliding pattern-detectors) → **transfer learning** (steal the eyes) → **embeddings** (meaning as coordinates) → **attention** (look, don't remember) → **transformers** → **tokenizers** → **pretraining/fine-tuning/LoRA**.
+
+When a paper says "we fine-tuned a 7B decoder-only transformer with LoRA (r=16) on 50k instruction pairs" — that's not jargon anymore. That's a sentence you can *audit*.
+
+## Roads from here 🗺️
+
+Pick by pull, not by obligation:
+
+- **Build things** (recommended first) — fine-tune models on your own data; build a semantic search with embeddings; enter a beginner Kaggle competition. Skills grow by shipping.
+- **Go deeper on fundamentals** — Andrej Karpathy's *"Neural Networks: Zero to Hero"* videos: build GPT from scratch, by hand, in code. The perfect sequel to this course's intuition-first approach.
+- **Read the classics** — you're ready for the real papers: *Attention Is All You Need* (2017), the ResNet paper (2015), *LoRA* (2021). Papers are just lessons with more Greek letters.
+- **Specialize** — vision (segmentation, detection), audio (whisper-style models), RL (models that act), diffusion (image generation — the one big family this course didn't cover).
+- **Engineering track** — serving models, quantization, evaluation pipelines: turning models into products. Scarce, valuable, very MSc-SE-shaped.
+
+## The three habits that matter more than any topic
+
+1. **Overfit one batch first** (lesson 3.5) — the debugging ritual that never stops paying
+2. **Look at your data and your model's mistakes** (lessons 3.1, 4.5) — most "model problems" are data problems wearing a disguise
+3. **Change one thing at a time** (lesson 3.4) — experiments, not vibes
+
+<Meme top="day 1: what's a neuron?" visual="🐱🎓" bottom="today: ah yes, a low-rank adapter on the attention projections" />
+
+One more thing: the final project awaits. Go fine-tune an actual language model on your own machine — the thing that, six modules ago, sounded like science fiction.
+
+## Recap 📌
+
+- You can trace pixels-or-text → prediction → loss → blame → learning, with zero magic steps
+- Next moves: build things, Karpathy's Zero-to-Hero, read the original papers, or specialize
+- The habits outlast the hype: overfit-one-batch, look at mistakes, change one thing at a time
+
+## Quiz
+
+<Quiz
+  question="Final exam (one question, very serious): what is deep learning?"
+  options={[
+    {text: 'Magic that only PhDs understand', feedback: "You did NOT just click that after six modules. Go stand in the corner and think about gradient descent. (Then try again — you know this.)"},
+    {text: 'Stacked multiply-add-squish units, tuned by following the gradient of a wrongness score over lots of examples', correct: true, feedback: "Graduated. 🎓 That one sentence, plus clever architectures for images (convolution) and text (attention), plus obscene compute — is the entire field. Now go build something. The final project is waiting."},
+    {text: 'If-else statements at scale', feedback: "The oldest meme in ML — and wrong in one crucial way: nobody writes the rules. The 'if's are LEARNED from data via backprop, which changes everything. (Also try counting the if-statements in a matrix multiply.) Try again."},
+  ]}
+/>

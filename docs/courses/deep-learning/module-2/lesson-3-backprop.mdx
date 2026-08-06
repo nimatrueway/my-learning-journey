@@ -1,0 +1,75 @@
+---
+title: "2.3 — Backprop: blaming the right neuron"
+description: "How a network figures out which of its million knobs caused the mistake."
+---
+
+import BackpropViz from '@site/src/components/BackpropViz';
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 2.3 — Backprop: blaming the right neuron ⏱️ ~15 min
+
+<Meme quote="Failure is simply the opportunity to begin again, this time more intelligently." author="Henry Ford — describing every backward pass ever" />
+
+## The hook
+
+Gradient descent needs a slope for every knob. Fine for 2 knobs — but a network has *millions*, buried under layers of other knobs. Computing each slope separately would take forever.
+
+**Backpropagation** computes all of them in one backward sweep. The intuition: it's a blame assignment system.
+
+## The blame game 🎮
+
+The network below made a bad prediction (said 2, truth was 5, loss = 9). Walk the blame backwards, node by node:
+
+<BackpropViz />
+
+**What to notice as you step:**
+
+1. Blame starts at the loss and flows **backwards** through the exact path the numbers took forwards.
+2. Each node applies one *local* rule ("addition splits blame", "multiplication scales blame by the other input") — nobody needs the big picture.
+3. The weight `w` ends up with gradient −12, the bias with −6. Bigger blame → bigger correction. Fair.
+4. Note the ReLU step: it was awake, so blame passed through. Had it been asleep, blame would've died there — asleep neurons learn nothing (remember sigmoid's flat zones from lesson 1.4? Same disease).
+
+<Meme top="the loss finding out who to blame" visual="😡 → 🐱 → 🐱 → 🐱" bottom="every cat gets exactly the blame it deserves" />
+
+## Why this is genius
+
+The blame for `w` reused the blame already computed for `z2`, which reused the loss's blame. Nothing is computed twice. One forward pass + one backward pass = **every** gradient in the network, at roughly 2× the cost of prediction alone. That efficiency is why training giant networks is possible at all.
+
+In PyTorch, this entire lesson is one line — the `loss.backward()` you've already been using:
+
+```python
+loss.backward()   # blame assigned to every knob, in one sweep
+```
+
+<details>
+<summary>🤓 The actual math (optional — skip freely)</summary>
+
+Backprop is the **chain rule** applied systematically. For our chain $x \to z_1 = wx \to z_2 = z_1 + b \to a = \text{relu}(z_2) \to L = (a - t)^2$:
+
+$$\frac{\partial L}{\partial w} = \frac{\partial L}{\partial a} \cdot \frac{\partial a}{\partial z_2} \cdot \frac{\partial z_2}{\partial z_1} \cdot \frac{\partial z_1}{\partial w}$$
+
+With $x=2, w=3, b=-4, t=5$: the factors are $2(a-t) = -6$, then $1$ (ReLU awake), then $1$ (addition), then $x = 2$:
+
+$$\frac{\partial L}{\partial w} = (-6)(1)(1)(2) = -12$$
+
+Each factor is *local* — a node only needs its own input/output. The backward sweep multiplies them up while caching shared prefixes, which is why it's fast. "Backprop" = chain rule + don't-repeat-yourself.
+
+</details>
+
+## Recap 📌
+
+- Backprop assigns **blame** (gradients) to every knob in one backward sweep
+- Each node applies a simple local rule; the chain multiplies them together
+- Asleep ReLUs / saturated sigmoids kill blame flow — dead zones learn nothing
+
+## Quiz
+
+<Quiz
+  question="During backprop, blame reaches a ReLU neuron that was asleep (output 0) in the forward pass. What happens?"
+  options={[
+    {text: 'The blame passes through at half strength', feedback: "ReLU doesn't do half measures — it's a bouncer, not a negotiator. Below the threshold there's no partial entry. Try again."},
+    {text: 'The blame stops dead — everything upstream of it gets zero gradient', correct: true, feedback: "Right. Asleep ReLU has slope 0, and anything × 0 = 0. The upstream knobs learn nothing this round. A neuron that's asleep for ALL inputs is 'dead' — a real bug you'll debug in Module 3."},
+    {text: 'The blame reverses direction and increases the loss', feedback: "Backprop never changes the loss — it's read-only bookkeeping that just measures slopes. The actual knob-turning happens later, in optimizer.step(). Try again."},
+  ]}
+/>

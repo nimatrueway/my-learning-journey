@@ -1,0 +1,32 @@
+---
+title: "🛠 Mini-project: cat vs not-cat, for real"
+description: "Transfer learning on real images, on your Mac. The meme becomes a model."
+---
+
+import Meme from '@site/src/components/Meme';
+
+# 🛠 Mini-project: cat vs not-cat, for real ⏱️ ~30 min
+
+<Meme quote="Vision without execution is hallucination." author="Thomas Edison" />
+
+## The mission
+
+Build the actual "is it a cat?" classifier using transfer learning (lesson 4.4) on CIFAR-10 — 60,000 tiny real photos across 10 classes, which the script relabels into **cat vs not-cat**.
+
+```bash
+pip install torch torchvision
+python notebooks/module-4-mini-project.py
+```
+
+## What you'll do
+
+1. **Run it** — downloads CIFAR-10 (~170 MB), loads a pretrained ResNet18, freezes the eyes, trains only a new head on MPS
+2. **Compare** — the script also trains lesson 4.3's from-scratch CNN; watch transfer learning win with a fraction of the training
+3. **Audit it** (lesson 4.5 energy) — the script prints its most confident *mistakes*; look at them and guess why each fooled the model
+4. **Bonus** — unfreeze the last ResNet block with lr/10 and squeeze out a few more points
+
+## Success criteria
+
+- [ ] Transfer-learning head reaches ≥ 90% cat/not-cat accuracy
+- [ ] It beats the from-scratch CNN trained for the same number of epochs
+- [ ] You inspected ≥ 5 confident mistakes and formed a theory about at least one
