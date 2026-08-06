@@ -1,89 +1,286 @@
 :root {
-  --ifm-color-primary: #007f78;
-  --ifm-color-primary-dark: #00726c;
-  --ifm-color-primary-darker: #006c66;
-  --ifm-color-primary-darkest: #005953;
-  --ifm-color-primary-light: #008c84;
-  --ifm-color-primary-lighter: #00928a;
-  --ifm-color-primary-lightest: #00a59c;
-  --ifm-background-color: #f7f5ef;
-  --ifm-font-family-base: 'Avenir Next', Avenir, 'Helvetica Neue', sans-serif;
-  --ifm-heading-font-family: Georgia, 'Times New Roman', serif;
-  --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --ifm-color-primary: #2b79a2;
+  --ifm-color-primary-dark: #276d92;
+  --ifm-color-primary-darker: #25678a;
+  --ifm-color-primary-darkest: #1e5572;
+  --ifm-color-primary-light: #2f85b2;
+  --ifm-color-primary-lighter: #328bbc;
+  --ifm-color-primary-lightest: #4d9fc9;
+  --ifm-background-color: #ffffff;
+  --ifm-background-surface-color: #f3f3f3;
+  --ifm-font-color-base: #333333;
+  --ifm-heading-color: #333333;
+  --ifm-font-family-base: 'Open Sans', sans-serif;
+  --ifm-font-family-monospace: 'Source Code Pro', Consolas, 'Ubuntu Mono', Menlo, monospace;
+  --ifm-heading-font-family: 'Open Sans', sans-serif;
+  --ifm-font-size-base: 100%;
+  --ifm-line-height-base: 1.45;
+  --ifm-code-font-size: 87.5%;
+  --ifm-code-background: #eeeeee;
+  --ifm-navbar-background-color: #ffffff;
+  --ifm-navbar-shadow: none;
+  --ifm-menu-color: #333333;
+  --ifm-menu-color-active: #2b79a2;
+  --ifm-toc-border-color: transparent;
+  --docusaurus-highlighted-code-line-bg: rgba(43, 121, 162, 0.16);
 }
 
 [data-theme='dark'] {
-  --ifm-color-primary: #5fd6ca;
-  --ifm-color-primary-dark: #43cec0;
-  --ifm-color-primary-darker: #35cabd;
-  --ifm-color-primary-darkest: #2ba69b;
-  --ifm-color-primary-light: #7bddd4;
-  --ifm-color-primary-lighter: #89e1d9;
-  --ifm-color-primary-lightest: #b3ece7;
-  --ifm-background-color: #161a1d;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  --ifm-color-primary: #2b79a2;
+  --ifm-color-primary-dark: #276d92;
+  --ifm-color-primary-darker: #25678a;
+  --ifm-color-primary-darkest: #1e5572;
+  --ifm-color-primary-light: #4590b7;
+  --ifm-color-primary-lighter: #559abf;
+  --ifm-color-primary-lightest: #76aecb;
+  --ifm-background-color: #161923;
+  --ifm-background-surface-color: #282d3f;
+  --ifm-font-color-base: #bcbdd0;
+  --ifm-heading-color: #bcbdd0;
+  --ifm-code-background: #1d1f21;
+  --ifm-navbar-background-color: #161923;
+  --ifm-menu-color: #c8c9db;
+  --ifm-menu-color-active: #2b79a2;
+  --ifm-color-emphasis-100: #1d202c;
+  --ifm-color-emphasis-200: #242838;
+  --ifm-color-emphasis-300: #34394d;
+  --ifm-color-emphasis-400: #4d5267;
+  --ifm-color-emphasis-500: #737480;
+  --ifm-color-emphasis-600: #9698aa;
+  --ifm-color-emphasis-700: #bcbdd0;
+  --ifm-color-emphasis-800: #d0d1de;
+  --ifm-color-emphasis-900: #ececf2;
+  --docusaurus-highlighted-code-line-bg: rgba(43, 121, 162, 0.2);
+}
+
+html,
+body {
+  letter-spacing: 0;
+}
+
+body {
+  font-size: 1rem;
+}
+
+.navbar {
+  height: 3.3rem;
+  border-bottom: 0;
+  box-shadow: none;
+}
+
+.navbar__inner {
+  position: relative;
+}
+
+.navbar__brand {
+  position: absolute;
+  left: 50%;
+  color: var(--ifm-color-emphasis-500);
+  font-size: 1.25rem;
+  font-weight: 400;
+  transform: translateX(-50%);
+}
+
+.navbar__logo {
+  display: none;
+}
+
+.navbar__item,
+.navbar__link {
+  color: var(--ifm-color-emphasis-500);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.navbar__link:hover,
+.navbar__link--active {
+  color: var(--ifm-color-primary);
+}
+
+.theme-doc-sidebar-container {
+  width: 300px !important;
+  border-right: 0 !important;
+  background: #f3f3f3;
+}
+
+[data-theme='dark'] .theme-doc-sidebar-container {
+  background: #282d3f;
+}
+
+.theme-doc-sidebar-menu {
+  padding: 1rem 0.75rem 2rem;
+  font-size: 0.875rem;
+}
+
+.menu__list .menu__list {
+  margin-top: 0.15rem;
+  padding-left: 1.25rem;
+}
+
+.menu__link {
+  min-height: 1.8rem;
+  padding: 0.25rem 0.35rem;
+  border-radius: 0;
+  line-height: 1.3;
+}
+
+.menu__link:hover,
+.menu__link--active:not(.menu__link--sublist) {
+  background: transparent;
+  color: var(--ifm-color-primary);
+}
+
+.menu__caret::before,
+.menu__link--sublist-caret::after {
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+
+.theme-doc-toc-desktop {
+  display: none;
+}
+
+main .col[class*='docItemCol'] {
+  max-width: 100% !important;
+  flex-basis: 100% !important;
+}
+
+.theme-doc-markdown {
+  max-width: 750px;
+  margin: 0 auto;
+  padding-bottom: 3rem;
+}
+
+.theme-doc-breadcrumbs,
+div[class*='tocCollapsible'] {
+  display: none;
+}
+
+.theme-doc-markdown h1 {
+  margin: 1.5rem 0 1.2rem;
+  font-size: 2rem;
+  line-height: 1.2;
+}
+
+.theme-doc-markdown h2 {
+  margin-top: 2.15rem;
+  font-size: 1.5rem;
+  line-height: 1.25;
+}
+
+.theme-doc-markdown h3 {
+  margin-top: 1.65rem;
+  font-size: 1.2rem;
+}
+
+.theme-doc-markdown p,
+.theme-doc-markdown li {
+  line-height: 1.45;
+}
+
+code {
+  padding: 0.1em 0.3em;
+  border: 0;
+  border-radius: 0;
+  color: #c5c8c6;
+  background: #1d1f21;
+}
+
+pre,
+.prism-code {
+  border: 0;
+  border-radius: 0 !important;
+  background: #1d1f21 !important;
+}
+
+blockquote {
+  color: var(--ifm-font-color-base);
+  border-left-color: var(--ifm-color-primary);
+}
+
+details,
+.alert {
+  border-radius: 2px !important;
+}
+
+details {
+  border: 1px solid var(--ifm-color-emphasis-300) !important;
+  background: var(--ifm-background-surface-color) !important;
+}
+
+details > summary {
+  color: var(--ifm-font-color-base);
+}
+
+.pagination-nav__link {
+  border: 0;
+  border-radius: 3px;
+  background: var(--ifm-background-surface-color);
+}
+
+.pagination-nav__label {
+  color: var(--ifm-color-primary);
+}
+
+.footer {
+  border-top: 1px solid var(--ifm-color-emphasis-200);
+  background: var(--ifm-background-color);
+}
+
+.footer,
+.footer__title,
+.footer__link-item {
+  color: var(--ifm-color-emphasis-600);
 }
 
 .journeyHero {
-  margin: 2rem 0 4rem;
-  padding: clamp(2rem, 6vw, 5.5rem) 0;
+  margin: 1.5rem 0 3rem;
+  padding: 2.5rem 0 2rem;
   border-bottom: 1px solid var(--ifm-color-emphasis-300);
-  background-image:
-    linear-gradient(90deg, transparent 49.5%, var(--ifm-color-emphasis-200) 50%, transparent 50.5%),
-    linear-gradient(var(--ifm-color-emphasis-100) 1px, transparent 1px);
-  background-size: 5rem 100%, 100% 2rem;
 }
 
 .journeyEyebrow {
-  margin-bottom: 1rem;
-  color: #d6533c;
+  margin-bottom: 0.75rem;
+  color: var(--ifm-color-primary);
   font-size: 0.8rem;
   font-weight: 700;
-  letter-spacing: 0;
-  text-transform: uppercase;
 }
 
 .journeyHero h1 {
-  max-width: 14ch;
-  margin-bottom: 1.5rem;
-  font-size: clamp(3rem, 8vw, 6.5rem);
-  line-height: 0.94;
-  letter-spacing: 0;
+  max-width: 18ch;
+  margin: 0 0 1rem;
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  line-height: 1.08;
 }
 
 .journeyLead {
   max-width: 42rem;
-  margin: 0;
-  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  color: var(--ifm-color-emphasis-600);
+  font-size: 1.05rem;
 }
 
 .courseGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
   gap: 1rem;
-  margin: 1.5rem 0 4rem;
+  margin: 1.25rem 0 3rem;
 }
 
 .courseCard {
   display: grid;
-  min-height: 22rem;
-  padding: 1.5rem;
+  min-height: 19rem;
+  padding: 1.25rem;
   color: inherit;
   border: 1px solid var(--ifm-color-emphasis-300);
-  border-top: 5px solid #d6533c;
-  border-radius: 4px;
+  border-radius: 2px;
   background: var(--ifm-background-surface-color);
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.07);
   text-decoration: none;
-  transition: transform 180ms ease, box-shadow 180ms ease;
 }
 
 .courseCard:hover {
   color: inherit;
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.13);
+  border-color: var(--ifm-color-primary);
   text-decoration: none;
-  transform: translateY(-4px);
 }
 
 .courseNumber {
@@ -95,34 +292,45 @@
   justify-self: end;
   margin-top: -1.5rem;
   color: var(--ifm-color-primary);
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
 .courseCard h3 {
   align-self: end;
-  margin: 3rem 0 1rem;
-  font-size: clamp(2rem, 5vw, 3rem);
-  line-height: 1;
-  letter-spacing: 0;
+  margin: 2.5rem 0 0.8rem;
+  font-size: 2rem;
+  line-height: 1.1;
 }
 
 .courseDescription {
   margin-bottom: 1rem;
+  color: var(--ifm-color-emphasis-700);
 }
 
 .courseCard strong {
   align-self: end;
-  color: #d6533c;
+  color: var(--ifm-color-primary);
+}
+
+@media (max-width: 996px) {
+  .navbar__brand {
+    position: static;
+    transform: none;
+  }
+
+  .theme-doc-markdown {
+    max-width: 100%;
+  }
 }
 
 @media (max-width: 600px) {
   .journeyHero {
     margin-top: 0;
-    padding-top: 3rem;
+    padding-top: 1.5rem;
   }
 
   .courseCard {
-    min-height: 19rem;
+    min-height: 17rem;
   }
 }

@@ -45,6 +45,10 @@ const config: Config = {
 
   stylesheets: [
     {
+      href: 'https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Source+Code+Pro:wght@400;600&display=swap',
+      type: 'text/css',
+    },
+    {
       href: 'https://cdn.jsdelivr.net/npm/katex@0.18.1/dist/katex.min.css',
       type: 'text/css',
       crossorigin: 'anonymous',
@@ -54,7 +58,7 @@ const config: Config = {
   themeConfig: {
     colorMode: {
       defaultMode: 'dark',
-      respectPrefersColorScheme: true,
+      respectPrefersColorScheme: false,
     },
     navbar: {
       title: 'My Learning Journey',
@@ -85,6 +89,10 @@ const config: Config = {
           items: [
             {label: 'All courses', to: '/'},
             {label: 'Deep Learning', to: '/courses/deep-learning/'},
+            {
+              label: 'Performance Foundations',
+              to: '/courses/performance-foundations/',
+            },
           ],
         },
         {

@@ -1,6 +1,6 @@
 .widget {
   border: 1px solid var(--ifm-color-emphasis-300);
-  border-radius: 12px;
+  border-radius: 3px;
   padding: 1rem;
   margin: 1.5rem 0;
   background: var(--ifm-background-surface-color);
@@ -9,7 +9,7 @@
 .plot {
   width: 100%;
   height: auto;
-  border-radius: 8px;
+  border-radius: 2px;
   background: var(--ifm-color-emphasis-100);
 }
 
@@ -74,7 +74,7 @@
 .button,
 .activeButton {
   border: 1px solid var(--ifm-color-emphasis-400);
-  border-radius: 8px;
+  border-radius: 3px;
   padding: 0.35rem 0.9rem;
   cursor: pointer;
   background: transparent;
@@ -100,11 +100,61 @@
   color: var(--ifm-color-emphasis-700);
 }
 
+.practiceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.control input:not([type='range']),
+.control select {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.45rem 0.6rem;
+  color: var(--ifm-font-color-base);
+  border: 1px solid var(--ifm-color-emphasis-400);
+  border-radius: 6px;
+  background: var(--ifm-background-color);
+}
+
+.practiceResult {
+  margin: 1rem 0;
+  padding: 0.85rem 1rem;
+  border-left: 4px solid var(--ifm-color-primary);
+  background: var(--ifm-color-emphasis-100);
+}
+
+.practiceCounter {
+  margin-left: 0.5rem;
+  font-weight: 700;
+}
+
+.activationList {
+  margin-bottom: 1rem;
+}
+
+.activationDone {
+  color: var(--ifm-color-primary);
+  text-decoration: line-through;
+}
+
+.checkList {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.checkList label {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+}
+
 /* Quiz */
 .quiz {
   border: 1px solid var(--ifm-color-emphasis-300);
   border-left: 4px solid var(--ifm-color-primary);
-  border-radius: 12px;
+  border-radius: 3px;
   padding: 1rem 1.25rem;
   margin: 1.5rem 0;
   background: var(--ifm-background-surface-color);
@@ -126,7 +176,7 @@
 .quizWrong {
   text-align: left;
   border: 1px solid var(--ifm-color-emphasis-400);
-  border-radius: 8px;
+  border-radius: 3px;
   padding: 0.5rem 0.9rem;
   cursor: pointer;
   background: transparent;
@@ -164,7 +214,7 @@
 /* Meme / quote cards */
 .memeCard {
   border: 2px dashed var(--ifm-color-emphasis-400);
-  border-radius: 12px;
+  border-radius: 3px;
   padding: 1rem;
   margin: 1.5rem 0;
   text-align: center;
@@ -190,7 +240,7 @@
   margin: 1.5rem 0;
   padding: 0.75rem 1.25rem;
   background: var(--ifm-color-emphasis-100);
-  border-radius: 0 12px 12px 0;
+  border-radius: 0 3px 3px 0;
 }
 
 .quoteCard blockquote {
