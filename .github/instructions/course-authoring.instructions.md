@@ -61,6 +61,20 @@ navigate or evaluate its information.
 - Keep flavor strings in props or isolated constants where practical.
 - Include accessible labels, buttons, and readable status feedback.
 
+## Visual Theme
+
+- Preserve the Rust by Example / mdBook-inspired visual language defined in
+  `src/css/custom.css`: navy canvas, lavender-gray text, blue active links,
+  Open Sans prose, Source Code Pro code, compact headings, and minimal borders.
+- Keep desktop lesson navigation as a dense 300px left sidebar and the reading
+  column near 750px. Hide the right-side table of contents rather than shrinking
+  the reading column for an empty rail.
+- Prefer flat or 2–3px-radius panels and controls. Avoid decorative shadows,
+  oversized marketing typography, pill-heavy UI, and floating card sections.
+- The catalog may use course cards, but they should feel like compact book
+  entries within the documentation theme, not a separate landing-page design.
+- Keep dark navy as the default while maintaining a functional light mode.
+
 ## Evidence and Health Content
 
 - Preserve a clear distinction between evidence, inference, heuristic, and

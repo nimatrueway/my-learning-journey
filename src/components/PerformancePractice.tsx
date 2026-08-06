@@ -100,6 +100,60 @@ export function ActivationRamp(): React.ReactElement {
   );
 }
 
+const CONTRIBUTIONS = {
+  validate: 'I agree with that approach because it keeps the decision reversible.',
+  clarify: 'Which constraint matters most for this decision?',
+  update: 'The first pass is complete; the remaining risk is the integration step.',
+};
+
+export function MeetingRehearsal(): React.ReactElement {
+  const [contribution, setContribution] = useState<keyof typeof CONTRIBUTIONS>('clarify');
+  const [qualifier, setQualifier] = useState(true);
+  const [attention, setAttention] = useState('speaker');
+  const statement = `${qualifier ? 'This might be a dumb question, but ' : ''}${CONTRIBUTIONS[contribution]}`;
+
+  return (
+    <div className={styles.widget}>
+      <h3>Rehearse your first five minutes</h3>
+      <div className={styles.practiceGrid}>
+        <label className={styles.control}>
+          Contribution
+          <select value={contribution}
+            onChange={(event) => setContribution(event.target.value as keyof typeof CONTRIBUTIONS)}>
+            <option value="validate">Validate and add a reason</option>
+            <option value="clarify">Ask a clarifying question</option>
+            <option value="update">Give a concise update</option>
+          </select>
+        </label>
+        <label className={styles.control}>
+          External attention target
+          <select value={attention} onChange={(event) => setAttention(event.target.value)}>
+            <option value="speaker">Speaker's actual words</option>
+            <option value="decision">Decision being made</option>
+            <option value="evidence">Evidence on the table</option>
+          </select>
+        </label>
+      </div>
+      <label className={styles.inlineCheck}>
+        <input type="checkbox" checked={qualifier}
+          onChange={(event) => setQualifier(event.target.checked)} />
+        Add a defensive qualifier
+      </label>
+      <div className={styles.practiceResult}>
+        <strong>Say within five minutes:</strong> “{statement}”
+        <br /><strong>Then redirect attention to:</strong> {attention === 'speaker'
+          ? "the speaker's actual words"
+          : attention === 'decision' ? 'the decision being made' : 'the evidence on the table'}.
+      </div>
+      <p className={styles.statusLine}>
+        {qualifier
+          ? 'Try switching off the qualifier. The contribution can stand without apologizing for existing.'
+          : 'Direct, concise, and complete. Pause instead of filling the silence.'}
+      </p>
+    </div>
+  );
+}
+
 export function SupplementGate(): React.ReactElement {
   const [sleep, setSleep] = useState(false);
   const [basics, setBasics] = useState(false);
