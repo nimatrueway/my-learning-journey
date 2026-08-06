@@ -1,8 +1,12 @@
+import {execSync} from 'node:child_process';
 import {themes as prismThemes} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+
+const gitCommit = execSync('git rev-parse --short HEAD').toString().trim();
+const gitDate = execSync('git log -1 --format=%cs HEAD').toString().trim();
 
 const config: Config = {
   title: 'My Learning Journey',
@@ -105,7 +109,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `My Learning Journey · ${new Date().getFullYear()}`,
+      copyright: `My Learning Journey · ${new Date().getFullYear()} · <a href="https://github.com/nimatrueway/my-learning-journey/commit/${gitCommit}">${gitCommit}</a> · ${gitDate}`,
     },
     prism: {
       theme: prismThemes.github,
