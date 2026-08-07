@@ -24,6 +24,8 @@ const config: Config = {
   trailingSlash: false,
   onBrokenLinks: 'throw',
 
+  clientModules: [require.resolve('./src/client/shortcuts.ts')],
+
   i18n: {
     defaultLocale: 'en',
     locales: ['en'],
@@ -65,7 +67,7 @@ const config: Config = {
       respectPrefersColorScheme: false,
     },
     navbar: {
-      title: 'My Learning Journey',
+      title: 'my-learning-journey',
       logo: {
         alt: 'My Learning Journey',
         src: 'img/logo.svg',
@@ -83,6 +85,11 @@ const config: Config = {
           label: 'GitHub',
           position: 'right',
         },
+        {
+          type: 'html',
+          position: 'right',
+          value: '<button class="navbarKbdBtn" id="kbd-guide-btn" type="button" title="Keyboard shortcuts (?)">⌨</button>',
+        },
       ],
     },
     footer: {
@@ -92,9 +99,9 @@ const config: Config = {
           title: 'Learn',
           items: [
             {label: 'All courses', to: '/'},
-            {label: 'Deep Learning', to: '/courses/deep-learning/'},
+            {label: '😼 Deep Learning', to: '/courses/deep-learning/'},
             {
-              label: 'Performance Foundations',
+              label: '⚡ Performance Foundations',
               to: '/courses/performance-foundations/',
             },
           ],
@@ -109,7 +116,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `My Learning Journey · ${new Date().getFullYear()} · <a href="https://github.com/nimatrueway/my-learning-journey/commit/${gitCommit}">${gitCommit}</a> · ${gitDate}`,
+      copyright: `<span class="footerPrompt">nima@github:~/my-learning-journey$</span> git log -1 → <a href="https://github.com/nimatrueway/my-learning-journey/commit/${gitCommit}">${gitCommit}</a> · deployed ${gitDate} · © ${new Date().getFullYear()} · press <kbd>?</kbd> for shortcuts`,
     },
     prism: {
       theme: prismThemes.github,

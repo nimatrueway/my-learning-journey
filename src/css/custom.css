@@ -19,6 +19,7 @@
   --ifm-code-background: #eeeeee;
   --ifm-navbar-background-color: #ffffff;
   --ifm-navbar-shadow: none;
+  --ifm-navbar-height: 3.3rem;
   --ifm-menu-color: #333333;
   --ifm-menu-color-active: #2b79a2;
   --ifm-toc-border-color: transparent;
@@ -63,9 +64,26 @@ body {
 }
 
 .navbar {
-  height: 3.3rem;
   border-bottom: 0;
   box-shadow: none;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: saturate(1.4) blur(10px);
+  -webkit-backdrop-filter: saturate(1.4) blur(10px);
+}
+
+[data-theme='dark'] .navbar {
+  background: rgba(22, 25, 35, 0.92);
+}
+
+.navbar::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #2b79a2 18%, #5fd6ca 50%, #2b79a2 82%, transparent);
+  opacity: 0.9;
 }
 
 .navbar__inner {
@@ -75,10 +93,35 @@ body {
 .navbar__brand {
   position: absolute;
   left: 50%;
-  color: var(--ifm-color-emphasis-500);
-  font-size: 1.25rem;
-  font-weight: 400;
+  color: var(--ifm-font-color-base);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 1.02rem;
+  font-weight: 600;
   transform: translateX(-50%);
+}
+
+.navbar__title::before {
+  content: '~/';
+  color: var(--ifm-color-primary);
+}
+
+.navbar__title::after {
+  content: '▋';
+  margin-left: 0.18rem;
+  color: var(--ifm-color-primary);
+  animation: cursor-blink 1.2s steps(2, start) infinite;
+}
+
+@keyframes cursor-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navbar__title::after {
+    animation: none;
+  }
 }
 
 .navbar__logo {
@@ -90,6 +133,28 @@ body {
   color: var(--ifm-color-emphasis-500);
   font-size: 0.9rem;
   font-weight: 600;
+}
+
+.navbar__link {
+  position: relative;
+}
+
+.navbar__link::after {
+  content: '';
+  position: absolute;
+  right: 0.7rem;
+  bottom: 0.15rem;
+  left: 0.7rem;
+  height: 2px;
+  background: var(--ifm-color-primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 160ms ease;
+}
+
+.navbar__link:hover::after,
+.navbar__link--active::after {
+  transform: scaleX(1);
 }
 
 .navbar__link:hover,
@@ -137,7 +202,7 @@ body {
 }
 
 .theme-doc-toc-desktop {
-  top: 4.5rem;
+  top: calc(var(--ifm-navbar-height) + 1rem);
 }
 
 .table-of-contents {
@@ -234,20 +299,197 @@ details > summary {
 }
 
 .footer {
-  border-top: 1px solid var(--ifm-color-emphasis-200);
-  background: var(--ifm-background-color);
+  position: relative;
+  padding-top: 2.5rem;
+  border-top: 0;
+  background: var(--ifm-background-surface-color);
+}
+
+.footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #2b79a2 18%, #5fd6ca 50%, #2b79a2 82%, transparent);
+  opacity: 0.9;
 }
 
 .footer,
-.footer__title,
 .footer__link-item {
   color: var(--ifm-color-emphasis-600);
+}
+
+.footer__title {
+  color: var(--ifm-color-emphasis-500);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.8rem;
+  text-transform: lowercase;
+}
+
+.footer__title::before {
+  content: '# ';
+  color: var(--ifm-color-primary);
+}
+
+.footer__link-item:hover {
+  color: var(--ifm-color-primary);
+  text-decoration: none;
+}
+
+.footer__link-item::after {
+  content: ' →';
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+
+.footer__link-item:hover::after {
+  opacity: 1;
+}
+
+.footer__copyright {
+  margin-top: 1.5rem;
+  color: var(--ifm-color-emphasis-500);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.78rem;
+}
+
+.footerPrompt {
+  color: var(--ifm-color-primary);
 }
 
 .journeyHero {
   margin: 1.5rem 0 3rem;
   padding: 2.5rem 0 2rem;
   border-bottom: 1px solid var(--ifm-color-emphasis-300);
+}
+
+/* Zen mode */
+html.zen-mode .navbar,
+html.zen-mode .footer,
+html.zen-mode .theme-doc-sidebar-container,
+html.zen-mode .theme-doc-toc-desktop,
+html.zen-mode .pagination-nav,
+html.zen-mode div[class*='tocCollapsible'] {
+  display: none !important;
+}
+
+/* In the v4 layer cascade, !important in the earliest-declared layer (infima)
+   outranks the theme-classic layer's 75% !important column cap. */
+@layer docusaurus.infima {
+  html.zen-mode main[class*='docMainContainer'] {
+    max-width: 100% !important;
+  }
+
+  html.zen-mode main .col[class*='docItemCol'] {
+    max-width: 100% !important;
+    flex-basis: 100% !important;
+  }
+}
+
+html.zen-mode main .container {
+  max-width: none;
+}
+
+html.zen-mode .theme-doc-markdown {
+  max-width: none;
+  padding-top: 1.5rem;
+}
+
+#zen-exit {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 300;
+  display: none;
+  padding: 0.35rem 0.8rem;
+  color: var(--ifm-color-emphasis-500);
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 3px;
+  background: var(--ifm-background-surface-color);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.78rem;
+  cursor: pointer;
+  opacity: 0.75;
+}
+
+#zen-exit:hover {
+  color: var(--ifm-color-primary);
+  border-color: var(--ifm-color-primary);
+  opacity: 1;
+}
+
+html.zen-mode #zen-exit {
+  display: block;
+}
+
+/* Keyboard shortcut guide */
+.navbarKbdBtn {
+  padding: 0 0.5rem;
+  color: var(--ifm-color-emphasis-500);
+  border: 0;
+  background: transparent;
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.navbarKbdBtn:hover {
+  color: var(--ifm-color-primary);
+}
+
+#kbd-guide {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: none;
+  place-items: center;
+  background: rgba(10, 12, 18, 0.6);
+}
+
+#kbd-guide.open {
+  display: grid;
+}
+
+.kbdPanel {
+  min-width: min(24rem, 92vw);
+  padding: 1.25rem 1.75rem 1.5rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-top: 3px solid var(--ifm-color-primary);
+  border-radius: 3px;
+  background: var(--ifm-background-surface-color);
+  font-family: var(--ifm-font-family-monospace);
+}
+
+.kbdTitle {
+  margin-bottom: 1rem;
+  color: var(--ifm-color-primary);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.kbdRow {
+  display: grid;
+  grid-template-columns: 3.5rem 1fr;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 0.55rem;
+  color: var(--ifm-font-color-base);
+  font-size: 0.85rem;
+}
+
+kbd {
+  padding: 0.1rem 0.45rem;
+  color: var(--ifm-font-color-base);
+  border: 1px solid var(--ifm-color-emphasis-400);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  background: var(--ifm-color-emphasis-100);
+  box-shadow: none;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.78rem;
+  text-align: center;
 }
 
 .journeyEyebrow {

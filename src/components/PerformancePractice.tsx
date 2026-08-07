@@ -276,6 +276,91 @@ export function InsideOutside(): React.ReactElement {
   );
 }
 
+const ANGER_TRIGGERS = [
+  'Baby interrupts deep work for the fifth time',
+  "Partner didn't do what you expected",
+  'Colleague missed what you were counting on',
+];
+
+const CIRCUIT_STEPS = [
+  'Stop — say nothing yet',
+  'Name it: "this is anger, riding on exhaustion"',
+  'Let the wave pass: breathe, walk, water (60–90s)',
+  'Check the expectation: was it ever actually agreed?',
+  'Choose the response you will respect tomorrow',
+];
+
+export function AngerCircuitBreaker(): React.ReactElement {
+  const [trigger, setTrigger] = useState(0);
+  const [step, setStep] = useState(0);
+  const complete = step === CIRCUIT_STEPS.length;
+
+  return (
+    <div className={styles.widget}>
+      <h3>Break the circuit before it reaches someone you love</h3>
+      <label className={styles.control}>
+        Trigger
+        <select value={trigger} onChange={(event) => {setTrigger(Number(event.target.value)); setStep(0);}}>
+          {ANGER_TRIGGERS.map((t, i) => <option key={t} value={i}>{t}</option>)}
+        </select>
+      </label>
+      <ol className={styles.activationList}>
+        {CIRCUIT_STEPS.map((label, index) => (
+          <li key={label} className={index < step ? styles.activationDone : ''}>{label}</li>
+        ))}
+      </ol>
+      <button type="button" className={styles.button}
+        onClick={() => setStep(complete ? 0 : step + 1)}>
+        {complete ? 'Reset for the next trigger' : `Do only this: ${CIRCUIT_STEPS[step]}`}
+      </button>
+      <p className={styles.statusLine}>
+        {complete
+          ? 'Circuit broken. The anger was real; the casualties were optional.'
+          : `${step} of ${CIRCUIT_STEPS.length} — the goal is delay, not denial.`}
+      </p>
+    </div>
+  );
+}
+
+export function LearnDoConverter(): React.ReactElement {
+  const [topic, setTopic] = useState('Rust');
+  const [artifact, setArtifact] = useState('');
+  const [days, setDays] = useState(7);
+  const ready = artifact.trim() !== '';
+
+  return (
+    <div className={styles.widget}>
+      <h3>Convert an obsession into an artifact</h3>
+      <div className={styles.practiceGrid}>
+        <label className={styles.control}>
+          Thing you crave to learn
+          <input value={topic} onChange={(event) => setTopic(event.target.value)} />
+        </label>
+        <label className={styles.control}>
+          Deadline: {days} days
+          <input type="range" min="3" max="14" value={days}
+            onChange={(event) => setDays(Number(event.target.value))} />
+        </label>
+      </div>
+      <label className={styles.control}>
+        Smallest real thing you could build with it
+        <input value={artifact} placeholder="A CLI tool, a deployed page, a working script…"
+          onChange={(event) => setArtifact(event.target.value)} />
+      </label>
+      <div className={styles.practiceResult}>
+        {ready
+          ? `Contract: build “${artifact}” with ${topic || 'the topic'} in ${days} days. Learn only what the build demands, when it demands it.`
+          : 'No artifact, no enrollment. Consuming is not a substitute for contact with reality.'}
+      </div>
+      <p className={styles.statusLine}>
+        {ready
+          ? 'Just-in-time learning engaged. The courage rep is shipping it, even privately.'
+          : 'The brain wants course #13. The skill wants one small collision with the real world.'}
+      </p>
+    </div>
+  );
+}
+
 export function SupplementGate(): React.ReactElement {
   const [sleep, setSleep] = useState(false);
   const [basics, setBasics] = useState(false);
