@@ -9,6 +9,8 @@ import {FocusSprint} from '@site/src/components/PerformancePractice';
 
 # Part I: Strengthening Focus
 
+⏱️ **~10 min** · folds are optional extra
+
 You sit down to do the important thing. Ninety seconds later, your thumb is
 opening a notification your conscious mind did not authorize. Excellent work,
 autopilot.

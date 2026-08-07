@@ -9,6 +9,8 @@ import {RiskExperiment} from '@site/src/components/PerformancePractice';
 
 # Part II: Acting Despite Fear of Failure or Embarrassment
 
+⏱️ **~10 min** · folds are optional extra
+
 The project cannot embarrass you while it exists only in your head. Convenient.
 It also cannot teach you anything there.
 

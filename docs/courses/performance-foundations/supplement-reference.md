@@ -9,6 +9,8 @@ import {SupplementGate} from '@site/src/components/PerformancePractice';
 
 # Supplement Stack Ranked by Cognitive & High-Performance Impact
 
+⏱️ **~8 min** · reference — skim the rankings, read “Using the Stack Safely”
+
 The supplement aisle is where “maybe a little useful” puts on a lab coat and
 starts charging premium prices. Treat this page as a decision reference, not a
 shopping list.

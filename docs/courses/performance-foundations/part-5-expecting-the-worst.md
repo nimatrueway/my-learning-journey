@@ -9,6 +9,8 @@ import {PredictionAudit} from '@site/src/components/PerformancePractice';
 
 # Part V: Expecting the Worst
 
+⏱️ **~8 min** · folds are optional extra
+
 Things are going fine, which is exactly how your brain knows something terrible
 is about to happen. That reflex is not a personality flaw — it is a very old
 security system doing its job too enthusiastically.

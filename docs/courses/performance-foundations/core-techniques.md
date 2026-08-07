@@ -7,6 +7,8 @@ import Meme from '@site/src/components/Meme';
 
 # Core Techniques
 
+⏱️ **~5 min** · reference — read once, revisit often
+
 Four techniques keep reappearing across this course because the same brain
 runs all of these problems. This page is their canonical home: lessons give a
 one-line refresher and link here, and here is where the mechanics and the

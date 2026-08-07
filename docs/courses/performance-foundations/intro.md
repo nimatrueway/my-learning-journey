@@ -42,16 +42,16 @@ physical momentum to do meaningful things.
 ## Start the course
 
 Read [Core Techniques](/courses/performance-foundations/core-techniques) once
-early — it is the canonical home of the moves every lesson leans on.
+early — it is the canonical home of the moves every lesson leans on (~5 min).
 
-1. [Strengthening Focus](/courses/performance-foundations/part-1-strengthening-focus)
-2. [Acting Despite Fear of Failure or Embarrassment](/courses/performance-foundations/part-2-acting-despite-fear)
-3. [Overcoming Physical Inertia](/courses/performance-foundations/part-3-overcoming-physical-inertia)
-4. [Speaking With Confidence at Work](/courses/performance-foundations/part-4-speaking-with-confidence)
-5. [Expecting the Worst](/courses/performance-foundations/part-5-expecting-the-worst)
-6. [Letting Success Count](/courses/performance-foundations/part-6-letting-success-count)
-7. [Dismantling Imposter Syndrome](/courses/performance-foundations/part-7-imposter-syndrome)
-8. [Supplement Reference](/courses/performance-foundations/supplement-reference)
+1. [Strengthening Focus](/courses/performance-foundations/part-1-strengthening-focus) — ~10 min
+2. [Acting Despite Fear of Failure or Embarrassment](/courses/performance-foundations/part-2-acting-despite-fear) — ~10 min
+3. [Overcoming Physical Inertia](/courses/performance-foundations/part-3-overcoming-physical-inertia) — ~6 min
+4. [Speaking With Confidence at Work](/courses/performance-foundations/part-4-speaking-with-confidence) — ~9 min
+5. [Expecting the Worst](/courses/performance-foundations/part-5-expecting-the-worst) — ~8 min
+6. [Letting Success Count](/courses/performance-foundations/part-6-letting-success-count) — ~8 min
+7. [Dismantling Imposter Syndrome](/courses/performance-foundations/part-7-imposter-syndrome) — ~8 min
+8. [Supplement Reference](/courses/performance-foundations/supplement-reference) — ~8 min, skimmable
 
 :::note Educational scope
 The behavioral material is educational, not mental-health treatment. The

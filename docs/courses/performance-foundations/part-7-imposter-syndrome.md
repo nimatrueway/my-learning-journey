@@ -9,6 +9,8 @@ import {InsideOutside} from '@site/src/components/PerformancePractice';
 
 # Part VII: Dismantling Imposter Syndrome
 
+⏱️ **~8 min** · folds are optional extra
+
 You have the job. You do the job. You get paid for the job. And somewhere in
 the back of your mind, a narrator insists this is an elaborate clerical error
 that HR will discover any day now.

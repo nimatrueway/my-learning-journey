@@ -22,19 +22,24 @@ applyTo: "docs/courses/**,src/components/**"
 Each teaching lesson should normally follow this sequence:
 
 1. **Hook:** Name a concrete, familiar problem in a few punchy lines.
-2. **Epigraph:** Use one accurately attributed entrepreneur, builder, or domain
+2. **Reading time:** Show a badge under the title, e.g.
+   `⏱️ **~10 min** · folds are optional extra`. Derive minutes from word count
+   (~200 wpm plus widget/quiz time); do not guess. Repeat the time next to the
+   lesson's entry in the course intro or syllabus list. Label references
+   honestly (e.g. `~5 min · read once, revisit often`).
+3. **Epigraph:** Use one accurately attributed entrepreneur, builder, or domain
    expert quote tied to the lesson idea. Do not invent or misattribute quotes.
-3. **Interactive rehearsal:** Include at least one purposeful React widget that
+4. **Interactive rehearsal:** Include at least one purposeful React widget that
    lets the learner change a decision, parameter, sequence, or mental model.
-4. **Tiny example:** Show the smallest concrete example that makes the idea
+5. **Tiny example:** Show the smallest concrete example that makes the idea
    useful. In technical courses, prefer runnable code on the learner's stack.
-5. **Try it yourself:** Give a bounded exercise that can be started immediately.
-6. **Optional depth:** Put nonessential math, research mechanisms, caveats, or
+6. **Try it yourself:** Give a bounded exercise that can be started immediately.
+7. **Optional depth:** Put nonessential math, research mechanisms, caveats, or
    derivations in a collapsed `<details>` block. Give the summary a domain-fit
    label such as `🤓 The actual math (optional)` or
    `🧠 The science (optional)`. Explain symbols and claims in plain language.
-7. **Three-point recap:** End with exactly three high-signal takeaways.
-8. **Quiz:** Use `<Quiz/>` for immediate feedback. Wrong answers may be roasted;
+8. **Three-point recap:** End with exactly three high-signal takeaways.
+9. **Quiz:** Use `<Quiz/>` for immediate feedback. Wrong answers may be roasted;
    correct answers should feel energetic, but clarity always wins.
 
 Reference pages, indexes, and syllabi may omit the full lesson sequence. A
@@ -67,8 +72,8 @@ navigate or evaluate its information.
   `src/css/custom.css`: navy canvas, lavender-gray text, blue active links,
   Open Sans prose, Source Code Pro code, compact headings, and minimal borders.
 - Keep desktop lesson navigation as a dense 300px left sidebar and the reading
-  column near 750px. Hide the right-side table of contents rather than shrinking
-  the reading column for an empty rail.
+  column near 750px, with the clickable right-side table of contents styled to
+  match (muted links, blue active state).
 - Prefer flat or 2–3px-radius panels and controls. Avoid decorative shadows,
   oversized marketing typography, pill-heavy UI, and floating card sections.
 - The catalog may use course cards, but they should feel like compact book

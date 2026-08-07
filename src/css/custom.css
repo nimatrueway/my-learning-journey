@@ -137,12 +137,24 @@ body {
 }
 
 .theme-doc-toc-desktop {
-  display: none;
+  top: 4.5rem;
 }
 
-main .col[class*='docItemCol'] {
-  max-width: 100% !important;
-  flex-basis: 100% !important;
+.table-of-contents {
+  font-size: 0.8rem;
+}
+
+.table-of-contents__link {
+  color: var(--ifm-color-emphasis-600);
+}
+
+.table-of-contents__link:hover,
+.table-of-contents__link--active {
+  color: var(--ifm-color-primary);
+}
+
+.table-of-contents__link--active {
+  font-weight: 600;
 }
 
 .theme-doc-markdown {
@@ -151,8 +163,7 @@ main .col[class*='docItemCol'] {
   padding-bottom: 3rem;
 }
 
-.theme-doc-breadcrumbs,
-div[class*='tocCollapsible'] {
+.theme-doc-breadcrumbs {
   display: none;
 }
 

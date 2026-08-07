@@ -9,6 +9,8 @@ import {ActivationRamp} from '@site/src/components/PerformancePractice';
 
 # Part III: Overcoming Physical Inertia
 
+⏱️ **~6 min** · shortest lesson in the course
+
 The window frame needs fixing. You are on the sofa. Between those two facts lies
 an emotional distance roughly equal to the Pacific Ocean.
 

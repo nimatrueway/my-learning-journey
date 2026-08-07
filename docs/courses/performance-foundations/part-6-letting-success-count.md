@@ -9,6 +9,8 @@ import {PraiseAnchor} from '@site/src/components/PerformancePractice';
 
 # Part VI: Letting Success Count
 
+⏱️ **~8 min** · folds are optional extra
+
 You ship something good. For about four seconds it feels great. Then an internal
 auditor appears, reclassifies the achievement as “nothing special,” and closes
 the file before anyone can celebrate. Case dismissed.

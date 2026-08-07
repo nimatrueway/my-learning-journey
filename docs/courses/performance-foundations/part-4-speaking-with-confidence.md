@@ -9,6 +9,8 @@ import {MeetingRehearsal} from '@site/src/components/PerformancePractice';
 
 # Part IV: Speaking With Confidence at Work
 
+⏱️ **~9 min** · folds are optional extra
+
 Your work is solid. Then a meeting starts, attention turns inward, and suddenly
 you are live-commentating your own heartbeat like it is a production incident.
 
