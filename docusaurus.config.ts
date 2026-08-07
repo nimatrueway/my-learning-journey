@@ -89,11 +89,10 @@ const config: Config = {
         src: 'img/logo.svg',
       },
       items: [
-        {to: '/', label: 'Courses', position: 'left'},
+        {to: '/courses/deep-learning/', label: '😼 Deep Learning', position: 'left'},
         {
-          type: 'docSidebar',
-          sidebarId: 'journeySidebar',
-          label: 'Browse lessons',
+          to: '/courses/performance-foundations/',
+          label: '⚡ Performance Foundations',
           position: 'left',
         },
         {
