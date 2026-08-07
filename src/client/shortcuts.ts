@@ -1,12 +1,24 @@
 import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
 
 const ZEN_STORAGE_KEY = 'zen-mode';
+const STATUS_STORAGE_KEY = 'reading-status';
 
-const readStoredZen = (): boolean => {
+const readStored = (key: string): boolean => {
   try {
-    return localStorage.getItem(ZEN_STORAGE_KEY) === '1';
+    return localStorage.getItem(key) === '1';
   } catch {
     return false;
+  }
+};
+
+const readStoredZen = (): boolean => readStored(ZEN_STORAGE_KEY);
+
+const setStatusBar = (on: boolean) => {
+  document.documentElement.classList.toggle('show-reading-status', on);
+  try {
+    localStorage.setItem(STATUS_STORAGE_KEY, on ? '1' : '0');
+  } catch {
+    // storage unavailable; status stays session-only
   }
 };
 
@@ -48,6 +60,7 @@ const ensureGuide = (): HTMLElement | null => {
         <p class="kbdTitle"># keyboard shortcuts</p>
         <div class="kbdRow"><kbd>z</kbd><span>toggle zen mode (hide all chrome)</span></div>
         <div class="kbdRow"><kbd>d</kbd><span>toggle dark / light theme</span></div>
+        <div class="kbdRow"><kbd>s</kbd><span>toggle reading status bar</span></div>
         <div class="kbdRow"><kbd>?</kbd><span>show this guide</span></div>
         <div class="kbdRow"><kbd>esc</kbd><span>close guide / exit zen</span></div>
       </div>`;
@@ -64,6 +77,7 @@ const toggleGuide = () => ensureGuide()?.classList.toggle('open');
 const init = () => {
   // Restore first so persistence survives even if later DOM setup fails.
   if (readStoredZen()) document.documentElement.classList.add('zen-mode');
+  if (readStored(STATUS_STORAGE_KEY)) document.documentElement.classList.add('show-reading-status');
   ensureZenExit();
 
   // Docusaurus rewrites the html className wholesale during hydration and
@@ -71,6 +85,9 @@ const init = () => {
   new MutationObserver(() => {
     if (readStoredZen() && !document.documentElement.classList.contains('zen-mode')) {
       document.documentElement.classList.add('zen-mode');
+    }
+    if (readStored(STATUS_STORAGE_KEY) && !document.documentElement.classList.contains('show-reading-status')) {
+      document.documentElement.classList.add('show-reading-status');
     }
   }).observe(document.documentElement, {attributes: true, attributeFilter: ['class']});
 
@@ -96,6 +113,8 @@ const init = () => {
       setZen(!isZen());
     } else if (event.key === 'd') {
       toggleTheme();
+    } else if (event.key === 's') {
+      setStatusBar(!document.documentElement.classList.contains('show-reading-status'));
     } else if (event.key === '?') {
       toggleGuide();
     } else if (event.key === 'Escape') {
@@ -121,5 +140,6 @@ if (ExecutionEnvironment.canUseDOM) {
 export function onRouteDidUpdate(): void {
   if (!ExecutionEnvironment.canUseDOM) return;
   if (readStoredZen()) document.documentElement.classList.add('zen-mode');
+  if (readStored(STATUS_STORAGE_KEY)) document.documentElement.classList.add('show-reading-status');
   ensureZenExit();
 }

@@ -424,6 +424,61 @@ html.zen-mode #zen-exit {
   display: block;
 }
 
+/* Reading status bar (toggle: s) */
+#reading-status {
+  position: fixed;
+  bottom: 0.75rem;
+  left: 50%;
+  z-index: 250;
+  display: none;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.6rem;
+  align-items: center;
+  justify-content: center;
+  max-width: 96vw;
+  padding: 0.4rem 0.9rem;
+  color: var(--ifm-color-emphasis-600);
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 3px;
+  background: var(--ifm-background-surface-color);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.74rem;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+html.show-reading-status #reading-status {
+  display: flex;
+}
+
+.rsCourse {
+  color: var(--ifm-color-primary);
+  font-weight: 700;
+}
+
+.rsChapter {
+  color: var(--ifm-font-color-base);
+}
+
+.rsSection {
+  max-width: 16rem;
+  overflow: hidden;
+  color: var(--ifm-color-emphasis-600);
+  font-style: italic;
+  text-overflow: ellipsis;
+}
+
+.rsSep {
+  color: var(--ifm-color-emphasis-400);
+}
+
+.rsMeter {
+  padding-left: 0.6rem;
+  border-left: 1px solid var(--ifm-color-emphasis-300);
+  letter-spacing: -0.04em;
+}
+
 /* Keyboard shortcut guide */
 .navbarKbdBtn {
   padding: 0 0.5rem;
@@ -567,6 +622,15 @@ kbd {
 }
 
 @media (max-width: 996px) {
+  /* backdrop-filter makes .navbar the containing block for the fixed
+     .navbar-sidebar in Safari, clipping it to the header height */
+  .navbar,
+  [data-theme='dark'] .navbar {
+    background: var(--ifm-navbar-background-color);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
   .navbar__brand {
     position: static;
     transform: none;
