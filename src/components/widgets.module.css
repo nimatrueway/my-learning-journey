@@ -107,6 +107,15 @@
   margin-bottom: 1rem;
 }
 
+.practiceGrid > * {
+  min-width: 0;
+}
+
+.practiceGrid ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1.1rem;
+}
+
 .control input:not([type='range']),
 .control select {
   width: 100%;

@@ -14,13 +14,16 @@ This course is about preparing someone to become more productive, more
 confident, more willing to take thoughtful risks, and more energetic, so they
 can perform better and pursue ambitious work.
 
-It begins with five practical foundations:
+It begins with eight practical foundations:
 
 1. Strengthening focus and staying with effortful work.
 2. Acting despite fear of failure or embarrassment.
 3. Overcoming physical inertia and beginning before motivation arrives.
 4. Speaking with confidence despite self-doubt and social anxiety.
-5. Evaluating supplements cautiously as optional support, not as substitutes
+5. Recalibrating a brain that always expects things to get worse.
+6. Letting success count instead of downplaying it.
+7. Dismantling the imposter narrative with evidence.
+8. Evaluating supplements cautiously as optional support, not as substitutes
    for sleep, nutrition, exercise, or appropriate medical care.
 
 The aim is not constant intensity. It is to build repeatable ways to direct
@@ -38,11 +41,17 @@ physical momentum to do meaningful things.
 
 ## Start the course
 
+Read [Core Techniques](/courses/performance-foundations/core-techniques) once
+early — it is the canonical home of the moves every lesson leans on.
+
 1. [Strengthening Focus](/courses/performance-foundations/part-1-strengthening-focus)
 2. [Acting Despite Fear of Failure or Embarrassment](/courses/performance-foundations/part-2-acting-despite-fear)
 3. [Overcoming Physical Inertia](/courses/performance-foundations/part-3-overcoming-physical-inertia)
 4. [Speaking With Confidence at Work](/courses/performance-foundations/part-4-speaking-with-confidence)
-5. [Supplement Reference](/courses/performance-foundations/supplement-reference)
+5. [Expecting the Worst](/courses/performance-foundations/part-5-expecting-the-worst)
+6. [Letting Success Count](/courses/performance-foundations/part-6-letting-success-count)
+7. [Dismantling Imposter Syndrome](/courses/performance-foundations/part-7-imposter-syndrome)
+8. [Supplement Reference](/courses/performance-foundations/supplement-reference)
 
 :::note Educational scope
 The behavioral material is educational, not mental-health treatment. The

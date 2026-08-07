@@ -154,6 +154,128 @@ export function MeetingRehearsal(): React.ReactElement {
   );
 }
 
+export function PredictionAudit(): React.ReactElement {
+  const [fear, setFear] = useState('The next release will blow up in my face');
+  const [probability, setProbability] = useState(80);
+  const [best, setBest] = useState('');
+  const [likely, setLikely] = useState('');
+  const audited = best.trim() !== '' && likely.trim() !== '';
+
+  return (
+    <div className={styles.widget}>
+      <h3>Audit a doom prediction</h3>
+      <label className={styles.control}>
+        The thing that will surely get worse
+        <input value={fear} onChange={(event) => setFear(event.target.value)} />
+      </label>
+      <div className={styles.practiceGrid}>
+        <label className={styles.control}>
+          Gut probability: {probability}%
+          <input type="range" min="0" max="100" step="5" value={probability}
+            onChange={(event) => setProbability(Number(event.target.value))} />
+        </label>
+        <label className={styles.control}>
+          Best case
+          <input value={best} placeholder="One way it could go right"
+            onChange={(event) => setBest(event.target.value)} />
+        </label>
+        <label className={styles.control}>
+          Most likely case
+          <input value={likely} placeholder="The realistic middle ground"
+            onChange={(event) => setLikely(event.target.value)} />
+        </label>
+      </div>
+      <div className={styles.practiceResult}>
+        <strong>Smoke detector:</strong> “{fear || 'Something vague but definitely terrible'}” at {probability}%.
+        <br /><strong>Audit:</strong> {audited
+          ? `Worst case is survivable, best case is “${best}”, and the realistic outcome is “${likely}”. Plan for that one.`
+          : 'Incomplete — the amygdala filed only the worst-case column. Fill in the other two.'}
+      </div>
+      <p className={styles.statusLine}>
+        {probability >= 60 && !audited
+          ? 'A number that high with no evidence is a fire drill, not a forecast.'
+          : audited
+            ? 'Prediction recalibrated. Vigilance can stand down to advisory mode.'
+            : 'Name the best and likely cases to complete the loop your brain skips.'}
+      </p>
+    </div>
+  );
+}
+
+const PRAISE_RESPONSES = [
+  {label: '“Oh, it was nothing, anyone could have done it”', verdict: 'Deflected. The compliment bounced off and taught your brain the win was fake.'},
+  {label: '“Thanks, but there are still so many problems with it”', verdict: 'A thank-you with a self-deprecation chaser is still a deflection.'},
+  {label: '“Thank you.” — then stop talking', verdict: 'Anchor holds. The silence is the rep.', correct: true},
+];
+
+export function PraiseAnchor(): React.ReactElement {
+  const [picked, setPicked] = useState<number | null>(null);
+  const [savors, setSavors] = useState(0);
+
+  return (
+    <div className={styles.widget}>
+      <h3>Someone says: “This is really solid work.”</h3>
+      <div className={styles.checkList}>
+        {PRAISE_RESPONSES.map((response, index) => (
+          <button key={response.label} type="button"
+            className={picked === index ? styles.activeButton : styles.button}
+            onClick={() => setPicked(index)}>
+            {response.label}
+          </button>
+        ))}
+      </div>
+      {picked !== null && (
+        <div className={styles.practiceResult}>{PRAISE_RESPONSES[picked].verdict}</div>
+      )}
+      <button type="button" className={styles.button} onClick={() => setSavors(savors + 1)}>
+        I stayed with the feeling for 15 seconds
+      </button>
+      <span className={styles.practiceCounter}> Savoring reps: {savors}</span>
+    </div>
+  );
+}
+
+const HIDDEN_PROCESS = [
+  'Three discarded drafts',
+  'Two hours of self-doubt',
+  'One question they were afraid to ask',
+  'A day spent confused before it clicked',
+];
+
+export function InsideOutside(): React.ReactElement {
+  const [xray, setXray] = useState(false);
+
+  return (
+    <div className={styles.widget}>
+      <h3>What you see vs. what exists</h3>
+      <div className={styles.practiceGrid}>
+        <div>
+          <strong>Your own work</strong>
+          <ul>
+            {HIDDEN_PROCESS.map((item) => <li key={item}>{item}</li>)}
+            <li>Final polished deliverable</li>
+          </ul>
+        </div>
+        <div>
+          <strong>A colleague's work</strong>
+          <ul>
+            {xray && HIDDEN_PROCESS.map((item) => <li key={item}>{item}</li>)}
+            <li>Final polished deliverable</li>
+          </ul>
+        </div>
+      </div>
+      <button type="button" className={styles.button} onClick={() => setXray(!xray)}>
+        {xray ? 'Remove the X-ray' : 'Apply the same X-ray to your colleague'}
+      </button>
+      <p className={styles.statusLine}>
+        {xray
+          ? 'Same mess on both sides. You were comparing your rehearsal footage to their highlight reel.'
+          : 'You have full access to your own chaos and only the polished output of everyone else.'}
+      </p>
+    </div>
+  );
+}
+
 export function SupplementGate(): React.ReactElement {
   const [sleep, setSleep] = useState(false);
   const [basics, setBasics] = useState(false);

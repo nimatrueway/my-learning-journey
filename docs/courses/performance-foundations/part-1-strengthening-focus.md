@@ -1,5 +1,5 @@
 ---
-sidebar_position: 2
+sidebar_position: 3
 title: "Part I: Strengthening Focus"
 ---
 
@@ -51,12 +51,7 @@ Describe the reaction in simple, neutral language:
 
 Labeling the experience creates distance between the feeling and the decision that follows. The aim is not to argue with the emotion, but to recognize it without treating it as an instruction.
 
-<details>
-<summary>🧠 Why naming a feeling can weaken its pull (optional)</summary>
-
-> **Scientific basis:** *Affect labeling*—putting feelings into words—reduces amygdala reactivity while increasing activity in the right ventrolateral prefrontal cortex (Lieberman et al., 2007), dampening the emotional signal that drives escape. In Acceptance and Commitment Therapy this is called *cognitive defusion*: observing a thought or feeling as an event ("this is boredom") rather than a fact reduces its behavioral pull.
-
-</details>
+This move is **defusion** — the canonical write-up and the science live in [Core Techniques](/courses/performance-foundations/core-techniques#defusion).
 
 ### Observe the Urge
 

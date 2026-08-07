@@ -1,5 +1,5 @@
 ---
-sidebar_position: 3
+sidebar_position: 4
 title: "Part II: Acting Despite Fear"
 ---
 
@@ -121,7 +121,7 @@ These responses acknowledge the work's current stage without apologizing for lea
 
 ## 6. Try It Yourself: Make an Intentionally Rough Draft
 
-Use a small exposure exercise to weaken perfectionistic avoidance:
+Use a small exposure exercise — [micro-exposure](/courses/performance-foundations/core-techniques#micro-exposure) applied to creative work — to weaken perfectionistic avoidance:
 
 1. Choose a low-stakes task.
 2. Set a timer for 15 minutes.

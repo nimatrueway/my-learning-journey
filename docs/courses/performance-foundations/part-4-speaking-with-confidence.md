@@ -1,5 +1,5 @@
 ---
-sidebar_position: 5
+sidebar_position: 6
 title: "Part IV: Speaking With Confidence at Work"
 ---
 
@@ -70,22 +70,13 @@ verdict into an event you can observe while choosing what to do next.
 
 <Meme top="brain submitted: everyone will think this is dumb" visual="🧠📨" bottom="request received. not automatically approved." />
 
-<details>
-<summary>🧠 Cognitive defusion (optional)</summary>
+This is [defusion](/courses/performance-foundations/core-techniques#defusion) — the canonical mechanics and evidence live in Core Techniques.
 
-In **Acceptance and Commitment Therapy**, cognitive defusion practices reduce
-the literal grip of thoughts by changing how a person relates to them. Adding
-“I am noticing the thought…” is a language-based way to create that distance.
-Research supports defusion as one process that can reduce believability and
-distress, but precise neural mechanisms and broad claims about specific brain
-networks remain active research questions.
+## 3. Keep the Evidence File
 
-</details>
-
-## 3. Keep a Fact vs. Impression Log
-
-Low self-worth can make impressions feel like measurements. Build a two-column
-log that forces them apart:
+Low self-worth can make impressions feel like measurements. Build the
+two-column [Evidence File](/courses/performance-foundations/core-techniques#evidence-file)
+that forces them apart:
 
 | Impression | Objective facts |
 | --- | --- |
@@ -96,17 +87,6 @@ Write the entry shortly after the work or meeting, while concrete evidence is
 available. Facts include observable actions, requests, decisions, feedback, and
 outcomes. “Everyone secretly hated it” remains an impression, even when typed
 with confidence.
-
-<details>
-<summary>🧠 Why written evidence can correct the record (optional)</summary>
-
-**Cognitive restructuring** separates automatic interpretations from evidence
-for and against them. A written log also counters selective attention and
-confirmation bias by making disconfirming evidence harder to discard. The useful
-mechanism is disciplined comparison, not forcing the brain into positivity or
-claiming that one region simply overrides another.
-
-</details>
 
 ## 4. Speak Within the First Five Minutes
 
