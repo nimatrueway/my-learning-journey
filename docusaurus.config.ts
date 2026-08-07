@@ -49,6 +49,22 @@ const config: Config = {
     ],
   ],
 
+  plugins: [
+    [
+      '@docusaurus/plugin-pwa',
+      {
+        offlineModeActivationStrategies: ['appInstalled', 'standalone', 'queryString'],
+        pwaHead: [
+          {tagName: 'link', rel: 'manifest', href: '/my-learning-journey/manifest.json'},
+          {tagName: 'meta', name: 'theme-color', content: '#161923'},
+          {tagName: 'link', rel: 'apple-touch-icon', href: '/my-learning-journey/img/apple-touch-icon.png'},
+          {tagName: 'meta', name: 'apple-mobile-web-app-capable', content: 'yes'},
+          {tagName: 'meta', name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent'},
+        ],
+      },
+    ],
+  ],
+
   stylesheets: [
     {
       href: 'https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Source+Code+Pro:wght@400;600&display=swap',
