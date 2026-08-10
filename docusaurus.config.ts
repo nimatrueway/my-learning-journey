@@ -89,13 +89,20 @@ const config: Config = {
         src: 'img/logo.svg',
       },
       items: [
-        {to: '/courses/deep-learning/', label: '😼 Deep Learning', position: 'left'},
         {
-          to: '/courses/performance-foundations/',
-          label: '⚡ Performance Foundations',
+          type: 'dropdown',
+          label: '☰ Courses',
           position: 'left',
+          items: [
+            {to: '/', label: 'All courses'},
+            {to: '/courses/deep-learning/', label: '😼 Deep Learning'},
+            {
+              to: '/courses/performance-foundations/',
+              label: '⚡ Performance Foundations',
+            },
+            {to: '/courses/startup-school/', label: '🚀 Startup School'},
+          ],
         },
-        {to: '/courses/startup-school/', label: '🚀 Startup School', position: 'left'},
         {
           href: 'https://github.com/nimatrueway/my-learning-journey',
           label: 'GitHub',
