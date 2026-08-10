@@ -10,6 +10,9 @@ applyTo: "docs/courses/**,src/components/**"
 - Build Docusaurus courses with Markdown or MDX and React interactions.
 - Optimize for a technically capable learner with short attention bandwidth.
 - Teach intuition first, then examples, then optional depth.
+- Make teaching lessons self-sufficient. Videos, papers, books, and podcasts may
+  be optional primary sources, but the learner should not need to consume them
+  to understand the argument, evidence, examples, caveats, or practical move.
 - Prefer 10–15 minute lessons with clear headers and one idea per chunk.
 - Build or revise a small polished sample before expanding a full course when
   the style or domain is new.
@@ -27,8 +30,10 @@ Each teaching lesson should normally follow this sequence:
    (~200 wpm plus widget/quiz time); do not guess. Repeat the time next to the
    lesson's entry in the course intro or syllabus list. Label references
    honestly (e.g. `~5 min · read once, revisit often`).
-3. **Epigraph:** Use one accurately attributed entrepreneur, builder, or domain
-   expert quote tied to the lesson idea. Do not invent or misattribute quotes.
+3. **Epigraph:** When an exact, accurately attributed quote materially improves
+  the lesson, use one from an entrepreneur, builder, or domain expert. Omit the
+  epigraph when wording or speaker identity cannot be verified. Never invent,
+  silently clean up, or misattribute a quote merely to fill the slot.
 4. **Interactive rehearsal:** Include at least one purposeful React widget that
    lets the learner change a decision, parameter, sequence, or mental model.
 5. **Tiny example:** Show the smallest concrete example that makes the idea
@@ -45,6 +50,57 @@ Each teaching lesson should normally follow this sequence:
 Reference pages, indexes, and syllabi may omit the full lesson sequence. A
 reference page should still provide orientation, caveats, and a useful way to
 navigate or evaluate its information.
+
+## Source-Derived Courses
+
+- Treat captions, transcripts, descriptions, and metadata as research inputs,
+  not publishable lesson prose. Write concise original synthesis and avoid
+  reproducing substantial transcript passages or long source descriptions.
+- Explain the source's important reasoning, not just its conclusions. Include
+  enough intermediate logic that a learner can evaluate and apply the claim.
+- Include at least one memorable anecdote, company case, or real-world story
+  when the source provides one. Explain what happened, the constraint involved,
+  and why the outcome supports the lesson; a company-name list is not a case.
+- Clearly distinguish source-grounded stories from original illustrative
+  examples. Add a short provenance note near the canonical source link.
+- Preserve uncertainty. Label a speaker's heuristic as a heuristic, distinguish
+  a story from general evidence, and include counterconditions or caveats.
+- Keep long source media collapsed and optional by default. Put the lesson's
+  complete explanation before relying on a video embed or external link.
+- Keep downloaded transcripts and metadata in an ignored local research cache.
+  Do not publish raw third-party transcripts unless rights and product needs
+  explicitly support doing so.
+
+## Scaling a Course
+
+- Approve one polished representative lesson before generating a large batch.
+  The sample establishes depth, source handling, section rhythm, and tone.
+- Expand in module-sized batches and inspect representative lessons after each
+  batch. Structural checks alone cannot detect generic or forgettable teaching.
+- Do not satisfy word-count targets with repeated scaffolding. Every paragraph,
+  exercise, recap, and quiz must teach the current lesson rather than a generic
+  startup, study, or decision-making template.
+- Audit repeated phrases across lessons. Reused component labels are expected;
+  repeated explanatory paragraphs, invented stock epigraphs, identical quizzes,
+  or identical exercise frames are a quality failure.
+- Audit source integrity programmatically when metadata is available: every
+  source ID should map to exactly one lesson embed and one canonical source link,
+  with no missing, duplicate, or extra lessons.
+- Calculate reading times after final prose is settled, then update individual
+  syllabus entries, module totals, and the course total from the same data.
+
+## Docusaurus Navigation
+
+- Use a course-level `_category_.json` doc link when the course intro should act
+  as the course landing page.
+- Do not link a module category directly to its first teaching document when
+  that lesson must also appear as a child in the left sidebar. Docusaurus treats
+  a linked document as the category landing page and omits it from child items.
+- Prefer `{"type": "generated-index"}` for module category links so the module
+  gets a landing page and every lesson, including the first, remains visible.
+- Verify sidebar behavior in the rendered desktop UI. A valid build does not
+  prove that category expansion, current-page state, or first-lesson visibility
+  matches the intended navigation.
 
 ## Flavor Kit
 
@@ -97,8 +153,21 @@ After course changes:
 
 1. Run `pnpm typecheck`.
 2. Run `pnpm build` and resolve MDX, route, and broken-link errors.
-3. Confirm representative generated paths under `build/`.
-4. For new or changed widgets, use the dev server to check controls, folds,
-   responsive layout, and feedback behavior in a browser.
-5. Ask for learner feedback on lesson length, humor dial, interaction density,
-   and optional-depth level before generating a large new course.
+3. For a multi-lesson source-derived course, audit source IDs and links, minimum
+  substantive depth, required sections, exact three-point recaps, unique quizzes
+  and exercises, and known repeated boilerplate before building.
+4. Confirm the course landing page, module indexes, and representative lesson
+  paths under `build/`. Remember that Docusaurus may emit flat `.html` routes or
+  directories depending on the route shape; inspect the generated tree rather
+  than assuming one filename convention.
+5. Check representative early, middle, and late lessons in the browser. Verify
+  source folds are collapsed, exercises and quizzes work, canonical links are
+  correct, and desktop/mobile layouts have no horizontal overflow.
+6. Verify the desktop sidebar separately: module links, first lesson visibility,
+  active state, and previous/next navigation should all resolve as intended.
+7. Prefer a production-build server for final visual checks. If the Rspack dev
+  cache panics or reports a stale theme alias during hot reload, restart cleanly
+  or serve the validated static build instead of treating the stale cache as a
+  content failure.
+8. Ask for learner feedback on lesson length, humor dial, interaction density,
+  source depth, and optional-depth level before expanding another large batch.

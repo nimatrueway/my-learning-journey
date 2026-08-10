@@ -95,6 +95,7 @@ const config: Config = {
           label: '⚡ Performance Foundations',
           position: 'left',
         },
+        {to: '/courses/startup-school/', label: '🚀 Startup School', position: 'left'},
         {
           href: 'https://github.com/nimatrueway/my-learning-journey',
           label: 'GitHub',
@@ -119,6 +120,7 @@ const config: Config = {
               label: '⚡ Performance Foundations',
               to: '/courses/performance-foundations/',
             },
+            {label: '🚀 Startup School', to: '/courses/startup-school/'},
           ],
         },
         {

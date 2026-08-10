@@ -3,5 +3,6 @@ build/
 .docusaurus/
 .pnpm-store/
 .cache-loader/
+.cache/
 .DS_Store
 npm-debug.log*

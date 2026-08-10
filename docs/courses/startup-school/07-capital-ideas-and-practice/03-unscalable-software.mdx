@@ -1,0 +1,135 @@
+---
+sidebar_position: 50
+title: "Things That Don't Scale, The Software Edition"
+description: Accept temporary software shortcuts when they accelerate learning without hiding dangerous debt.
+---
+
+
+import StartupVideoLesson from '@site/src/components/StartupVideoLesson';
+import Quiz from '@site/src/components/Quiz';
+
+
+# Things That Don't Scale, The Software Edition
+
+The first version of a product needs enough engineering to answer its next
+important question. It does not need the architecture of the company founders
+hope to become. The difficult part is distinguishing a reversible constraint
+from a shortcut that can injure users or destroy the evidence.
+
+⏱️ **~7 min** · includes 2 minutes of practice · the 26-minute source video is optional
+
+## Optimize for the Current Learning Boundary
+
+“Doesn't scale” can describe several legitimate choices: a narrow feature set,
+manual work behind an interface, duplicated infrastructure, or a capacity limit.
+Each is acceptable only when the team can name what it buys and where it breaks.
+
+Use four questions before choosing the shortcut:
+
+1. **Learning:** Which user or market assumption will shipping now test?
+2. **Containment:** How many users, records, or dollars can the shortcut affect?
+3. **Observability:** Will the team know before or immediately when it fails?
+4. **Replacement:** What demand or risk threshold triggers a rebuild?
+
+This is a risk budget, not an excuse. A temporary admin queue for ten beta users
+is different from casually storing payment credentials. Security, privacy,
+financial correctness, and irreversible data loss deserve strong foundations
+even when the rest of the product is rough.
+
+## Source Case: Gmail Started With One Person's Mail
+
+The episode recounts Paul Buchheit's early Gmail work at Google. Frustrated with
+the email product he used, he adapted an existing Google Groups-like interface
+so he could read his own mail in it. The meaningful milestone was not a complete
+global email service. It was seeing his real inbox inside a searchable web
+interface and finding the experience useful enough to continue.
+
+That narrow beginning protected the central product question: was this a better
+way to use email? Building every later Gmail feature or a worldwide capacity
+plan first would have delayed that answer. Once people wanted the experience,
+reliability and scale became earned engineering problems.
+
+## Source Case: Facebook Scaled One School at a Time
+
+Seibel describes early Facebook infrastructure that would horrify a platform
+architect. Each school could have a copied PHP instance plus separate MySQL and
+cache instances. Launching another campus meant adding another isolated stack.
+It duplicated systems, but the product itself was segmented by school, so the
+technical boundary matched the rollout boundary.
+
+The approach was not infinitely scalable. It was operationally legible and let
+the company open campuses while demand was still being established. The lesson
+is not to copy databases forever. It is that a crude partition can be rational
+when it follows a real product boundary and has a migration path.
+
+Twitch reveals the other side. Ordinary sites might provision for peaks a few
+times steady traffic; live video events could create peaks around 20 times the
+baseline. Some failures could only be experienced at real event scale and then
+repaired. Once the traffic pattern was known, capacity was not premature polish.
+It was part of the product promise.
+
+## Original Example: The Capped Import Worker
+
+A team building an analytics tool needs to import customer CSV files. A general
+streaming pipeline would take six weeks, so the beta uses one background worker
+and accepts files below 25 MB. The interface displays queue position, failed jobs
+page the on-call engineer, and imports are idempotent so retrying cannot duplicate
+data. The team sets a rebuild trigger at 100 daily imports or a 15-minute queue.
+
+The shortcut is narrow but controlled. It tests whether customers value the
+analysis without pretending the importer is production-ready for any workload.
+
+<StartupVideoLesson
+  videoId="TCPjk8Tpb5c"
+  title="Things That Don&rsquo;t Scale, The Software Edition"
+  focus="Choose constrained implementations that test the core product while making capacity, failure cost, and replacement triggers explicit."
+  tryThis="Write a risk budget for one shortcut: learning goal, hard limit, monitoring signal, owner, and rebuild threshold."
+/>
+
+## Try It Yourself: Write a Shortcut Contract
+
+Choose one temporary implementation in the product. In 25 minutes, document its
+purpose, maximum load, worst credible failure, detection method, rollback, owner,
+and replacement trigger. Then classify the affected data as public, internal,
+personal, financial, or safety-critical.
+
+If the worst failure is unacceptable, strengthen the implementation now. If the
+failure is contained, add the limit and alert to the product rather than leaving
+them in a planning document. Finally, delete one speculative scaling task that
+does not protect users or answer a current demand signal.
+
+<details>
+<summary>🧭 Rewrites are not free (optional)</summary>
+
+A team can underestimate migration cost, especially when temporary data models
+leak into APIs, billing, or customer workflows. Prefer shortcuts behind narrow
+interfaces. Preserve data export and rollback paths. Revisit the contract at
+the trigger, not months later when every engineer has learned to work around it.
+
+</details>
+
+## Three Things to Keep
+
+- A software shortcut is defensible when it accelerates a named test and contains the cost of failure.
+- Gmail and Facebook began with narrow technical boundaries, while Twitch had to harden once real traffic made capacity part of the product.
+- Put limits, monitoring, ownership, rollback, and a replacement trigger beside every temporary implementation.
+
+## Quick Check
+
+<Quiz
+  question="Which beta implementation best applies the software lesson?"
+  options={[
+    {text: 'Store unencrypted payment credentials because only ten users are expected', feedback: 'Small scale does not make a catastrophic security shortcut acceptable.'},
+    {text: 'Build a global multi-region architecture before anyone completes onboarding', feedback: 'That protects a hypothetical scale before testing the core user outcome.'},
+    {text: 'Cap imports, expose queue status, alert failures, and rebuild when measured volume crosses a threshold', correct: true, feedback: 'The constraint is observable, contained, and tied to a learning goal and exit condition.'},
+  ]}
+/>
+
+## Source
+
+[Watch on YouTube](https://www.youtube.com/watch?v=TCPjk8Tpb5c) · Y Combinator,
+*Things That Don't Scale, The Software Edition*. Source provenance: Buchheit's
+first Gmail interface, Facebook's school-specific PHP/database/cache stacks,
+and Twitch's live-video traffic peaks are paraphrased from the cached original
+captions and metadata. The capped-import example and shortcut contract are
+original.
