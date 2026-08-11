@@ -1,0 +1,9 @@
+{
+  "label": "🧮 Calculator",
+  "position": 4,
+  "collapsed": false,
+  "link": {
+    "type": "doc",
+    "id": "courses/calculator/intro"
+  }
+}

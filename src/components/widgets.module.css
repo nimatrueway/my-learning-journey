@@ -6,6 +6,11 @@
   background: var(--ifm-background-surface-color);
 }
 
+.widget .widgetTitle {
+  margin: 0 0 1rem;
+  font-size: 1.2rem;
+}
+
 .plot {
   width: 100%;
   height: auto;
@@ -64,6 +69,17 @@
 .control input[type='range'] {
   width: 100%;
   accent-color: var(--ifm-color-primary);
+}
+
+.numericControlRow {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, 0.65fr) minmax(8rem, 1.35fr);
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.numericControlRow input[type='number'] {
+  min-width: 0;
 }
 
 .buttonRow {
@@ -137,6 +153,305 @@
 .practiceCounter {
   margin-left: 0.5rem;
   font-weight: 700;
+}
+
+.bmiResultGrid {
+  display: grid;
+  grid-template-columns: minmax(8rem, 0.7fr) minmax(14rem, 1.3fr);
+  gap: 1rem;
+  padding: 1rem;
+  border-left: 4px solid var(--ifm-color-primary);
+  background: var(--ifm-color-emphasis-100);
+}
+
+.bmiResultLabel,
+.bmiResultValue,
+.bmiResultText {
+  display: block;
+}
+
+.bmiResultLabel {
+  color: var(--ifm-color-emphasis-600);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.bmiResultValue {
+  margin-top: 0.2rem;
+  color: var(--ifm-color-primary);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.bmiResultText {
+  margin-top: 0.25rem;
+  line-height: 1.25;
+}
+
+.bmiChart {
+  margin: 2.25rem 0 1.25rem;
+}
+
+.bmiBands {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28.333% 21.667% 16.667% 33.333%;
+  min-height: 3.2rem;
+  border: 1px solid var(--ifm-color-emphasis-400);
+}
+
+.bmiBands > span:not(.bmiMarker) {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  padding: 0.4rem 0.2rem;
+  color: #111827;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.bmiBandLow { background: #9ecae1; }
+.bmiBandHealthy { background: #9bd3ae; }
+.bmiBandHigh { background: #f3d37a; }
+.bmiBandObesity { background: #e99a91; }
+
+.bmiMarker {
+  position: absolute;
+  top: -1.75rem;
+  bottom: -0.45rem;
+  width: 2px;
+  background: var(--ifm-font-color-base);
+  transform: translateX(-1px);
+}
+
+.bmiMarker > span {
+  position: absolute;
+  top: -0.1rem;
+  left: 50%;
+  padding: 0.1rem 0.35rem;
+  color: var(--ifm-background-color);
+  border-radius: 2px;
+  background: var(--ifm-font-color-base);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.75rem;
+  font-weight: 700;
+  transform: translateX(-50%);
+}
+
+.bmiTicks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.55rem;
+  color: var(--ifm-color-emphasis-600);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.7rem;
+}
+
+.bmiPercentileNote {
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+}
+
+.bmiPercentileNote p {
+  margin: 0.35rem 0 0;
+}
+
+.growthSetupGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1.25rem 0 1rem;
+}
+
+.segmentedField {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.segmentedField legend {
+  margin-bottom: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.growthMetrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin: 1rem 0 1.25rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  background: var(--ifm-color-emphasis-300);
+}
+
+.growthMetrics > div {
+  min-width: 0;
+  padding: 0.85rem;
+  background: var(--ifm-color-emphasis-100);
+}
+
+.growthMetrics small {
+  display: block;
+  margin-top: 0.3rem;
+  color: var(--ifm-color-emphasis-600);
+  line-height: 1.25;
+}
+
+.growthPercentile {
+  display: block;
+  margin-top: 0.2rem;
+  color: var(--ifm-color-primary);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.growthCharts {
+  display: grid;
+  gap: 1rem;
+}
+
+.growthChartPanel {
+  min-width: 0;
+  padding: 0.75rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+}
+
+.growthChartPanel h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.growthChart {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  background: var(--ifm-background-color);
+}
+
+.growthGridLine {
+  stroke: var(--ifm-color-emphasis-300);
+  stroke-width: 1;
+}
+
+.growthCurveLow,
+.growthCurveMedian,
+.growthCurveHigh,
+.growthProjection {
+  fill: none;
+  stroke-width: 2.5;
+}
+
+.growthCurveLow { stroke: #5e9bc4; }
+.growthCurveMedian { stroke: #54b383; }
+.growthCurveHigh { stroke: #d39b3c; }
+
+.growthProjection {
+  stroke: #c78bff;
+  stroke-dasharray: 7 5;
+}
+
+circle.growthCurveLow,
+circle.growthCurveMedian,
+circle.growthCurveHigh,
+circle.growthProjection {
+  fill: var(--ifm-background-color);
+  stroke-width: 3;
+}
+
+.growthPoint {
+  fill: #ff6b6b;
+  stroke: var(--ifm-background-color);
+  stroke-width: 2;
+}
+
+.growthAxisLabel {
+  fill: var(--ifm-color-emphasis-600);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 11px;
+}
+
+.growthCursorLine {
+  stroke: var(--ifm-color-emphasis-500);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  pointer-events: none;
+}
+
+.growthTooltip rect {
+  fill: var(--ifm-background-surface-color);
+  stroke: var(--ifm-color-emphasis-400);
+  stroke-width: 1;
+}
+
+.growthTooltip text {
+  fill: var(--ifm-font-color-base);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 11px;
+}
+
+.growthTooltipHeading {
+  fill: var(--ifm-color-primary);
+  font-weight: 700;
+}
+
+.growthLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.growthLegendLow { color: #5e9bc4; }
+.growthLegendMedian { color: #54b383; }
+.growthLegendHigh { color: #d39b3c; }
+.growthLegendProjection { color: #c78bff; }
+.growthLegendPoint { color: #ff6b6b; }
+
+.growthProjectionNote {
+  margin: 0.5rem 0 0;
+  color: var(--ifm-color-emphasis-600);
+  font-size: 0.75rem;
+}
+
+.bmiWarning {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  color: #b23b3b;
+  border-left: 4px solid #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+}
+
+@media (max-width: 600px) {
+  .numericControlRow {
+    grid-template-columns: minmax(5.5rem, 0.75fr) minmax(7rem, 1.25fr);
+  }
+
+  .growthSetupGrid,
+  .growthMetrics {
+    grid-template-columns: 1fr;
+  }
+
+  .growthSetupGrid .buttonRow,
+  .growthSetupGrid .button,
+  .growthSetupGrid .activeButton {
+    width: 100%;
+  }
+
+  .bmiResultGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bmiBands > span:not(.bmiMarker) {
+    font-size: 0.62rem;
+  }
 }
 
 .activationList {

@@ -1,0 +1,120 @@
+---
+sidebar_position: 1
+title: BMI & Baby Growth Calculator
+description: Calculate BMI for ages 2+ or plot WHO growth data for babies using metric measurements.
+---
+
+import BMICalculator from '@site/src/components/BMICalculator';
+import Quiz from '@site/src/components/Quiz';
+
+# BMI & Baby Growth Calculator
+
+Adults and older children use BMI-related screening. Babies need a different
+view: sex-specific growth standards that compare weight, recumbent length, and
+exact age. Choose the mode that matches the person being measured.
+
+⏱️ **~5 min** · calculator and interpretation included
+
+<BMICalculator />
+
+## The Formula
+
+With weight in kilograms and height in metres:
+
+$$
+\mathrm{BMI} = \frac{\mathrm{weight\ (kg)}}{\mathrm{height\ (m)}^2}
+$$
+
+For example, a person who weighs 70 kg and is 1.75 m tall has a BMI of
+$70 / 1.75^2 \approx 22.9$.
+
+## What the Adult Chart Means
+
+For adults age 20 and older, common screening thresholds are:
+
+- Below 18.5: below the healthy-weight range.
+- 18.5-24.9: healthy-weight range.
+- 25.0-29.9: overweight range.
+- 30.0 and above: obesity range.
+
+These are screening categories, not diagnoses. BMI can misrepresent people with
+high muscularity, pregnancy, age-related changes in body composition, or health
+risks that are not captured by weight and height.
+
+## Why the Calculator Does Not Invent a Percentile
+
+Adult BMI uses fixed thresholds rather than age percentiles. For children and
+teenagers age 2-19, BMI is interpreted against official age- and sex-specific
+growth references. A valid pediatric percentile needs age in months and the
+appropriate reference population; age, height, and weight alone cannot produce
+an honest percentile.
+
+## What Baby Growth Mode Shows
+
+For babies and toddlers under 2, the calculator does **not** report BMI. Choose
+girl or boy according to the sex-specific WHO reference, then enter exact age in
+weeks or months, recumbent length, and weight. It reports:
+
+- **Weight for length:** how weight compares with babies of the same length.
+- **Length for age:** how recumbent length compares at the same age and sex.
+- **Weight for age:** how weight compares at the same age and sex.
+
+Each chart shows the WHO 15th, 50th, and 85th percentile curves. The red point
+is the entered measurement. Week values are converted to fractional months
+before interpolating the official monthly WHO LMS standards.
+
+The dashed purple line extends the measurement's current WHO z-score across the
+full chart. It answers “where would the same relative position sit elsewhere on
+this reference?” It does **not** predict the child's future growth. Move the
+cursor or a finger along a chart to inspect the 15th, median, 85th, and same-z
+projection values at any age or length.
+
+Growth is a trajectory, not a single score. Accurate recumbent length is hard to
+measure, premature infants may need corrected age, and clinical interpretation
+depends on repeated measurements, medical history, feeding, and development.
+
+For ages 2-19, use an official BMI-for-age growth chart with sex and exact age.
+The BMI mode calculates the number but intentionally withholds a percentile.
+
+## Try It Yourself
+
+In baby mode, switch between weeks and months and confirm that the plotted point
+does not jump. Then change recumbent length by 1 cm and watch weight-for-length
+move while weight-for-age stays fixed. This is why measurement technique and the
+choice of indicator matter.
+
+<details>
+<summary>🧭 Limits of BMI (optional)</summary>
+
+BMI does not distinguish fat from muscle, locate body fat, explain a weight
+change, or estimate an individual's metabolic health. A clinician may combine it
+with growth history, waist measurement, blood pressure, laboratory results,
+medications, symptoms, and personal context.
+
+</details>
+
+## Three Things to Keep
+
+- Metric BMI is weight in kilograms divided by height in metres squared.
+- Adult categories are screening thresholds, not population percentiles or diagnoses.
+- Under 2, use sex-specific WHO weight-for-length, length-for-age, and weight-for-age trajectories instead of BMI.
+
+## Quick Check
+
+<Quiz
+  question="Which measure is preferred over BMI for assessing body proportionality under age 2?"
+  options={[
+    {text: 'Adult BMI category bands', feedback: 'Adult thresholds do not describe infant growth.'},
+    {text: 'Sex-specific weight for recumbent length on an official growth standard', correct: true, feedback: 'Correct. Pair it with age-based length and weight trajectories over time.'},
+    {text: 'Weight alone, without age or length', feedback: 'Weight needs context from age, length, sex-specific standards, and growth over time.'},
+  ]}
+/>
+
+## References
+
+- [CDC: About Adult BMI](https://www.cdc.gov/bmi/adult-calculator/bmi-categories.html)
+- [CDC: Child and Teen BMI Calculator](https://www.cdc.gov/bmi/child-teen-calculator/)
+- [CDC: WHO Growth Standards for Ages 0-2](https://www.cdc.gov/growth-chart-training/hcp/using-growth-charts/who-using.html)
+- [WHO: Weight-for-length standards](https://www.who.int/tools/child-growth-standards/standards/weight-for-length-height)
+- [WHO: Length-for-age standards](https://www.who.int/tools/child-growth-standards/standards/length-height-for-age)
+- [WHO: Weight-for-age standards](https://www.who.int/tools/child-growth-standards/standards/weight-for-age)

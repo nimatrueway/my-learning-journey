@@ -101,6 +101,7 @@ const config: Config = {
               label: '⚡ Performance Foundations',
             },
             {to: '/courses/startup-school/', label: '🚀 Startup School'},
+            {to: '/courses/calculator/', label: '🧮 Calculator'},
           ],
         },
         {
@@ -128,6 +129,7 @@ const config: Config = {
               to: '/courses/performance-foundations/',
             },
             {label: '🚀 Startup School', to: '/courses/startup-school/'},
+            {label: '🧮 Calculator', to: '/courses/calculator/'},
           ],
         },
         {
