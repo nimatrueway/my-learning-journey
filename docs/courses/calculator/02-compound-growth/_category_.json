@@ -1,0 +1,9 @@
+{
+  "label": "2. Compound Growth",
+  "position": 2,
+  "collapsed": false,
+  "link": {
+    "type": "generated-index",
+    "description": "Calculate compound interest and user growth without hiding the assumptions."
+  }
+}

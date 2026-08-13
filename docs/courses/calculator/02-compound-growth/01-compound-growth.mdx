@@ -1,0 +1,116 @@
+---
+sidebar_position: 1
+title: Compound Interest & User Growth Calculator
+description: Calculate compound interest on savings or compounding user growth, and see why the curve beats the straight line.
+---
+
+import CompoundGrowthCalculator from '@site/src/components/CompoundGrowthCalculator';
+import Quiz from '@site/src/components/Quiz';
+
+# Compound Interest & User Growth Calculator
+
+Your brain extrapolates in straight lines. Compounding does not care. The same
+formula that quietly grows a savings account is the one that makes 5% weekly
+user growth look boring for a year and then absurd. This calculator shows both,
+next to the straight line your intuition drew.
+
+⏱️ **~6 min** · calculator and interpretation included
+
+<CompoundGrowthCalculator />
+
+## The Formula
+
+One number drives everything: each period, the current total is multiplied by
+$(1 + r)$, where $r$ is the growth rate per period.
+
+$$
+A = P\,(1 + r)^{n}
+$$
+
+- $P$ — the starting amount (money or users).
+- $r$ — the rate **per compounding period**, as a decimal.
+- $n$ — the number of periods.
+- $A$ — what you end up with.
+
+For example, 100 users growing 5% per week for 52 weeks:
+$100 \times 1.05^{52} \approx 12{,}643$ users. The linear version of the same
+first week — adding 5 users every week — reaches 360.
+
+## What the Two Modes Assume
+
+**Compound interest mode** compounds monthly and adds the contribution at the
+end of each month, so the final balance is
+
+$$
+A = P\,(1 + \tfrac{r}{12})^{n} + c \cdot \frac{(1 + \tfrac{r}{12})^{n} - 1}{\tfrac{r}{12}}
+$$
+
+where $c$ is the monthly contribution and $n$ is months. Real accounts differ:
+fees, taxes, variable returns, and contribution timing all move the answer. A
+steady 7% is a modeling assumption, not a promise — real market returns arrive
+as a jagged sequence that merely averages out to something like it.
+
+**User growth mode** assumes the weekly rate holds every week. That is the
+strongest assumption on this page. Sustained percentage growth gets harder as
+the base grows, because a constant *rate* requires an ever-larger *absolute*
+number of new users each week. Treat long horizons at high rates as an upper
+bound, not a forecast.
+
+## The Doubling-Time Shortcut
+
+The rule of 72 estimates doubling time: divide 72 by the percentage rate.
+At 7% annual return, money doubles roughly every $72 / 7 \approx 10.3$ years.
+At 5% weekly growth, users double roughly every $72 / 5 \approx 14.4$ weeks.
+The calculator shows the exact value, $\ln 2 / \ln(1 + r)$; the rule of 72 is
+the version you can do while someone is still talking.
+
+## Try It Yourself
+
+Set the interest mode to 10,000 starting, 0 monthly contribution, 7% for
+40 years, and note the final balance. Now halve the time to 20 years. The
+balance falls to far less than half — compounding is heavily back-loaded, which
+is why starting early beats starting big. Then switch to user growth, compare
+5% and 7% weekly over two years, and watch a 2-point difference become a
+multiple, not a margin.
+
+<details>
+<summary>🤓 The actual math (optional)</summary>
+
+Why is doubling time $\ln 2 / \ln(1 + r)$? Solve $(1 + r)^{n} = 2$ by taking
+logarithms: $n \ln(1 + r) = \ln 2$. For small $r$, $\ln(1 + r) \approx r$, so
+$n \approx \ln 2 / r \approx 0.693 / r$ — which is the "rule of 69.3". The
+convention of 72 survives because 72 divides cleanly by 2, 3, 4, 6, 8, 9, and
+12, and because it slightly corrects for the approximation error at typical
+interest rates.
+
+The contribution term in the money mode is a geometric series: a contribution
+made $k$ months before the end grows to $c(1 + \tfrac{r}{12})^{k}$, and summing
+over all months gives the closed form above. The calculator computes it
+iteratively month by month, which produces the same result and also yields the
+full curve for the chart.
+
+</details>
+
+## Three Things to Keep
+
+- Compound growth multiplies by $(1 + r)$ each period, so the gap between the curve and the straight line widens forever.
+- Time in the formula is an exponent: halving the horizon costs far more than half the growth, and small rate differences compound into multiples.
+- Divide 72 by the percentage rate for a quick doubling-time estimate; constant-rate projections are assumptions, not forecasts.
+
+## Quick Check
+
+<Quiz
+  question="A product grows 5% per week. Roughly how long until its user count doubles?"
+  options={[
+    {text: 'About 20 weeks, since 5% of 100% is 1/20', feedback: 'That ignores compounding — each week grows on top of the last. The rule of 72 gives a faster answer.'},
+    {text: 'About 14 weeks, from 72 divided by 5', correct: true, feedback: 'Correct. Rule of 72: 72 / 5 ≈ 14.4 weeks, and the exact value ln 2 / ln 1.05 ≈ 14.2 agrees.'},
+    {text: 'It cannot double without knowing the starting user count', feedback: 'Doubling time depends only on the rate — that is the point of exponential growth.'},
+  ]}
+/>
+
+## References
+
+- [Investor.gov: Compound Interest Calculator](https://www.investor.gov/financial-tools-calculators/calculators/compound-interest-calculator)
+- [Wikipedia: Compound interest](https://en.wikipedia.org/wiki/Compound_interest)
+- [Wikipedia: Rule of 72](https://en.wikipedia.org/wiki/Rule_of_72)
+- [Paul Graham: Startup = Growth](https://paulgraham.com/growth.html)

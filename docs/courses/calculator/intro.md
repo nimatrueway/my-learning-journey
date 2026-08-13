@@ -14,6 +14,7 @@ into a mysterious verdict.
 ## Modules
 
 1. [BMI & Baby Growth Calculator](/courses/calculator/body-measures/bmi) — ~7 min
+2. [Compound Interest & User Growth Calculator](/courses/calculator/compound-growth/compound-growth) — ~6 min
 
 :::note Educational scope
 These calculators provide general educational information, not diagnosis or
