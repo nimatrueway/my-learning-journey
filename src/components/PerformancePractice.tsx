@@ -361,6 +361,168 @@ export function LearnDoConverter(): React.ReactElement {
   );
 }
 
+const HOPE_HORIZONS = {
+  today: 'What can I move by tonight?',
+  week: 'What evidence can I create in seven days?',
+  month: 'What small system can I keep for one month?',
+};
+
+export function HopeMap(): React.ReactElement {
+  const [goal, setGoal] = useState('Keep the project alive');
+  const [horizon, setHorizon] = useState<keyof typeof HOPE_HORIZONS>('week');
+  const [path, setPath] = useState('Ask one customer what still hurts');
+  const [backup, setBackup] = useState('Ship a smaller version to one person');
+
+  return (
+    <div className={styles.widget}>
+      <h3>Turn hope into routes you can walk</h3>
+      <div className={styles.practiceGrid}>
+        <label className={styles.control}>
+          Direction worth protecting
+          <input value={goal} onChange={(event) => setGoal(event.target.value)} />
+        </label>
+        <label className={styles.control}>
+          Planning horizon
+          <select value={horizon}
+            onChange={(event) => setHorizon(event.target.value as keyof typeof HOPE_HORIZONS)}>
+            <option value="today">Today</option>
+            <option value="week">Seven days</option>
+            <option value="month">One month</option>
+          </select>
+        </label>
+        <label className={styles.control}>
+          Route A
+          <input value={path} onChange={(event) => setPath(event.target.value)} />
+        </label>
+        <label className={styles.control}>
+          Route B if A fails
+          <input value={backup} onChange={(event) => setBackup(event.target.value)} />
+        </label>
+      </div>
+      <div className={styles.practiceResult}>
+        <strong>Direction:</strong> {goal || 'Choose something worth protecting.'}
+        <br /><strong>Question:</strong> {HOPE_HORIZONS[horizon]}
+        <br /><strong>Routes:</strong> {path || 'Name a first route.'} If blocked: {backup || 'Name a second route.'}
+      </div>
+      <p className={styles.statusLine}>
+        Hope is not certainty about the outcome. It is a direction, more than one route, and the next usable move.
+      </p>
+    </div>
+  );
+}
+
+const SIGNAL_TOOLS = {
+  body: {
+    label: 'Body: wired, heavy, tense, restless, or exhausted',
+    tool: 'Lower the load first: water or food if needed, ten slow exhales, a short walk, and a protected sleep window.',
+  },
+  attention: {
+    label: 'Attention: racing thoughts, doom loops, mistakes, or no focus',
+    tool: 'Externalize: write the loop once, separate facts from predictions, then choose one ten-minute task.',
+  },
+  behavior: {
+    label: 'Behavior: withdrawing, snapping, scrolling, freezing, or overworking',
+    tool: 'Interrupt the pattern: change rooms, contact one safe person, and make the next action deliberately small.',
+  },
+  mood: {
+    label: 'Mood: dread, numbness, hopelessness, irritability, or no enjoyment',
+    tool: 'Reduce demands and add support. Track duration and impact; persistent or worsening symptoms deserve professional care.',
+  },
+};
+
+export function SignalDashboard(): React.ReactElement {
+  const [signals, setSignals] = useState<Array<keyof typeof SIGNAL_TOOLS>>([]);
+  const [days, setDays] = useState(2);
+  const toggle = (signal: keyof typeof SIGNAL_TOOLS) => {
+    setSignals((current) => current.includes(signal)
+      ? current.filter((item) => item !== signal)
+      : [...current, signal]);
+  };
+
+  return (
+    <div className={styles.widget}>
+      <h3>Match the signal to the next level of support</h3>
+      <div className={styles.checkList}>
+        {(Object.keys(SIGNAL_TOOLS) as Array<keyof typeof SIGNAL_TOOLS>).map((signal) => (
+          <label key={signal}>
+            <input type="checkbox" checked={signals.includes(signal)}
+              onChange={() => toggle(signal)} /> {SIGNAL_TOOLS[signal].label}
+          </label>
+        ))}
+      </div>
+      <label className={styles.control}>
+        How long has this cluster been disrupting normal life? {days} {days === 1 ? 'day' : 'days'}
+        <input type="range" min="1" max="21" value={days}
+          onChange={(event) => setDays(Number(event.target.value))} />
+      </label>
+      <div className={styles.practiceResult} aria-live="polite">
+        {signals.length === 0
+          ? 'Select what you notice. A signal is information, not a verdict.'
+          : signals.map((signal) => <p key={signal}><strong>{signal}:</strong> {SIGNAL_TOOLS[signal].tool}</p>)}
+        {signals.length > 0 && days >= 14 && (
+          <p><strong>Escalate support:</strong> two weeks of disruption is a good reason to contact a qualified mental-health professional or primary-care clinician.</p>
+        )}
+      </div>
+      <p className={styles.statusLine}>
+        Immediate danger, thoughts of self-harm, or inability to stay safe skip the dashboard: contact local emergency or crisis support now.
+      </p>
+    </div>
+  );
+}
+
+const CONVERSATION_MODES = {
+  listen: 'Do you want me to listen and stay with you?',
+  plan: 'Do you want help making a small plan?',
+  space: 'Would quiet company or some space feel better?',
+};
+
+export function PartnerSupportPlanner(): React.ReactElement {
+  const [concern, setConcern] = useState('Tomorrow feels overwhelming');
+  const [mode, setMode] = useState<keyof typeof CONVERSATION_MODES>('listen');
+  const [capacity, setCapacity] = useState(7);
+  const [boundary, setBoundary] = useState('I can talk for 20 minutes, then I need to sleep');
+
+  return (
+    <div className={styles.widget}>
+      <h3>Build a response without becoming the anxiety department</h3>
+      <div className={styles.practiceGrid}>
+        <label className={styles.control}>
+          What your partner is worried about
+          <input value={concern} onChange={(event) => setConcern(event.target.value)} />
+        </label>
+        <label className={styles.control}>
+          Ask what kind of support is wanted
+          <select value={mode}
+            onChange={(event) => setMode(event.target.value as keyof typeof CONVERSATION_MODES)}>
+            <option value="listen">Listening</option>
+            <option value="plan">Planning</option>
+            <option value="space">Space or quiet company</option>
+          </select>
+        </label>
+      </div>
+      <label className={styles.control}>
+        Your available capacity: {capacity}/10
+        <input type="range" min="1" max="10" value={capacity}
+          onChange={(event) => setCapacity(Number(event.target.value))} />
+      </label>
+      <label className={styles.control}>
+        Honest boundary
+        <input value={boundary} onChange={(event) => setBoundary(event.target.value)} />
+      </label>
+      <div className={styles.practiceResult}>
+        <strong>Validate:</strong> “I can see why ‘{concern || 'this'}’ feels heavy.”
+        <br /><strong>Ask:</strong> “{CONVERSATION_MODES[mode]}”
+        <br /><strong>Boundary:</strong> “I care about you. {boundary || 'I need to be honest about what I can offer right now.'}”
+      </div>
+      <p className={styles.statusLine}>
+        {capacity <= 3
+          ? 'Low capacity: keep the boundary short and help widen the support network instead of promising more than you have.'
+          : 'Support the person, do not repeatedly litigate every catastrophic prediction.'}
+      </p>
+    </div>
+  );
+}
+
 export function SupplementGate(): React.ReactElement {
   const [sleep, setSleep] = useState(false);
   const [basics, setBasics] = useState(false);

@@ -14,7 +14,7 @@ This course is about preparing someone to become more productive, more
 confident, more willing to take thoughtful risks, and more energetic, so they
 can perform better and pursue ambitious work.
 
-It begins with ten practical foundations:
+It begins with thirteen practical foundations:
 
 1. Strengthening focus and staying with effortful work.
 2. Acting despite fear of failure or embarrassment.
@@ -25,7 +25,12 @@ It begins with ten practical foundations:
 7. Dismantling the imposter narrative with evidence.
 8. Keeping anger from reaching the people who did not cause it.
 9. Converting knowledge obsession into real-world doing.
-10. Evaluating supplements cautiously as optional support, not as substitutes
+10. Building durable hope and preserving energy when the odds look bad.
+11. Recognizing stress and anxiety signals early, matching tools to the state,
+    and knowing when to seek professional or urgent support.
+12. Supporting an anxious partner with validation, boundaries, and shared
+    agreements without becoming their only regulator.
+13. Evaluating supplements cautiously as optional support, not as substitutes
     for sleep, nutrition, exercise, or appropriate medical care.
 
 The aim is not constant intensity. It is to build repeatable ways to direct
@@ -55,7 +60,10 @@ early — it is the canonical home of the moves every lesson leans on (~5 min).
 7. [Dismantling Imposter Syndrome](/courses/performance-foundations/part-7-imposter-syndrome) — ~8 min
 8. [Anger Without Casualties](/courses/performance-foundations/part-8-anger-without-casualties) — ~9 min
 9. [From Learning to Doing](/courses/performance-foundations/part-9-from-learning-to-doing) — ~8 min
-10. [Supplement Reference](/courses/performance-foundations/supplement-reference) — ~8 min, skimmable
+10. [Durable Hope Under Bad Odds](/courses/performance-foundations/part-10-durable-hope) — ~8 min
+11. [Signals, Spirals, and the Right Tool](/courses/performance-foundations/part-11-signals-and-tools) — ~9 min
+12. [Supporting an Anxious Partner](/courses/performance-foundations/part-12-supporting-an-anxious-partner) — ~10 min
+13. [Supplement Reference](/courses/performance-foundations/supplement-reference) — ~8 min, skimmable
 
 :::note Educational scope
 The behavioral material is educational, not mental-health treatment. The
