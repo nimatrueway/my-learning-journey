@@ -1,0 +1,9 @@
+{
+  "label": "📚 Books",
+  "position": 5,
+  "collapsed": false,
+  "link": {
+    "type": "doc",
+    "id": "courses/books/intro"
+  }
+}

@@ -71,6 +71,35 @@ navigate or evaluate its information.
   Do not publish raw third-party transcripts unless rights and product needs
   explicitly support doing so.
 
+## Book Summary Courses
+
+- Treat a supplied, user-authored book summary as publishable reference prose
+  only when its provenance and publication rights are clear. Otherwise, use it
+  as research input under the source-derived rules above.
+- Book summaries are reference pages and may omit widgets, exercises, recaps,
+  and quizzes. Preserve the book's reasoning, examples, tensions, and caveats;
+  do not reduce a substantial summary to a list of slogans merely to resemble a
+  teaching lesson.
+- Add a course intro that names the books and authors, groups related works,
+  provides word-count-derived reading times, and explains that summaries do not
+  replace the original books. Attribute claims and judgments to the named
+  authors unless the summary explicitly marks an editorial qualification.
+- Organize related books in module directories. Give every summary explicit
+  `sidebar_position`, `slug`, `title`, and `description` frontmatter. Use a
+  course-level doc link for the intro and generated-index links for modules so
+  every book remains visible in the sidebar.
+- Before importing a batch, copy one representative summary and run a production
+  build. Choose a structurally demanding sample with dense headings,
+  punctuation, links, or currency so the probe can expose parser problems.
+- Normalize imported Markdown without rewriting its prose. Ensure headings begin
+  on their own lines; audit for joined boundaries such as `.## Heading`; and
+  escape currency dollar signs as `\$` when remark-math would otherwise parse
+  prose between dollar amounts as inline math. Do not escape real math
+  delimiters.
+- After final normalization, recalculate reading times at approximately 200
+  words per minute and derive book, module, and course totals from the same word
+  counts.
+
 ## Scaling a Course
 
 - Approve one polished representative lesson before generating a large batch.
@@ -156,18 +185,21 @@ After course changes:
 3. For a multi-lesson source-derived course, audit source IDs and links, minimum
   substantive depth, required sections, exact three-point recaps, unique quizzes
   and exercises, and known repeated boilerplate before building.
-4. Confirm the course landing page, module indexes, and representative lesson
+4. For imported book summaries, audit heading boundaries and unescaped currency
+  dollar signs before building; confirm that Markdown normalization did not
+  alter visible prose or real math.
+5. Confirm the course landing page, module indexes, and representative lesson
   paths under `build/`. Remember that Docusaurus may emit flat `.html` routes or
   directories depending on the route shape; inspect the generated tree rather
   than assuming one filename convention.
-5. Check representative early, middle, and late lessons in the browser. Verify
+6. Check representative early, middle, and late lessons in the browser. Verify
   source folds are collapsed, exercises and quizzes work, canonical links are
   correct, and desktop/mobile layouts have no horizontal overflow.
-6. Verify the desktop sidebar separately: module links, first lesson visibility,
+7. Verify the desktop sidebar separately: module links, first lesson visibility,
   active state, and previous/next navigation should all resolve as intended.
-7. Prefer a production-build server for final visual checks. If the Rspack dev
+8. Prefer a production-build server for final visual checks. If the Rspack dev
   cache panics or reports a stale theme alias during hot reload, restart cleanly
   or serve the validated static build instead of treating the stale cache as a
   content failure.
-8. Ask for learner feedback on lesson length, humor dial, interaction density,
+9. Ask for learner feedback on lesson length, humor dial, interaction density,
   source depth, and optional-depth level before expanding another large batch.
