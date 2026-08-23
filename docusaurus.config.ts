@@ -78,6 +78,11 @@ const config: Config = {
   ],
 
   themeConfig: {
+    docs: {
+      sidebar: {
+        hideable: true,
+      },
+    },
     colorMode: {
       defaultMode: 'dark',
       respectPrefersColorScheme: false,
@@ -95,6 +100,7 @@ const config: Config = {
           position: 'left',
           items: [
             {to: '/', label: 'All courses'},
+            {to: '/courses/books/', label: '📚 Books'},
             {to: '/courses/deep-learning/', label: '😼 Deep Learning'},
             {
               to: '/courses/performance-foundations/',
@@ -112,6 +118,16 @@ const config: Config = {
         {
           type: 'html',
           position: 'right',
+          value: '<button class="navbarModeBtn" data-reading-action="zen" type="button" aria-pressed="false">Zen mode</button>',
+        },
+        {
+          type: 'html',
+          position: 'right',
+          value: '<button class="navbarModeBtn" data-reading-action="status" type="button" aria-pressed="false">Status bar</button>',
+        },
+        {
+          type: 'html',
+          position: 'right',
           value: '<button class="navbarKbdBtn" id="kbd-guide-btn" type="button" title="Keyboard shortcuts (?)">⌨</button>',
         },
       ],
@@ -123,6 +139,7 @@ const config: Config = {
           title: 'Learn',
           items: [
             {label: 'All courses', to: '/'},
+            {label: '📚 Books', to: '/courses/books/'},
             {label: '😼 Deep Learning', to: '/courses/deep-learning/'},
             {
               label: '⚡ Performance Foundations',

@@ -177,7 +177,6 @@ body {
 }
 
 .theme-doc-sidebar-container {
-  width: 300px !important;
   border-right: 0 !important;
   background: #f3f3f3;
 }
@@ -201,6 +200,52 @@ body {
   padding: 0.25rem 0.35rem;
   border-radius: 0;
   line-height: 1.3;
+}
+
+.menu__link--completed::before {
+  flex: 0 0 1rem;
+  color: #238636;
+  content: '✓';
+  font-weight: 700;
+}
+
+[data-theme='dark'] .menu__link--completed::before {
+  color: #4ade80;
+}
+
+.menu__progress {
+  display: flex;
+  width: 2.25rem;
+  flex: 0 0 2.25rem;
+  align-items: center;
+  margin-left: auto;
+}
+
+.menu__page-progress {
+  display: flex;
+  width: 1.7rem;
+  flex: 0 0 1.7rem;
+  align-items: center;
+  margin-left: auto;
+}
+
+.menu__page-progress .menu__progress-track {
+  width: 1.35rem;
+}
+
+.menu__progress-track {
+  width: 1.8rem;
+  height: 0.3rem;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--ifm-color-emphasis-300);
+}
+
+.menu__progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--ifm-color-primary);
 }
 
 .menu__link:hover,
@@ -494,6 +539,7 @@ html.show-reading-status #reading-status {
 }
 
 /* Keyboard shortcut guide */
+.navbarModeBtn,
 .navbarKbdBtn {
   padding: 0 0.5rem;
   color: var(--ifm-color-emphasis-500);
@@ -504,6 +550,21 @@ html.show-reading-status #reading-status {
   cursor: pointer;
 }
 
+.navbarModeBtn {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  font-family: var(--ifm-font-family-base);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.navbarModeBtn--active {
+  color: var(--ifm-color-primary);
+  border-color: var(--ifm-color-primary);
+}
+
+.navbarModeBtn:hover,
 .navbarKbdBtn:hover {
   color: var(--ifm-color-primary);
 }
@@ -650,8 +711,26 @@ kbd {
     transform: none;
   }
 
+  .navbar__items--right > .navbar__item:has(.navbarModeBtn) {
+    display: flex;
+  }
+
+  .navbar__items--right > .navbar__item .navbarModeBtn {
+    padding: 0.3rem 0.4rem;
+    font-size: 0.72rem;
+  }
+
   .theme-doc-markdown {
     max-width: 100%;
+  }
+
+  .navbar-sidebar .navbarModeBtn {
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 0;
+    font-size: 0.9rem;
+    text-align: left;
   }
 }
 

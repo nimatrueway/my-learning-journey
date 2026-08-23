@@ -6,6 +6,71 @@ import type {PropSidebarItem, PropSidebarItemCategory} from '@docusaurus/plugin-
 const normalize = (path: string) => path.replace(/\/+$/, '');
 
 type FlatItem = {href: string; label: string};
+type CategoryProgress = {href: string; completed: number; percent: number; total: number};
+
+const completionKey = (href: string): string => `reading-complete:${normalize(href)}`;
+const progressKey = (href: string): string => `reading-progress:${normalize(href)}`;
+
+function pageProgress(href: string): number {
+  const stored = localStorage.getItem(progressKey(href));
+  if (stored !== null) return Math.max(0, Math.min(100, Number(stored) || 0));
+  return localStorage.getItem(completionKey(href)) === '1' ? 100 : 0;
+}
+
+function leafPaths(items: PropSidebarItem[]): string[] {
+  return items.flatMap((item) => {
+    if (item.type === 'category') return leafPaths(item.items);
+    return item.type === 'link' ? [item.href] : [];
+  });
+}
+
+function categoryProgress(items: PropSidebarItem[]): CategoryProgress[] {
+  return items.flatMap((item) => {
+    if (item.type !== 'category') return [];
+    const paths = leafPaths(item.items);
+    let completed = 0;
+    let percent = 0;
+    try {
+      const pagePercentages = paths.map(pageProgress);
+      completed = pagePercentages.filter((value) => value === 100).length;
+      percent = paths.length === 0 ? 0 : Math.round(pagePercentages.reduce((sum, value) => sum + value, 0) / paths.length);
+    } catch {
+      // storage unavailable; report zero persistent progress
+    }
+    const current = item.href ? [{href: item.href, completed, percent, total: paths.length}] : [];
+    return [...current, ...categoryProgress(item.items)];
+  });
+}
+
+function updateSidebarProgress(items: PropSidebarItem[]) {
+  document.querySelectorAll('.menu__progress').forEach((indicator) => indicator.remove());
+
+  for (const progress of categoryProgress(items)) {
+    const link = Array.from(
+      document.querySelectorAll<HTMLAnchorElement>('.theme-doc-sidebar-menu a.menu__link--sublist[href]'),
+    ).find((candidate) => normalize(new URL(candidate.href).pathname) === normalize(progress.href));
+    if (!link || progress.total === 0 || progress.percent === 0) continue;
+
+    const {percent} = progress;
+    const indicator = document.createElement('span');
+    indicator.className = 'menu__progress';
+    indicator.title = 'Reading progress';
+    indicator.setAttribute('role', 'progressbar');
+    indicator.setAttribute('aria-label', `${percent}% complete`);
+    indicator.setAttribute('aria-valuemin', '0');
+    indicator.setAttribute('aria-valuemax', '100');
+    indicator.setAttribute('aria-valuenow', String(percent));
+    const track = document.createElement('span');
+    track.className = 'menu__progress-track';
+    track.setAttribute('aria-hidden', 'true');
+    const fill = document.createElement('span');
+    fill.className = 'menu__progress-fill';
+    fill.style.width = `${percent}%`;
+    track.appendChild(fill);
+    indicator.appendChild(track);
+    link.appendChild(indicator);
+  }
+}
 
 function flatten(items: PropSidebarItem[]): FlatItem[] {
   const out: FlatItem[] = [];
@@ -82,6 +147,20 @@ export default function ReadingStatus(): React.ReactElement | null {
   const sidebar = useDocsSidebar();
   const {pathname} = useLocation();
   const {section, pagePct} = useScrollPosition(pathname);
+
+  useEffect(() => {
+    if (!sidebar) return;
+    const update = () => updateSidebarProgress(sidebar.items);
+    const frame = requestAnimationFrame(update);
+    window.addEventListener('reading-progress-updated', update);
+    window.addEventListener('storage', update);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('reading-progress-updated', update);
+      window.removeEventListener('storage', update);
+    };
+  }, [pathname, sidebar]);
+
   if (!sidebar) return null;
 
   const target = normalize(pathname);
