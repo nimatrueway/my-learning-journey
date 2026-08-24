@@ -2,25 +2,25 @@
 sidebar_position: 1
 slug: /courses/startup-school/
 title: Startup School
-description: Forty-nine concise founder lessons from Dalton Caldwell and Michael Seibel, each paired with a bounded practice.
+description: Eighty concise founder lessons grounded in Dalton and Michael's startup talks, each paired with a bounded practice.
 ---
 
 # 🚀 Startup School
 
 Startups produce a peculiar fog: fundraising can look like progress, confidence
 can impersonate evidence, and advice can travel much farther than its context.
-This course turns 49 conversations between Dalton Caldwell and Michael Seibel
-into self-sufficient, source-grounded reading lessons with one concrete practice
-each. You do not need to watch the videos to understand or apply the material;
-the collapsed videos are optional primary sources.
+This course turns 79 conversations from Dalton Caldwell and Michael Seibel,
+plus a practical lecture from YC CFO Kirsty Nathoo, into self-sufficient,
+source-grounded reading lessons with one concrete practice each. You do not need
+to watch the videos to understand or apply the material; the collapsed videos
+are optional primary sources.
 
-**~5 hr 54 min total** · reading, decision rehearsal, and quick checks
+**~9 hr 30 min total** · reading, decision rehearsal, and quick checks
 
-Read in playlist order if you want the original sequence. Every lesson explains
-the core argument, grounds it in a story discussed in the episode, challenges it
-with caveats, and connects it to a decision. The seven modules are thematic
-signposts; their lesson positions preserve the order of the source playlist,
-including its unavailable gaps.
+The first seven modules preserve the original playlist sequence, including its
+unavailable gaps. The eighth follows the newer channel in publication order.
+Every lesson explains the core argument, grounds it in a story discussed in the
+episode, challenges it with caveats, and connects it to a decision.
 
 ## Syllabus
 
@@ -80,7 +80,7 @@ including its unavailable gaps.
 8. [How Future Billionaires Get Sh*t Done](/courses/startup-school/resilience-and-execution/get-things-done) — ~7 min
 9. [Elon Musk & The Midwit Meme](/courses/startup-school/resilience-and-execution/midwit-meme) — ~7 min
 
-### [7. Capital, Ideas & Practice](/courses/startup-school/capital-ideas-and-practice/investors-cant-fix-company) · ~1 hr 18 min
+### [7. Capital, Ideas & Practice](/courses/startup-school/capital-ideas-and-practice/investors-cant-fix-company) · ~1 hr 28 min
 
 1. [Why Investors Can't Fix Your Company](/courses/startup-school/capital-ideas-and-practice/investors-cant-fix-company) — ~8 min
 2. [What Does It REALLY Mean To Do Things That Don't Scale?](/courses/startup-school/capital-ideas-and-practice/do-things-that-dont-scale) — ~7 min
@@ -93,19 +93,56 @@ including its unavailable gaps.
 9. [Simple Products That Became Big Companies](/courses/startup-school/capital-ideas-and-practice/simple-products) — ~7 min
 10. [How To Change The World? Get The Small Things Right](/courses/startup-school/capital-ideas-and-practice/small-things-right) — ~7 min
 11. [Successful Founders Are OK With Rejection](/courses/startup-school/capital-ideas-and-practice/okay-with-rejection) — ~7 min
+12. [Startup Mechanics: Keep the Company Fundable](/courses/startup-school/capital-ideas-and-practice/startup-mechanics) — ~10 min
+
+### [8. Dalton + Michael: New Season](/courses/startup-school/new-season/dalton-michael-return) · ~3 hr 26 min
+
+1. [When a Successful Chapter Should End](/courses/startup-school/new-season/dalton-michael-return) — ~7 min
+2. [Design a Series A Like a Product](/courses/startup-school/new-season/inside-standard-capital) — ~7 min
+3. [Be Impatient With Work, Patient With Outcomes](/courses/startup-school/new-season/founder-impatience-pre-agi) — ~7 min
+4. [Make Process Earn Its Keep](/courses/startup-school/new-season/process-vs-chaos) — ~7 min
+5. [Do Not Let a Funding Post Run Your Company](/courses/startup-school/new-season/fundraising-announcements) — ~7 min
+6. [Contract for the Advice You Need](/courses/startup-school/new-season/better-advice) — ~7 min
+7. [Real vs Fake Startups](/courses/startup-school/new-season/real-vs-fake-startups) — ~7 min
+8. [Is My Startup Growing Fast Enough?](/courses/startup-school/new-season/startup-growth-rate) — ~7 min
+9. [2025 Year In Review](/courses/startup-school/new-season/2025-year-in-review) — ~6 min
+10. [Standard Capital Update](/courses/startup-school/new-season/standard-capital-update) — ~6 min
+11. [Building A Big Company: Non-Obvious Insights](/courses/startup-school/new-season/building-a-big-company) — ~7 min
+12. [How Great Founders Approach Sales](/courses/startup-school/new-season/great-founders-sales) — ~6 min
+13. [Shockingly Good Predictions](/courses/startup-school/new-season/shockingly-good-predictions) — ~6 min
+14. [Slop vs Craft](/courses/startup-school/new-season/slop-vs-craft) — ~6 min
+15. [How To Get Unique AI Startup Ideas](/courses/startup-school/new-season/unique-ai-startup-ideas) — ~6 min
+16. [Zombie Startups: Should They Shut Down or Keep Going?](/courses/startup-school/new-season/zombie-startups) — ~6 min
+17. [How Great Founders Navigate Lawsuits & Regulation](/courses/startup-school/new-season/lawsuits-and-regulation) — ~8 min
+18. [Startup Founder Ethics](/courses/startup-school/new-season/founder-ethics) — ~7 min
+19. [5 Years of Dalton + Michael: What We've Learned Making Videos](/courses/startup-school/new-season/five-years-of-videos) — ~7 min
+20. [A Founders Guide To Selling Your Company](/courses/startup-school/new-season/selling-your-company) — ~8 min
+21. [How to Build an MVP in the AI Coding Era](/courses/startup-school/new-season/ai-era-mvp) — ~8 min
+22. [How Startups Close Million Dollar Deals](/courses/startup-school/new-season/million-dollar-deals) — ~7 min
+23. [How Startup Founders Actually Get Rich (Quick?)](/courses/startup-school/new-season/how-founders-get-rich) — ~7 min
+24. [How To Build A Successful Career In Tech: Where To Join, When To Leave](/courses/startup-school/new-season/tech-career-where-to-join-leave) — ~7 min
+25. [Cofounder Relationships](/courses/startup-school/new-season/cofounder-relationships) — ~7 min
+26. [Problems Money Can't Solve](/courses/startup-school/new-season/problems-money-cant-solve) — ~7 min
+27. [Why Doomers Are Wrong About AI](/courses/startup-school/new-season/ai-doomers) — ~7 min
+28. [The Secret Killer of Startups](/courses/startup-school/new-season/secret-killer-of-startups) — ~7 min
+29. [How to Spot a Terrorist in Your Startup](/courses/startup-school/new-season/spot-a-terrorist-in-startup) — ~7 min
+30. [How to Find Consumer Startup Ideas](/courses/startup-school/new-season/consumer-startup-ideas) — ~7 min
 
 ## Source and Method
 
 This course follows the public YouTube playlist
 [Dalton & Michael](https://www.youtube.com/playlist?list=PLQ-uHSnFig5Nd98Sc9I-kkc0ZWe8peRMC).
 The playlist currently exposes 58 positions: **49 accessible videos** and **9
-unavailable positions** (1–6, 8–9, and 37). The exact accessible-video duration,
-calculated from cached metadata, is **14 hr 26 min 28 sec**.
+unavailable positions** (1–6, 8–9, and 37). The supplemental startup-mechanics
+lesson comes from Stanford Online's 2017 lecture by YC CFO Kirsty Nathoo rather
+than the playlist. The newer
+[Dalton + Michael channel](https://www.youtube.com/@daltonplusmichael) adds **30
+accessible videos**, inventoried on August 24, 2026. The 80 accessible source
+videos total **24 hr 57 min 1 sec**.
 
 Video metadata and English subtitles were downloaded with `yt-dlp` for research.
 Raw subtitles are retained locally under the ignored
 `.cache/startup-playlist/subtitles/` directory and are not published. The site
 publishes original, concise lessons and exercises, not transcripts; descriptions
-and subtitles are used only to ground each lesson in its source. The source
-videos total **14 hr 26 min 28 sec**, but that optional viewing time is not
-included in the course reading time above.
+and subtitles are used only to ground each lesson in its source. Optional viewing
+time is not included in the course reading time above.
