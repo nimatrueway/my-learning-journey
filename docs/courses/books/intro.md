@@ -2,18 +2,18 @@
 sidebar_position: 1
 slug: /courses/books/
 title: Books
-description: Seven detailed book summaries on IKEA, Reid Hoffman, Steve Jobs, Elon Musk, company building, design, and careers.
+description: Eight detailed book summaries on IKEA, Reid Hoffman, Steve Jobs, Elon Musk, startup founders, company building, design, and careers.
 ---
 
 # 📚 Books
 
-Seven detailed summaries about company building, design, careers, and the people
+Eight detailed summaries about company building, design, careers, and the people
 who shaped consequential organizations. Read straight through for a broad study
 of strategy and leadership, or choose a subject below. Each summary preserves
 the book's reasoning, examples, tensions, and caveats rather than reducing it to
 a list of slogans.
 
-**~4 hr 32 min total** · seven chapter-by-chapter summaries
+**~5 hr 20 min total** · eight chapter-by-chapter summaries
 
 ## IKEA · ~1 hr 7 min
 
@@ -48,6 +48,15 @@ eventual return.
 Ashlee Vance traces Musk's childhood and early companies through the formative
 years of SpaceX, Tesla, and SolarCity, including the human costs and contested
 claims surrounding that ambition.
+
+## Founders at Work · ~48 min
+
+1. [Founders at Work](/courses/books/founders-at-work/founders-at-work) — ~48 min
+
+Jessica Livingston's interviews reconstruct the uncertain beginnings of PayPal,
+Hotmail, Apple, Gmail, Flickr, and many other startups, emphasizing pivots,
+craftsmanship, financing, persistence, and the operating reality hidden by later
+success.
 
 ## Reading method
 
