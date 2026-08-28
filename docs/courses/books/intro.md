@@ -2,18 +2,18 @@
 sidebar_position: 1
 slug: /courses/books/
 title: Books
-description: Eight detailed book summaries on IKEA, Reid Hoffman, Steve Jobs, Elon Musk, startup founders, company building, design, and careers.
+description: Nine detailed book summaries on IKEA, Reid Hoffman, Steve Jobs, Elon Musk, startup founders, founding teams, company building, design, and careers.
 ---
 
 # 📚 Books
 
-Eight detailed summaries about company building, design, careers, and the people
+Nine detailed summaries about company building, design, careers, and the people
 who shaped consequential organizations. Read straight through for a broad study
 of strategy and leadership, or choose a subject below. Each summary preserves
 the book's reasoning, examples, tensions, and caveats rather than reducing it to
 a list of slogans.
 
-**~5 hr 20 min total** · eight chapter-by-chapter summaries
+**~7 hr 27 min total** · nine chapter-by-chapter summaries
 
 ## IKEA · ~1 hr 7 min
 
@@ -33,9 +33,9 @@ founder's operating philosophy in his own prescriptive terms.
 These summaries move from scaling companies to adapting individual careers and
 then to rebuilding trust between employers and employees.
 
-## Steve Jobs · ~41 min
+## Steve Jobs · ~40 min
 
-1. [Return to the Little Kingdom](/courses/books/steve-jobs/return-to-the-little-kingdom) — ~41 min
+1. [Return to the Little Kingdom](/courses/books/steve-jobs/return-to-the-little-kingdom) — ~40 min
 
 Michael Moritz follows Apple from the histories of Jobs and Wozniak through the
 garage years, rapid growth, professionalization, conflict, decline, and Jobs's
@@ -49,14 +49,17 @@ Ashlee Vance traces Musk's childhood and early companies through the formative
 years of SpaceX, Tesla, and SolarCity, including the human costs and contested
 claims surrounding that ambition.
 
-## Founders at Work · ~48 min
+## Founders and Founding Teams · ~2 hr 56 min
 
-1. [Founders at Work](/courses/books/founders-at-work/founders-at-work) — ~48 min
+1. [Founders at Work](/courses/books/founders-at-work/founders-at-work) — ~1 hr 47 min
+2. [The Founder's Dilemmas](/courses/books/founders-and-founding-teams/the-founders-dilemmas) — ~1 hr 9 min
 
 Jessica Livingston's interviews reconstruct the uncertain beginnings of PayPal,
 Hotmail, Apple, Gmail, Flickr, and many other startups, emphasizing pivots,
 craftsmanship, financing, persistence, and the operating reality hidden by later
-success.
+success. Noam Wasserman complements those firsthand accounts with research on
+career timing, cofounder selection, roles, equity, hiring, investors, succession,
+and the recurring tradeoff between founder wealth and control.
 
 ## Reading method
 
