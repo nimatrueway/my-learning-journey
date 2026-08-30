@@ -2,18 +2,19 @@
 sidebar_position: 1
 slug: /courses/books/
 title: Books
-description: Nine detailed book summaries on IKEA, Reid Hoffman, Steve Jobs, Elon Musk, startup founders, founding teams, company building, design, and careers.
+description: Nine detailed book summaries and 234 Paul Graham essays on startups, company building, technology, design, writing, and careers.
 ---
 
 # 📚 Books
 
-Nine detailed summaries about company building, design, careers, and the people
-who shaped consequential organizations. Read straight through for a broad study
-of strategy and leadership, or choose a subject below. Each summary preserves
-the book's reasoning, examples, tensions, and caveats rather than reducing it to
-a list of slogans.
+Nine detailed book summaries and 234 Paul Graham essays about company building,
+technology, design, writing, careers, and the people who shaped consequential
+organizations. Read straight through for a broad study of strategy and
+leadership, or choose a subject below. Each summary preserves the book's
+reasoning, examples, tensions, and caveats rather than reducing it to a list of
+slogans.
 
-**~7 hr 27 min total** · nine chapter-by-chapter summaries
+**~55 hr 52 min total** · nine book summaries and 234 essays
 
 ## IKEA · ~1 hr 7 min
 
@@ -61,9 +62,16 @@ success. Noam Wasserman complements those firsthand accounts with research on
 career timing, cofounder selection, roles, equity, hiring, investors, succession,
 and the recurring tradeoff between founder wealth and control.
 
+## Paul Graham Essays · ~48 hr 25 min
+
+[Browse all 234 essays](/courses/books/paul-graham), ordered from the newest to
+the earliest. The collection spans startups, technology, programming languages,
+writing, ambition, work, and independent thought. Each page links back to its
+original source.
+
 ## Reading method
 
-These pages are summaries, not substitutes for the books. Use them to recover
-an argument, compare authors, or decide which original work deserves a deeper
-read. Claims and judgments belong to the named authors unless the summary
-explicitly marks a qualification or counterpoint.
+Use the summaries to recover an argument, compare authors, or decide which
+original work deserves a deeper read. The Paul Graham pages preserve the essay
+text and identify the original source. Claims and judgments belong to the named
+authors unless a page explicitly marks a qualification or counterpoint.
