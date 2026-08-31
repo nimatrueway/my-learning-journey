@@ -317,15 +317,16 @@ code {
   padding: 0.1em 0.3em;
   border: 0;
   border-radius: 0;
-  color: #c5c8c6;
-  background: #1d1f21;
+  color: var(--ifm-font-color-base);
+  background: var(--ifm-code-background);
 }
 
 pre,
 .prism-code {
   border: 0;
   border-radius: 0 !important;
-  background: #1d1f21 !important;
+  background: var(--ifm-code-background) !important;
+  color: var(--ifm-font-color-base);
 }
 
 blockquote {
