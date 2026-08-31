@@ -2,19 +2,19 @@
 sidebar_position: 1
 slug: /courses/books/
 title: Books
-description: Nine detailed book summaries and 234 Paul Graham essays on startups, company building, technology, design, writing, and careers.
+description: Ten detailed book summaries and 234 Paul Graham essays on startups, product-led growth, company building, technology, design, writing, and careers.
 ---
 
 # 📚 Books
 
-Nine detailed book summaries and 234 Paul Graham essays about company building,
-technology, design, writing, careers, and the people who shaped consequential
-organizations. Read straight through for a broad study of strategy and
-leadership, or choose a subject below. Each summary preserves the book's
-reasoning, examples, tensions, and caveats rather than reducing it to a list of
-slogans.
+Ten detailed book summaries and 234 Paul Graham essays about company building,
+product-led growth, technology, design, writing, careers, and the people who
+shaped consequential organizations. Read straight through for a broad study of
+strategy and leadership, or choose a subject below. Each summary preserves the
+book's reasoning, examples, tensions, and caveats rather than reducing it to a
+list of slogans.
 
-**~55 hr 52 min total** · nine book summaries and 234 essays
+**~56 hr 28 min total** · ten book summaries and 234 essays
 
 ## IKEA · ~1 hr 7 min
 
@@ -61,6 +61,14 @@ craftsmanship, financing, persistence, and the operating reality hidden by later
 success. Noam Wasserman complements those firsthand accounts with research on
 career timing, cofounder selection, roles, equity, hiring, investors, succession,
 and the recurring tradeoff between founder wealth and control.
+
+## Product-Led Growth · ~36 min
+
+1. [Product-Led Growth](/courses/books/product-led-growth/product-led-growth) — ~36 min
+
+Wes Bush explains how to choose a free-trial, freemium, demo, or hybrid model;
+align pricing and onboarding around customer outcomes; and improve expansion and
+retention without assuming that free access automatically creates value.
 
 ## Paul Graham Essays · ~48 hr 25 min
 

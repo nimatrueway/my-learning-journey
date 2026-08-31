@@ -56,12 +56,23 @@ not a directory of chapter pages.
 
 ## Procedure
 
-1. **Verify the source and destination first.** Confirm the exact book path,
+1. **Synchronize with GitHub before adding content.** Before extracting the
+   source, creating drafts, or editing published files, check `git status` and
+   the current branch. If a merge, rebase, cherry-pick, or other Git operation
+   is in progress, resolve or complete it first. Preserve existing user changes;
+   never discard them to obtain a clean tree. Once synchronization is safe,
+   run `git pull --ff-only` on the current branch. If local changes, divergence,
+   detached HEAD, authentication, or network access prevents a fast-forward
+   pull, stop content edits and resolve the Git state with the user. After the
+   pull succeeds, re-read the destination files because remote changes may have
+   altered module numbers, sidebar positions, catalog counts, or totals.
+
+2. **Verify the source and destination first.** Confirm the exact book path,
     inspect `docs/courses/books/intro.md`, and inspect the likely module's
     `_category_.json` and summaries. Do not assume a path, module, route, or
     sidebar position.
 
-2. **Inventory the book before drafting.** List every preface, introduction,
+3. **Inventory the book before drafting.** List every preface, introduction,
    part, chapter, appendix, and conclusion. Build an explicit source map that
    pairs each planned `##` section with its exact extracted source file or spine
    item. Record the central argument, important stories, evidence, tensions,
@@ -72,7 +83,7 @@ not a directory of chapter pages.
    space its substance requires; completeness and narrative context outrank
    brevity.
 
-3. **Extract into the ignored research cache.**
+4. **Extract into the ignored research cache.**
     - Prefer `ebook-convert` (Calibre) or `pandoc` for epub conversion.
     - If neither exists and installation is unavailable, unzip the epub, read its
        `.opf` manifest and spine, and strip HTML from spine items in reading order.
@@ -85,14 +96,14 @@ not a directory of chapter pages.
     - Preserve source material only in `.cache/book-summaries/<book-slug>/`.
        Do not publish raw third-party book text.
 
-4. **Draft and review one representative section first.** Choose a structurally
+5. **Draft and review one representative section first.** Choose a structurally
    demanding chapter with multiple stories, evidence, figures, or caveats. Draft
    it from its exact source and evidence ledger, then compare it back to the
    source before scaling. The sample passes only if it preserves the chapter's
    argument, causal sequence, memorable cases, counterevidence, and limits. A
    polished but shallow synopsis is a failed sample.
 
-5. **Draft remaining chapter sections independently.** Write temporary files as
+6. **Draft remaining chapter sections independently.** Write temporary files as
     `.cache/book-summaries/<book-slug>/chapters/NN-title.md`, each beginning with
    one `##` heading. Use flowing prose suitable for TTS. Preserve the author's
    reasoning and the sequence that makes it intelligible. Include the important
@@ -103,7 +114,7 @@ not a directory of chapter pages.
    judgments to the author. Use short verbatim quotations sparingly and only
    when the wording is verified; otherwise paraphrase.
 
-6. **Audit completeness before assembly.** Compare every draft against its own
+7. **Audit completeness before assembly.** Compare every draft against its own
    evidence ledger and exact source item. Check that named cases are explained,
    not merely listed; pivotal decisions include the options and constraints;
    empirical claims retain their population and limitations; and contradictory
@@ -112,13 +123,13 @@ not a directory of chapter pages.
    not authority: recheck every integrated detail against the primary extracted
    chapter, especially when several chapters were analyzed in one batch.
 
-7. **Assemble one Docusaurus document.** Copy and configure
+8. **Assemble one Docusaurus document.** Copy and configure
     [merge_chapters.sh](./scripts/merge_chapters.sh) in the book's cache folder,
     then run it to write the final page into `docs/courses/books/NN-subject/`.
     Review the assembled result for narrative continuity. Do not publish the
     temporary chapter files or merge script.
 
-8. **Normalize Markdown without rewriting prose.** Ensure every heading starts
+9. **Normalize Markdown without rewriting prose.** Ensure every heading starts
     on its own line and search for joined boundaries such as `.## Heading`.
     Escape currency dollar signs as `\$` so remark-math does not interpret prose
     between prices as inline math; do not escape genuine math delimiters. Avoid
@@ -126,7 +137,7 @@ not a directory of chapter pages.
     such as `**Quote:**`. Book summaries are reference pages and do not need
     widgets, exercises, recaps, or quizzes.
 
-9. **Update repository navigation and totals.**
+10. **Update repository navigation and totals.**
     - Add or update the module `_category_.json` when needed.
     - Add the book under its module in `docs/courses/books/intro.md`.
     - After the prose is complete, calculate its descriptive reading time at
@@ -136,7 +147,7 @@ not a directory of chapter pages.
     - Update the book and subject counts plus description in `docs/index.mdx`.
        The navbar/footer already link to the Books course and normally need no edit.
 
-10. **Validate the published result.** Audit heading boundaries and unescaped
+11. **Validate the published result.** Audit heading boundaries and unescaped
     currency first, then run `pnpm typecheck` and `pnpm build`. Confirm the new
     route exists under `build/`, the book appears in the generated module index
    and sidebar, and previous/next navigation resolves. Programmatically compare
