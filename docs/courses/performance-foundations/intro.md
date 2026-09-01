@@ -14,7 +14,7 @@ This course is about preparing someone to become more productive, more
 confident, more willing to take thoughtful risks, and more energetic, so they
 can perform better and pursue ambitious work.
 
-It begins with fourteen practical foundations:
+It begins with fifteen practical foundations:
 
 1. Strengthening focus and staying with effortful work.
 2. Acting despite fear of failure or embarrassment.
@@ -32,7 +32,9 @@ It begins with fourteen practical foundations:
     agreements without becoming their only regulator.
 13. Building an internal compass so long-term direction, controllable standards,
     and recovery skills matter more than noisy short-term validation.
-14. Evaluating supplements cautiously as optional support, not as substitutes
+14. Understanding why uncertainty and first tries feel easier for some people,
+    then training bounded experiments and recovery confidence.
+15. Evaluating supplements cautiously as optional support, not as substitutes
     for sleep, nutrition, exercise, or appropriate medical care.
 
 The aim is not constant intensity. It is to build repeatable ways to direct
@@ -66,7 +68,8 @@ early — it is the canonical home of the moves every lesson leans on (~5 min).
 11. [Signals, Spirals, and the Right Tool](/courses/performance-foundations/part-11-signals-and-tools) — ~9 min
 12. [Supporting an Anxious Partner](/courses/performance-foundations/part-12-supporting-an-anxious-partner) — ~10 min
 13. [Build an Internal Compass](/courses/performance-foundations/part-13-internal-compass) — ~10 min
-14. [Supplement Reference](/courses/performance-foundations/supplement-reference) — ~8 min, skimmable
+14. [Uncertainty and First Tries](/courses/performance-foundations/part-14-uncertainty-and-first-tries) — ~12 min
+15. [Supplement Reference](/courses/performance-foundations/supplement-reference) — ~8 min, skimmable
 
 :::note Educational scope
 The behavioral material is educational, not mental-health treatment. The

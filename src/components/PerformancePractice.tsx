@@ -69,6 +69,46 @@ export function RiskExperiment(): React.ReactElement {
   );
 }
 
+export function UncertaintyMap(): React.ReactElement {
+  const [attempt, setAttempt] = useState('Build a small tool with an unfamiliar API');
+  const [unknown, setUnknown] = useState('Whether the API supports the workflow I need');
+  const [nextStep, setNextStep] = useState('Test one request with sample data');
+  const [recovery, setRecovery] = useState('Read the error, search the docs, and ask one specific question');
+
+  return (
+    <div className={styles.widget}>
+      <h3>Turn uncertainty into a map</h3>
+      <label className={styles.control}>
+        First try
+        <input value={attempt} onChange={(event) => setAttempt(event.target.value)} />
+      </label>
+      <div className={styles.practiceGrid}>
+        <label className={styles.control}>
+          What is genuinely unknown?
+          <input value={unknown} onChange={(event) => setUnknown(event.target.value)} />
+        </label>
+        <label className={styles.control}>
+          Smallest controllable probe
+          <input value={nextStep} onChange={(event) => setNextStep(event.target.value)} />
+        </label>
+        <label className={styles.control}>
+          Recovery move if it fails
+          <input value={recovery} onChange={(event) => setRecovery(event.target.value)} />
+        </label>
+      </div>
+      <div className={styles.practiceResult}>
+        <strong>Attempt:</strong> {attempt || 'Name the first try.'}
+        <br /><strong>Not a verdict:</strong> The unknown is “{unknown || 'name the missing information'}.”
+        <br /><strong>Probe:</strong> {nextStep || 'Choose one action you control.'}
+        <br /><strong>If it goes badly:</strong> {recovery || 'Choose how you will recover and learn.'}
+      </div>
+      <p className={styles.statusLine}>
+        Confidence can arrive later. A next step and a recovery path are enough to begin.
+      </p>
+    </div>
+  );
+}
+
 const ACTIVATION_STEPS = [
   'Stand up',
   'Put on work shoes',

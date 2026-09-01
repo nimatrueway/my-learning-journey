@@ -9,7 +9,7 @@ import Meme from '@site/src/components/Meme';
 
 ⏱️ **~5 min** · reference — read once, revisit often
 
-Four techniques keep reappearing across this course because the same brain
+Five techniques keep reappearing across this course because the same brain
 runs all of these problems. This page is their canonical home: lessons give a
 one-line refresher and link here, and here is where the mechanics and the
 science live.
@@ -129,9 +129,28 @@ daily and with certainty; the promised cushioning against future disappointment
 is mostly illusory. Full mechanics and the recalibration protocol live in
 [Part V](/courses/performance-foundations/part-5-expecting-the-worst).
 
+## Uncertainty Mapping
+
+**What it is:** converting “I do not know how this will go” from a global alarm
+into a specific information gap, a bounded probe, and a recovery response.
+
+**The move:**
+
+1. Name what is genuinely unknown.
+2. Decide whether the choice is easy or difficult to reverse.
+3. For a reversible choice, run the cheapest test that can produce useful
+  evidence. For a difficult-to-reverse choice, gather evidence and install
+  safeguards first.
+4. Write what you will do if the attempt goes badly.
+
+The goal is not confidence that the outcome will be good. It is confidence
+that you can take a responsible next step and respond to what happens. Full
+mechanics and practice live in
+[Part XIV](/courses/performance-foundations/part-14-uncertainty-and-first-tries).
+
 ## How to Use This Page
 
 - Read it once early, then let the lessons send you back as needed.
 - Keep exactly one Evidence File.
 - When stuck, the order of operations is usually: defuse the thought, check
-  the file, shrink the next step, decline the insurance.
+  the file, map the unknown, shrink the next step, decline the insurance.
