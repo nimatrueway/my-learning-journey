@@ -411,6 +411,46 @@ export function HopeMap(): React.ReactElement {
   );
 }
 
+export function InternalCompass(): React.ReactElement {
+  const [direction, setDirection] = useState('Build tools that make difficult work easier');
+  const [evidence, setEvidence] = useState('People repeatedly use something I shipped');
+  const [standard, setStandard] = useState('Do one focused hour and ask one useful question');
+  const [signal, setSignal] = useState('A proposal was rejected');
+
+  return (
+    <div className={styles.widget}>
+      <h3>Turn a distant vision into today's compass</h3>
+      <div className={styles.practiceGrid}>
+        <label className={styles.control}>
+          Direction worth years of effort
+          <input value={direction} onChange={(event) => setDirection(event.target.value)} />
+        </label>
+        <label className={styles.control}>
+          Observable evidence of progress
+          <input value={evidence} onChange={(event) => setEvidence(event.target.value)} />
+        </label>
+        <label className={styles.control}>
+          Standard you control today
+          <input value={standard} onChange={(event) => setStandard(event.target.value)} />
+        </label>
+        <label className={styles.control}>
+          Noisy external signal
+          <input value={signal} onChange={(event) => setSignal(event.target.value)} />
+        </label>
+      </div>
+      <div className={styles.practiceResult}>
+        <strong>Direction:</strong> {direction || 'Name what you want to build toward.'}
+        <br /><strong>Evidence:</strong> {evidence || 'Name something observable, not applause.'}
+        <br /><strong>Today's score:</strong> Did I {standard || 'keep one controllable standard'}?
+        <br /><strong>Signal, not sentence:</strong> “{signal || 'Something did not go as hoped'}” may change the route; it does not decide my worth.
+      </div>
+      <p className={styles.statusLine}>
+        A compass supplies direction. Reality still gets a vote on the route.
+      </p>
+    </div>
+  );
+}
+
 const SIGNAL_TOOLS = {
   body: {
     label: 'Body: wired, heavy, tense, restless, or exhausted',
