@@ -1,9 +1,11 @@
 ---
 id: home
 slug: /
-title: Courses
+title: Contents
 sidebar_position: 1
 ---
+
+import RecentModules from '@site/src/components/RecentModules';
 
 <header className="journeyHero">
   <div className="journeyEyebrow">A growing course library</div>
@@ -14,7 +16,11 @@ sidebar_position: 1
   </div>
 </header>
 
-## Current courses
+## Recently accessed modules
+
+<RecentModules />
+
+## Courses
 
 <div className="courseGrid">
   <a className="courseCard" href="courses/deep-learning/">
@@ -38,6 +44,11 @@ sidebar_position: 1
     <div className="courseDescription">Founder reality, customer learning, capital, incentives, resilience, and execution through source-grounded video lessons.</div>
     <strong>Start course →</strong>
   </a>
+</div>
+
+## Contents
+
+<div className="courseGrid">
   <a className="courseCard" href="courses/calculator/">
     <span className="courseNumber">04 · 🧮</span>
     <span className="courseStatus">Growing · 2 calculators</span>

@@ -1,7 +1,11 @@
-import React, {useId, useState} from 'react';
+import React, {useId} from 'react';
+import usePersistentState from './usePersistentState';
 import styles from './widgets.module.css';
 
 type Mode = 'money' | 'users';
+
+const isMode = (value: unknown): value is Mode => value === 'money' || value === 'users';
+const isFiniteNumber = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
 
 const W = 560;
 const H = 280;
@@ -99,10 +103,14 @@ function GrowthChart({compound, baseline, xEnd, xUnit, ariaLabel, compoundLabel,
 }
 
 function MoneyMode(): React.ReactElement {
-  const [principal, setPrincipal] = useState(10000);
-  const [ratePct, setRatePct] = useState(7);
-  const [years, setYears] = useState(20);
-  const [contribution, setContribution] = useState(200);
+  const [principal, setPrincipal] = usePersistentState('calculator:compound-growth:money:principal', 10000, isFiniteNumber);
+  const [ratePct, setRatePct] = usePersistentState('calculator:compound-growth:money:rate', 7, isFiniteNumber);
+  const [years, setYears] = usePersistentState('calculator:compound-growth:money:years', 20, isFiniteNumber);
+  const [contribution, setContribution] = usePersistentState(
+    'calculator:compound-growth:money:contribution',
+    200,
+    isFiniteNumber,
+  );
 
   const valid = principal >= 0 && principal <= 1e9
     && ratePct >= 0 && ratePct <= 50
@@ -176,9 +184,9 @@ function MoneyMode(): React.ReactElement {
 }
 
 function UsersMode(): React.ReactElement {
-  const [startUsers, setStartUsers] = useState(100);
-  const [weeklyPct, setWeeklyPct] = useState(5);
-  const [weeks, setWeeks] = useState(104);
+  const [startUsers, setStartUsers] = usePersistentState('calculator:compound-growth:users:start', 100, isFiniteNumber);
+  const [weeklyPct, setWeeklyPct] = usePersistentState('calculator:compound-growth:users:rate', 5, isFiniteNumber);
+  const [weeks, setWeeks] = usePersistentState('calculator:compound-growth:users:weeks', 104, isFiniteNumber);
 
   const valid = startUsers >= 1 && startUsers <= 1e9
     && weeklyPct >= 0 && weeklyPct <= 50
@@ -243,7 +251,7 @@ function UsersMode(): React.ReactElement {
 }
 
 export default function CompoundGrowthCalculator(): React.ReactElement {
-  const [mode, setMode] = useState<Mode>('money');
+  const [mode, setMode] = usePersistentState<Mode>('calculator:compound-growth:mode', 'money', isMode);
   return (
     <section className={styles.widget} aria-labelledby="compound-growth-title">
       <h2 id="compound-growth-title" className={styles.widgetTitle}>Compound growth calculator</h2>

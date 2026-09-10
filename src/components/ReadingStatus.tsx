@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {useLocation} from '@docusaurus/router';
 import {useDocsSidebar} from '@docusaurus/plugin-content-docs/client';
 import type {PropSidebarItem, PropSidebarItemCategory} from '@docusaurus/plugin-content-docs';
+import {recordRecentModule} from './RecentModules';
 
 const normalize = (path: string) => path.replace(/\/+$/, '');
 
@@ -150,6 +151,7 @@ export default function ReadingStatus(): React.ReactElement | null {
 
   useEffect(() => {
     if (!sidebar) return;
+    recordRecentModule(sidebar.items, pathname);
     const update = () => updateSidebarProgress(sidebar.items);
     const frame = requestAnimationFrame(update);
     window.addEventListener('reading-progress-updated', update);

@@ -8,6 +8,7 @@ import {
   weightForLengthBoy,
   weightForLengthGirl,
 } from '@site/src/data/whoGrowthStandards';
+import usePersistentState from './usePersistentState';
 import styles from './widgets.module.css';
 
 type GrowthSex = 'girl' | 'boy';
@@ -16,6 +17,9 @@ type InfantAgeUnit = 'months' | 'weeks';
 const PERCENTILE_15_Z = -1.036433389;
 const PERCENTILE_85_Z = 1.036433389;
 const REFERENCE_LINES = [PERCENTILE_15_Z, 0, PERCENTILE_85_Z] as const;
+const isGrowthSex = (value: unknown): value is GrowthSex => value === 'girl' || value === 'boy';
+const isInfantAgeUnit = (value: unknown): value is InfantAgeUnit => value === 'months' || value === 'weeks';
+const isFiniteNumber = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
 
 function interpolate(rows: readonly GrowthRow[], x: number): GrowthRow {
   if (x <= rows[0][0]) return rows[0];
@@ -187,11 +191,15 @@ export default function InfantGrowthCalculator(): React.ReactElement {
   const ageId = useId();
   const lengthId = useId();
   const weightId = useId();
-  const [sex, setSex] = useState<GrowthSex>('girl');
-  const [ageUnit, setAgeUnit] = useState<InfantAgeUnit>('months');
-  const [ageMonths, setAgeMonths] = useState(6);
-  const [length, setLength] = useState(65);
-  const [weight, setWeight] = useState(7);
+  const [sex, setSex] = usePersistentState<GrowthSex>('calculator:body-measures:baby:sex', 'girl', isGrowthSex);
+  const [ageUnit, setAgeUnit] = usePersistentState<InfantAgeUnit>(
+    'calculator:body-measures:baby:age-unit',
+    'months',
+    isInfantAgeUnit,
+  );
+  const [ageMonths, setAgeMonths] = usePersistentState('calculator:body-measures:baby:age-months', 6, isFiniteNumber);
+  const [length, setLength] = usePersistentState('calculator:body-measures:baby:length', 65, isFiniteNumber);
+  const [weight, setWeight] = usePersistentState('calculator:body-measures:baby:weight', 7, isFiniteNumber);
   const displayedAge = ageUnit === 'months'
     ? Number(ageMonths.toFixed(1))
     : Math.round(ageMonths * 30.4375 / 7);

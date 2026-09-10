@@ -50,7 +50,7 @@ const config: Config = {
   ],
 
   plugins: [
-    [
+    process.env.NODE_ENV === 'production' && [
       '@docusaurus/plugin-pwa',
       {
         offlineModeActivationStrategies: ['appInstalled', 'standalone', 'queryString'],
@@ -96,17 +96,43 @@ const config: Config = {
       items: [
         {
           type: 'dropdown',
-          label: '☰ Courses',
+          label: '☰ Contents',
           position: 'left',
           items: [
-            {to: '/', label: 'All courses'},
-            {to: '/courses/books/', label: '📚 Books'},
-            {to: '/courses/deep-learning/', label: '😼 Deep Learning'},
+            {to: '/', label: 'All contents'},
             {
-              to: '/courses/performance-foundations/',
-              label: '⚡ Performance Foundations',
+              type: 'html',
+              className: 'contentsNestedGroup',
+              value: `
+                <details>
+                  <summary>Courses</summary>
+                  <div class="contentsNestedLinks">
+                    <a href="/my-learning-journey/courses/deep-learning/">😼 Deep Learning</a>
+                    <a href="/my-learning-journey/courses/performance-foundations/">⚡ Performance Foundations</a>
+                    <a href="/my-learning-journey/courses/startup-school/">🚀 Startup School</a>
+                  </div>
+                </details>
+              `,
             },
-            {to: '/courses/startup-school/', label: '🚀 Startup School'},
+            {
+              type: 'html',
+              className: 'contentsNestedGroup',
+              value: `
+                <details>
+                  <summary>📚 Books</summary>
+                  <div class="contentsNestedLinks">
+                    <a href="/my-learning-journey/courses/books/">All books</a>
+                    <a href="/my-learning-journey/category/1-ikea">1. IKEA</a>
+                    <a href="/my-learning-journey/category/2-reid-hoffman">2. Reid Hoffman</a>
+                    <a href="/my-learning-journey/category/3-steve-jobs">3. Steve Jobs</a>
+                    <a href="/my-learning-journey/category/4-elon-musk">4. Elon Musk</a>
+                    <a href="/my-learning-journey/category/5-founders-and-founding-teams">5. Founders and Founding Teams</a>
+                    <a href="/my-learning-journey/courses/books/paul-graham">6. Paul Graham Essays</a>
+                    <a href="/my-learning-journey/category/6-product-led-growth">6. Product-Led Growth</a>
+                  </div>
+                </details>
+              `,
+            },
             {to: '/courses/calculator/', label: '🧮 Calculator'},
           ],
         },
@@ -136,16 +162,16 @@ const config: Config = {
       style: 'dark',
       links: [
         {
-          title: 'Learn',
+          title: 'Contents',
           items: [
-            {label: 'All courses', to: '/'},
-            {label: '📚 Books', to: '/courses/books/'},
+            {label: 'All contents', to: '/'},
             {label: '😼 Deep Learning', to: '/courses/deep-learning/'},
             {
               label: '⚡ Performance Foundations',
               to: '/courses/performance-foundations/',
             },
             {label: '🚀 Startup School', to: '/courses/startup-school/'},
+            {label: '📚 Books', to: '/courses/books/'},
             {label: '🧮 Calculator', to: '/courses/calculator/'},
           ],
         },

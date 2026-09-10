@@ -1,9 +1,15 @@
-import React, {useId, useState} from 'react';
+import React, {useId} from 'react';
 import InfantGrowthCalculator from './InfantGrowthCalculator';
+import usePersistentState from './usePersistentState';
 import styles from './widgets.module.css';
 
 const SCALE_MIN = 10;
 const SCALE_MAX = 40;
+
+type CalculatorMode = 'bmi' | 'baby';
+
+const isCalculatorMode = (value: unknown): value is CalculatorMode => value === 'bmi' || value === 'baby';
+const isFiniteNumber = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
 
 function getAdultCategory(bmi: number): string {
   if (bmi < 18.5) return 'Below the healthy-weight range';
@@ -13,13 +19,13 @@ function getAdultCategory(bmi: number): string {
 }
 
 export default function BMICalculator(): React.ReactElement {
-  const [mode, setMode] = useState<'bmi' | 'baby'>('bmi');
+  const [mode, setMode] = usePersistentState<CalculatorMode>('calculator:body-measures:mode', 'bmi', isCalculatorMode);
   const ageId = useId();
   const heightId = useId();
   const weightId = useId();
-  const [age, setAge] = useState(30);
-  const [height, setHeight] = useState(175);
-  const [weight, setWeight] = useState(70);
+  const [age, setAge] = usePersistentState('calculator:body-measures:bmi:age', 30, isFiniteNumber);
+  const [height, setHeight] = usePersistentState('calculator:body-measures:bmi:height', 175, isFiniteNumber);
+  const [weight, setWeight] = usePersistentState('calculator:body-measures:bmi:weight', 70, isFiniteNumber);
 
   const valid = age >= 2 && age <= 120 && height >= 50 && height <= 250
     && weight >= 10 && weight <= 400;
