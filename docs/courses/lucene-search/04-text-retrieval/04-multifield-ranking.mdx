@@ -1,0 +1,120 @@
+---
+sidebar_position: 4
+slug: /courses/lucene-search/multifield-ranking
+title: Multi-Field Search and Boosting
+description: Compare summed field evidence with DisjunctionMaxQuery and keep boosts separate from eligibility.
+---
+
+import LuceneDecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+A title is usually more focused than a body. But copying the title into three
+other fields should not automatically make an article three times more useful.
+
+⏱️ **Reading + practice: ~9 min** · folds are optional extra.
+
+<Meme top="The cat copied one fact into three fields." visual="😼📚" bottom="Three mentions are not automatically three independent reasons. Choose sum versus DisMax deliberately." />
+
+## Decide how evidence combines
+
+Searching title and body requires two decisions: which fields may match, and
+how their score contributions combine. A Boolean query with `SHOULD` clauses
+can sum matching contributions. `DisjunctionMaxQuery` instead uses the highest
+subquery score plus a tie-breaker fraction of the other matching scores. A tie
+parameter of zero takes only the best; a parameter of one yields the sum.
+
+Neither choice is universally correct. Summation rewards agreement across
+independent fields, but duplicate evidence can dominate. Best-field behavior is
+often useful when title, summary, and body represent overlapping descriptions.
+The scores themselves still depend on field-specific term statistics and norms;
+a multiplier is not a portable probability of relevance.
+
+## Run the title/body comparison
+
+Run `FullTextLab multifield` using [the advanced setup](../advanced-labs.mdx).
+It returns A before B for `bicycle` using:
+
+```java
+Query query = new DisjunctionMaxQuery(List.of(
+    new BoostQuery(new TermQuery(new Term("title", "bicycle")), 3),
+    new TermQuery(new Term("body", "bicycle"))), 0.1f);
+```
+
+A's title is `Bicycle repairs`; B's title is `Travel guide`. Both bodies match,
+but A also has the stronger title signal. The lab wraps the query with the same
+public-access filter as other feature modes. A perfect private title is still
+ineligible. A boost never substitutes for authorization.
+
+This fragment uses already normalized exact terms. For a real text input,
+`MultiFieldQueryParser` can analyze clauses across configured fields with boosts,
+or you can use `QueryBuilder` and assemble the field queries yourself. Explicit
+construction gives you control over best-field versus summed evidence and
+required clauses. Inspect what the parser actually builds before assigning a
+product meaning to its defaults.
+
+## Rehearse duplicated evidence
+
+Imagine the same title copied into title, summary, and tags. Choose how to
+combine their scores. These are qualitative outcomes; run your judged queries
+before choosing a tie-breaker.
+
+<LuceneDecisionLab title="One fact in three fields" label="Combination rule" choices={[
+  {label: 'Sum every field contribution', result: 'An article can gain from matching the duplicated content repeatedly.', cost: 'This may reward schema duplication rather than independent evidence.'},
+  {label: 'Best field only', result: 'The strongest field determines the combined contribution.', cost: 'Useful corroboration in other fields contributes nothing.'},
+  {label: 'Best field plus a small tie contribution', result: 'The best match dominates while secondary matches provide limited support.', cost: 'The tie parameter is still a tuning choice requiring evaluation.'},
+]} />
+
+## Analysis and field boundaries
+
+Keep exact identifiers in exact fields and prose in analyzed fields. A title
+analyzer may differ from body analysis, but every query branch must produce
+compatible terms for its target. A phrase cannot magically cross title and body
+simply because both are part of the document. If a combined field is needed,
+define it at ingestion and understand its length and positional semantics.
+
+Multiple values of one text field also raise position-gap questions. Values are
+not automatically separate nested objects. Decide whether a phrase may span
+values and configure the analyzer's position increment gap appropriately. For
+related attributes such as color and size, a gap does not solve tuple integrity;
+the block-join lesson addresses that different problem.
+
+## Try it yourself 🧪
+
+Change the tie-breaker from 0.1 to zero and then one. Print `searcher.explain`
+for A and B from the same reader and locate the best-field and secondary terms.
+Next copy `bicycle` into B's title and compare again. Do not demand that a
+specific boost always gives a fixed score margin after changing corpus statistics.
+
+Write six intent-specific judgments: three title-oriented lookups and three
+questions answered only in the body. Tune on four and hold two aside. If title
+boosting helps navigational queries but suppresses detailed answers, report the
+tradeoff by query type instead of hiding it in one average.
+
+<details>
+<summary>🤓 Business signals are another layer (optional)</summary>
+
+Freshness, popularity, and quality can influence ranking, but first decide whether
+they are gates, sort keys, or scoring features. A legal publication date filter
+is not equivalent to a freshness boost. Multiplying text relevance by unbounded
+popularity can bury new content. Calibrate features with judgments, retain a
+lexical baseline, and inspect failure cases before reaching for a learned ranker.
+
+</details>
+
+## Recap 🐾
+
+1. Multi-field matching and field-score combination are separate choices.
+2. DisjunctionMaxQuery limits secondary contributions; boosts do not enforce eligibility.
+3. Field analysis, phrase boundaries, and query intent determine whether a ranking rule is useful.
+
+<Quiz question="What does a zero tie-breaker do in DisjunctionMaxQuery?" options={[
+  {text: 'Use only the highest matching subquery score.', correct: true, feedback: 'Correct. Other matching fields add no secondary contribution.'},
+  {text: 'Require every field to match.', feedback: 'This is a scoring combination parameter, not an AND operator.'},
+  {text: 'Make all document scores zero.', feedback: 'The best subquery score remains.'},
+]} />
+
+## References
+
+[DisjunctionMaxQuery](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/search/DisjunctionMaxQuery.html)
+and [MultiFieldQueryParser](https://lucene.apache.org/core/10_3_1/queryparser/org/apache/lucene/queryparser/classic/MultiFieldQueryParser.html).

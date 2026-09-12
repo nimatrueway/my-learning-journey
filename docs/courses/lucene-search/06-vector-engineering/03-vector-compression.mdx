@@ -1,0 +1,116 @@
+---
+sidebar_position: 3
+slug: /courses/lucene-search/vector-compression
+title: Vector Compression and Quantization
+description: Measure scalar quantization without confusing coordinate payload, total index size, model precision, and recall.
+---
+
+import LuceneDecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+Someone promises an eight-times smaller vector index by dividing 32 by 4.
+That arithmetic describes one coordinate encoding, not necessarily the index
+your process will store, map, or search.
+
+⏱️ **Reading + practice: ~9 min** · folds are optional extra.
+
+<Meme top="Smaller box. Same cat. Extra box containing the original cat." visual="🐱📦📦" bottom="Compressed coordinates do not guarantee a smaller total index when originals and graph data remain." />
+
+## What gets compressed?
+
+A float vector has roughly four bytes per coordinate before surrounding index
+structures. Scalar quantization maps coordinate ranges into fewer representable
+levels, introducing rounding and potentially clipping. Similarity computation
+must account for that encoding; casting arbitrary float coordinates directly to
+Java bytes does not reproduce Lucene's scalar-quantized format.
+
+The whole index also contains the HNSW graph, IDs, metadata, text, segment headers,
+and potentially original vectors retained for other operations. An encoding can
+reduce the active vector representation while total on-disk bytes stay similar
+or increase. Heap use, mapped file size, resident pages, and disk usage are four
+different measurements. Do not advertise one as another.
+
+## Run a controlled comparison
+
+Use the [vector benchmark](../advanced-labs.mdx) with identical corpus, graph
+settings, filter, and query vectors:
+
+```bash
+mvn -q compile exec:java -Dexec.mainClass=VectorLab -Dexec.args="benchmark 16 100"
+mvn -q compile exec:java -Dexec.mainClass=VectorLab -Dexec.args="benchmark 16 100 quantized"
+```
+
+The second command selects `Lucene99HnswScalarQuantizedVectorsFormat(16, 100)`.
+This constructor uses the pinned implementation's scalar-quantization defaults;
+it does not select every possible bit width or compression feature. In this
+version the default is 7-bit scalar quantization, not the hypothetical 4-bit
+marketing arithmetic from the hook. Codec APIs are version-specific.
+
+Both runs retain the original float arrays outside the index for the exact
+baseline. That baseline compares original vectors, not quantized vectors against
+themselves. Report recall changes along with query time, build time, and total
+index bytes. The laboratory uses `ByteBuffersDirectory`, so its byte count is
+serialized index size, not a process resident-memory measurement.
+
+<LuceneDecisionLab title="What proves a compression win?" label="Evidence" choices={[
+  {label: 'Only the coordinate bit width', result: 'You know a representation-level ratio.', cost: 'Graph, originals, metadata, quality, and actual memory use remain unmeasured.'},
+  {label: 'Bytes, recall, and latency under the same workload', result: 'The comparison exposes resource savings and retrieval loss together.', cost: 'Production memory and I/O still require a representative persistent benchmark.'},
+  {label: 'Compare quantized retrieval to its own quantized exact baseline only', result: 'You can isolate graph error within the compressed space.', cost: 'You miss distortion relative to the original embedding space unless you also compare there.'},
+]} />
+
+## Separate two kinds of loss
+
+Approximate graph navigation can miss neighbors even with full-precision vectors.
+Quantization changes the score representation and may reorder close neighbors.
+A compressed ANN result combines both effects. Comparing float ANN, quantized
+ANN, and exact original floats helps identify the overall tradeoff, but does
+not perfectly attribute each miss to a single mechanism.
+
+Some systems retrieve broadly with compressed vectors and rescore candidates with
+original vectors. That can repair ordering inside the candidate pool, not recover
+neighbors that never entered it. Keep original-vector rescoring distinct from
+cross-encoder reranking: the former uses the same embedding similarity, while
+the latter reads query and text together with a different model.
+
+The local model script also uses q8 neural-network weights. That is inference
+precision, separate from this Lucene index encoding. To measure their effects,
+hold the generated embeddings constant while varying the codec, then hold the
+codec constant while comparing model precision under relevance judgments.
+
+## Try it yourself 🧪
+
+Run the paired commands three times. Predict which quantity should decrease,
+then inspect whether it actually did. List the files in each directory before
+closing it and group their sizes by extension to see which structures dominate.
+Do not conclude that compression is broken merely because retained originals
+increase total bytes. Decide a recall floor before choosing a configuration,
+and add a larger candidate-pool experiment only as a separately labeled change.
+
+<details>
+<summary>🤓 Other compression families (optional)</summary>
+
+Product quantization partitions dimensions into subspaces and represents each
+subvector through a learned codebook. Binary representations use still different
+distance and reconstruction choices. These are not interchangeable flags on the
+particular Lucene constructor used here. Start with the supported pinned codec,
+then investigate another method only with its own implementation, baseline,
+training requirements, and compatibility constraints made explicit.
+
+</details>
+
+## Recap 🐾
+
+1. Quantization compresses a representation; total index and resident-memory savings need measurement.
+2. Compare compressed retrieval against original-float exact neighbors to expose overall loss.
+3. Model-weight precision, index quantization, and downstream rescoring are distinct choices.
+
+<Quiz question="Why can a scalar-quantized index use more total bytes than an unquantized one?" options={[
+  {text: 'It may retain original vectors alongside compressed data and graph metadata.', correct: true, feedback: 'Correct. A smaller active representation does not imply a smaller sum of every file.'},
+  {text: 'Cosine similarity requires storing every query forever.', feedback: 'Query retention is not required by cosine search.'},
+  {text: 'Compression guarantees lower recall, so bytes must increase.', feedback: 'Quality and storage have tradeoffs, but this is not a mathematical implication.'},
+]} />
+
+## References
+
+[Scalar-quantized HNSW format](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/codecs/lucene99/Lucene99HnswScalarQuantizedVectorsFormat.html).

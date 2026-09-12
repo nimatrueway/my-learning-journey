@@ -1,0 +1,5 @@
+{
+  "label": "3. Hybrid Search & Production",
+  "position": 3,
+  "link": {"type": "generated-index", "description": "Combine retrievers, measure usefulness, and operate a changing index."}
+}

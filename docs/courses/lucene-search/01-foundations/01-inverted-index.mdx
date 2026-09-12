@@ -1,0 +1,129 @@
+---
+sidebar_position: 1
+slug: /courses/lucene-search/inverted-index
+title: The Inverted Index
+description: Understand terms, postings, positions, and the boundary between matching and ranking.
+---
+
+import LucenePostingsLab from '@site/src/components/LucenePostingsLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+You search for "bicycle repair". A useful page says "fix a flat wheel" and never
+appears. Before blaming the ranking algorithm, ask a more basic question:
+did that page enter the candidate set at all?
+
+⏱️ **Reading + practice: ~9 min** · folds are optional extra.
+
+<Meme top="The search cat demands the missing article." visual="🐱🔎" bottom="First check the postings. Hissing at the ranking function is step never." />
+
+## Turn the lookup around
+
+A document database often starts with an ID and retrieves its contents. A search
+index also needs the reverse direction: start with a term and find the documents
+containing it. That reverse mapping is an **inverted index**.
+
+Imagine three short help articles. After simple lowercasing and tokenization,
+article A contains `repair a bicycle tire`; B contains `bicycle repair tools`;
+C contains `fix a flat wheel`. The term `bicycle` points to A and B. Those entries
+are its **postings list**. A posting can include the document ID, term frequency,
+and positions, depending on the field's indexing options.
+
+The query `bicycle repair` can union two lists for OR, intersect them for AND,
+or inspect positions to require a phrase. These are different requests, even
+though the text box contains the same words. Lucene does not read your mind;
+your query construction chooses the meaning.
+
+## Rehearse the lookup
+
+Switch between both terms and exact phrase. Predict the result before changing
+the control. Then inspect `repair` and `bicycle`: why is B a phrase match but A
+isn't? Positions here start at zero. The widget uses fixed, pre-tokenized English
+examples; it is an illustration, not a browser implementation of Lucene analysis.
+
+<LucenePostingsLab />
+
+Neither Boolean mode retrieves C. Ranking can reorder A and B, but it cannot
+rescue a document that did not match. Synonym expansion or vector retrieval can
+change that candidate set. They solve a different problem from adjusting a score.
+
+## A tiny Lucene query
+
+Given an open `IndexSearcher` and a `body` field indexed with lowercased tokens,
+this Java fragment requests both exact indexed terms:
+
+```java
+Query query = new BooleanQuery.Builder()
+    .add(new TermQuery(new Term("body", "bicycle")), BooleanClause.Occur.MUST)
+    .add(new TermQuery(new Term("body", "repair")), BooleanClause.Occur.MUST)
+    .build();
+TopDocs hits = searcher.search(query, 10);
+```
+
+`Query`, `BooleanQuery`, `BooleanClause`, `TermQuery`, and `TopDocs` live in
+`org.apache.lucene.search`; `Term` lives in `org.apache.lucene.index`.
+This is a fragment, not a complete application. The next lesson builds the
+writer, reader, and searcher that make it runnable.
+
+`TermQuery` does not run an analyzer. The term must already match what the index
+contains. Searching for `Bicycle` with a capital B will miss a lowercased term.
+That is not a scoring bug either: the lookup key is different.
+
+## Lucene's place in the system
+
+Lucene gives a Java application indexing and retrieval primitives. A `Directory`
+abstracts index storage. An `IndexWriter` adds and changes documents. An
+`IndexReader` provides a view of the index; an `IndexSearcher` executes queries
+against that view. These are not HTTP services, and opening a reader does not
+create a distributed cluster.
+
+Elasticsearch, OpenSearch, and Solr build search-server capabilities around
+Lucene, with their own APIs and behavior. Learning Lucene explains many of their
+mechanisms, but a server-specific setting is not automatically a Lucene API.
+In this course we stay inside one Java process so you can see the mechanism
+before adding distributed-system concerns.
+
+## Try it yourself 🧪
+
+On paper, add document D: `bicycle tire repair`. Write the new postings for
+`bicycle` and `repair`, including positions. Predict which documents match OR,
+AND, and the exact phrase `bicycle repair`. Finally, change D to
+`bicycle repair repair` and count its term frequency for `repair`.
+
+Check your work: D joins both Boolean result sets but not the original phrase
+result set. After the change it matches the phrase, and `repair` has frequency
+two. Frequency describes how often a term occurs; positions describe where.
+Neither guarantees that the article actually solves the user's problem.
+
+<details>
+<summary>🤓 Inside a segment (optional)</summary>
+
+Lucene writes index data into segments. Each segment has its own term dictionary
+and postings, and search combines results across segments. The dictionary helps
+locate a term; compressed postings and skip structures help avoid scanning every
+document. Actual work still depends on the query and corpus: a very common term
+can have a long list, while phrase queries require additional position checks.
+
+Internal document IDs are addresses within a reader's view, not durable business
+identities. Merges and reopening can change them. Store a separate stable ID
+such as `article-42` for updates, links, and evaluation judgments.
+
+</details>
+
+## Recap 🐾
+
+1. An inverted index maps terms to documents, with optional frequencies and positions.
+2. Boolean and phrase queries choose candidates; ranking orders those candidates.
+3. Lucene is an embedded library, and exact-term queries expect already analyzed terms.
+
+<Quiz question="The perfect article contains only 'fix a flat wheel'. Why won't a bicycle AND repair query retrieve it?" options={[
+  {text: 'Its score is below zero.', feedback: 'The problem occurs before ranking: neither required term matches.'},
+  {text: 'It is absent from the required postings lists.', correct: true, feedback: '😼 Found the culprit. An absent candidate cannot climb the ranking. Fix retrieval first.'},
+  {text: 'Lucene needs a larger result limit.', feedback: 'A larger limit returns more matches, not nonmatching documents.'},
+]} />
+
+## References
+
+Original teaching example, grounded in the Apache Lucene
+[core overview](https://lucene.apache.org/core/10_3_1/core/index.html) and
+[TermQuery API](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/search/TermQuery.html).

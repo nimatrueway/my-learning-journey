@@ -1,9 +1,14 @@
 ---
-description: "Use when creating, expanding, or revising courses, modules, lessons, MDX widgets, quizzes, syllabi, or course catalog entries in this learning site."
-applyTo: "docs/courses/**,src/components/**"
+description: "Use when creating, expanding, or revising courses, modules, lessons, MDX widgets, quizzes, syllabi, course navigation, or catalog entries. Requires this learning site's visual theme, playful cat-and-emoji teaching style, and rendered style checks."
+applyTo: "docs/courses/**,docs/index.mdx,src/components/**,src/css/custom.css,src/theme/**,docusaurus.config.ts,sidebars.ts,navigation.ts"
 ---
 
 # Course Authoring Conventions
+
+For new teaching courses or substantial expansions, load
+[the course-authoring skill](../skills/course-authoring/SKILL.md). This file is
+the shared style contract; the skill supplies the workflow. Book summaries use
+their dedicated skill and the reference-page exceptions below.
 
 ## Product Direction
 
@@ -19,6 +24,9 @@ applyTo: "docs/courses/**,src/components/**"
 - Keep courses independently expandable under `docs/courses/<course-slug>/`.
   Use `_category_.json` for labels, position, and the course landing document.
 - Add new courses to the catalog in `docs/index.mdx` and the footer when useful.
+- Technical accuracy and a working build are necessary but not sufficient:
+  a dry, visually inconsistent course fails the acceptance criteria. Preserve
+  the site's playful teaching identity from the first draft, not as a final pass.
 
 ## Lesson Template
 
@@ -30,7 +38,11 @@ Each teaching lesson should normally follow this sequence:
    (~200 wpm plus widget/quiz time); do not guess. Repeat the time next to the
    lesson's entry in the course intro or syllabus list. Label references
    honestly (e.g. `~5 min · read once, revisit often`).
-3. **Epigraph:** When an exact, accurately attributed quote materially improves
+3. **Attention reset:** For ordinary technical teaching lessons, include a short,
+  original, lesson-specific cat-themed `<Meme/>` after the hook/time badge or at
+  a natural conceptual transition. The joke must reinforce a misconception or
+  tradeoff; it must not replace the explanation. Follow the Flavor Kit exceptions
+  for sensitive subjects and reference pages. When a verified epigraph also improves
   the lesson, use one from an entrepreneur, builder, or domain expert. Omit the
   epigraph when wording or speaker identity cannot be verified. Never invent,
   silently clean up, or misattribute a quote merely to fill the slot.
@@ -103,7 +115,12 @@ navigate or evaluate its information.
 ## Scaling a Course
 
 - Approve one polished representative lesson before generating a large batch.
-  The sample establishes depth, source handling, section rhythm, and tone.
+  The sample establishes depth, source handling, section rhythm, and tone. For
+  an established course, use its accepted lesson as the baseline. For a new
+  visual or tonal direction, show the rendered sample and obtain user approval
+  before scaling; do not ask again merely to preserve an already accepted style.
+- Before expanding the sample, check the Flavor Kit and Visual Theme requirements
+  in desktop and mobile rendering. A compile-only sample is not style approval.
 - Expand in module-sized batches and inspect representative lessons after each
   batch. Structural checks alone cannot detect generic or forgettable teaching.
 - Do not satisfy word-count targets with repeated scaffolding. Every paragraph,
@@ -117,9 +134,25 @@ navigate or evaluate its information.
   with no missing, duplicate, or extra lessons.
 - Calculate reading times after final prose is settled, then update individual
   syllabus entries, module totals, and the course total from the same data.
+  Include visible meme captions in word counts, not JSX syntax; reserve time for
+  widget use, exercises, and quizzes separately.
 
 ## Docusaurus Navigation
 
+- `navigation.ts` is the shared builder for navbar, sidebar, and footer. Labels,
+  icons, and ordering come from collection `_category_.json` metadata; do not
+  maintain separate link lists in `docusaurus.config.ts` or `sidebars.ts`.
+- Collection landing pages use `/courses/<directory-name>` routes and doc links.
+  New collection directories must have `_category_.json` metadata. Direct child
+  categories of Books must declare an explicit generated-index `slug`, used by
+  both menus. Preserve existing public slugs when labels or nesting change.
+- Verify top-menu and sidebar group labels, icons, ordering, and destinations
+  together. The sidebar may expand into deeper lessons, but shared levels must
+  agree. A navigation change is incomplete if only one menu was checked.
+- Add ordinary teaching courses inside the existing **Contents > Courses**
+  nested navbar group, not as siblings of Courses, Books, or Calculator. Preserve
+  the Books group for books. Keep catalog, navbar, footer, and course identity
+  consistent; inspect the current configuration instead of copying stale markup.
 - Use a course-level `_category_.json` doc link when the course intro should act
   as the course landing page.
 - Do not link a module category directly to its first teaching document when
@@ -134,14 +167,28 @@ navigate or evaluate its information.
 ## Flavor Kit
 
 - Tone: PG-13, punchy, curious, and mildly cheeky; never cruel or distracting.
-- Use running metaphors, meme-style attention resets, and concise one-liners.
+- The user's default for new technical courses is **cats, emojis, and playful
+  teaching**, as established in Deep Learning and Lucene. Do not silently replace
+  that with neutral reference prose because the subject is advanced or operational.
+- Give the recurring cat a subject-specific role and a distinct mistake per lesson.
+  Use original, concise jokes about that lesson's actual mechanism. No repeated
+  caption with nouns swapped, generic motivational filler, or unrelated mascot gag.
 - Use `<Meme/>` for epigraph and meme slots. Keep flavor in component props so
   it can be changed without rewriting neutral teaching content.
 - Use text, CSS, ASCII, or emoji rather than hotlinked meme images.
-- Adapt running examples to the domain. Deep Learning uses cats and model
-  mishaps; Performance Foundations uses autopilot, tiny bets, activation ramps,
-  ambitious projects, and supplements trying to impersonate fundamentals.
-- Do not force cats into every course. Preserve the rhythm, not one skin.
+- Use readable emoji signposts: `⏱️` for time, `🧪` for practice, `🤓` for optional
+  depth, and `🐾` for recaps. Keep the accompanying words, accessible control
+  labels, and literal technical titles understandable without interpreting emoji.
+- Carry the tone into the landing hook, catalog identity, selected widget titles,
+  and quiz feedback. Explain why an answer is right or wrong before or alongside
+  a short joke. Roast the misconception, never the learner.
+- Keep runnable code, corpus IDs, expected outputs, formulas, model provenance,
+  and safety/security caveats precise. Do not rewrite fixtures just to insert cats.
+- Preserve a course's explicitly approved alternative motif. Health, grief,
+  trauma, and other sensitive material require judgment rather than forced jokes.
+  Book summaries and TTS/reference pages are exempt from mascot callouts and emoji
+  requirements; follow their source fidelity and voice rules. An explicit user
+  request for a serious tone also overrides the playful default for that work.
 
 ## Interaction Design
 
@@ -153,6 +200,10 @@ navigate or evaluate its information.
 
 ## Visual Theme
 
+- Read the relevant rules in `src/css/custom.css`, `src/components/widgets.module.css`,
+  and one accepted neighboring lesson before inventing styles. Reuse existing
+  components and CSS variables; do not add a per-course stylesheet or hardcoded
+  palette unless an actual missing capability requires it and scope permits it.
 - Preserve the Rust by Example / mdBook-inspired visual language defined in
   `src/css/custom.css`: navy canvas, lavender-gray text, blue active links,
   Open Sans prose, Source Code Pro code, compact headings, and minimal borders.
@@ -164,6 +215,13 @@ navigate or evaluate its information.
 - The catalog may use course cards, but they should feel like compact book
   entries within the documentation theme, not a separate landing-page design.
 - Keep dark navy as the default while maintaining a functional light mode.
+- No independent marketing hero, giant display headings, gradients, decorative
+  blobs, nested cards, or new font stack. Existing compact Meme and widget frames
+  are intentional exceptions to an otherwise flat documentation layout.
+- Keep emoji/meme captions readable at 390px and desktop widths. Wrap text within
+  callouts; code blocks may scroll internally, but the page must not overflow.
+  Do not shrink body copy to hide layout problems or let dynamic controls shift
+  the surrounding lesson. Check light mode contrast as well as the default theme.
 
 ## Evidence and Health Content
 
@@ -194,7 +252,10 @@ After course changes:
   than assuming one filename convention.
 6. Check representative early, middle, and late lessons in the browser. Verify
   source folds are collapsed, exercises and quizzes work, canonical links are
-  correct, and desktop/mobile layouts have no horizontal overflow.
+  correct, and desktop/mobile layouts have no horizontal overflow. Inspect actual
+  screenshots at about 1280px and 390px: captions, emoji, code, widget labels,
+  typography, spacing, and contrast must fit the established theme. Include a
+  light-mode spot check. Load the browser skill before using its commands.
 7. Verify the desktop sidebar separately: module links, first lesson visibility,
   active state, and previous/next navigation should all resolve as intended.
 8. Prefer a production-build server for final visual checks. If the Rspack dev
@@ -203,3 +264,7 @@ After course changes:
   content failure.
 9. Ask for learner feedback on lesson length, humor dial, interaction density,
   source depth, and optional-depth level before expanding another large batch.
+10. Before declaring completion, audit that each ordinary technical lesson has
+  meaningful playful flavor, unique callouts, explanatory quiz feedback, and
+  exactly three recap points. Report any intentional tone exceptions and any
+  unverified browser checks. Do not report build success as visual verification.

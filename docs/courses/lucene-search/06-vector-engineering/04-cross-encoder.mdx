@@ -1,0 +1,118 @@
+---
+sidebar_position: 4
+slug: /courses/lucene-search/cross-encoder
+title: Executable Cross-Encoder Reranking
+description: Score authorized query-passage pairs locally, deduplicate parents, and evaluate candidate coverage separately from reranking.
+---
+
+import LuceneDecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+The right repair passage is in the candidate pool, but a rental page outranks it.
+A second-stage model can inspect both query and passage together. It cannot
+inspect a passage that retrieval never handed over.
+
+⏱️ **Reading + practice: ~9 min** · first model download is additional.
+
+<Meme top="The cat hired a very expensive judge for an empty shortlist." visual="😼⚖️" bottom="A reranker can reorder candidates. It cannot award first place to a passage retrieval never supplied." />
+
+## Why a second model?
+
+A bi-encoder embeds query and document independently, enabling efficient vector
+retrieval over precomputed document vectors. A cross-encoder processes the query
+and passage jointly, allowing token interactions conditioned on that specific
+pair. Its work is repeated for every candidate and every query, so it typically
+belongs after inexpensive candidate generation, not in an exhaustive corpus scan.
+
+The [local lab](../advanced-labs.mdx) uses a pinned ONNX revision of
+`Xenova/ms-marco-MiniLM-L-6-v2`, with Transformers.js 3.8.1 and q8 weights.
+It consumes exactly the authorized candidates emitted by the Java vector search:
+
+```bash
+node model-lab.mjs embed
+mvn -q compile exec:java -Dexec.mainClass=VectorLab -Dexec.args="real embeddings.json"
+node model-lab.mjs rerank
+```
+
+The script tokenizes an array of queries with `text_pair` passages, pads the
+batch, caps pair length at 256 tokens, runs sequence classification, and sorts
+descending by its scalar logits. In the checked default run the repair passage
+scored approximately 9.54 and the unrelated candidates around -11.3. Exact floats
+can vary across runtimes. These logits are ranking signals, not probabilities of
+truth, answer confidence, or authorization.
+
+## Candidate depth is a quality ceiling
+
+This lab accepts one to ten candidates and deliberately keeps inference bounded.
+The small fixture returns all three public chunks; it demonstrates plumbing,
+not a realistic candidate-depth optimization. In a larger system the candidate
+pool could come from the earlier hybrid RRF pipeline, provided identity, text,
+access, and provenance contracts remain intact.
+
+<LuceneDecisionLab title="The relevant passage is missing" label="Next action" choices={[
+  {label: 'Use a more expensive reranker on the same pool', result: 'The absent passage still cannot be returned.', cost: 'Additional compute cannot repair candidate coverage.'},
+  {label: 'Inspect retrieval depth, chunking, and lexical/vector coverage', result: 'You can locate the stage that lost the passage.', cost: 'A broader pool increases reranking work and must stay authorized.'},
+  {label: 'Remove access filters to find more candidates', result: 'Private content enters downstream processing.', cost: 'That violates eligibility rather than solving relevance.'},
+]} />
+
+Measure candidate recall before reranking, then judged metrics such as nDCG at
+the final display depth. Also measure end-to-end latency with and without the
+second stage. A model that improves one toy example can still regress specialized
+vocabulary, languages, long passages, or queries unlike its training distribution.
+Keep held-out queries separate from the examples used to choose settings.
+
+## Parent diversity and truncation
+
+Overlapping chunks can crowd out distinct documents. The script sorts chunks,
+then keeps the highest-scoring chunk per `parentId` and writes `reranked.json`.
+That is a max-chunk parent policy, not a universal aggregation rule. A document
+with several supporting passages may warrant a different presentation, while
+aggressive early parent deduplication can discard the best passage before scoring.
+
+Pair truncation can silently hide relevant text. The embedding lab's 96-token
+chunks keep this example small, but its token counts come from another tokenizer.
+For production, measure the reranker's actual pair-token lengths, reserve a query
+budget, and record truncation rates. Never assume equal budgets imply identical
+tokenization. Treat token limits as part of the relevance contract.
+
+## Try it yourself 🧪
+
+Add one public passage that repeats "bicycle tube" but gives no repair method,
+and another that explains patching without repeating the query verbatim. Write
+relevance judgments before running either model. Compare vector order and reranked
+order, then remove the useful passage from the candidate file and observe the
+coverage limit. Finally add two overlapping chunks with the same parent ID and
+inspect which representative survives deduplication.
+
+For a service design, specify a reranking deadline and a fallback to the original
+authorized order. Do not silently return a partially scored mixture as though
+every candidate received the same ranking treatment.
+
+<details>
+<summary>🤓 Batch size and serving economics (optional)</summary>
+
+Larger batches can improve hardware utilization but also increase padding,
+memory pressure, queueing, and the delay before a request runs. Separate model
+download/cold initialization from warm inference measurements. This command-line
+lab initializes the model per process; a production worker would normally reuse
+it with bounded concurrency and explicit health, version, and timeout handling.
+
+</details>
+
+## Recap 🐾
+
+1. Cross-encoders score query-passage pairs after candidate generation and access filtering.
+2. Candidate coverage limits the best result any reranker can return.
+3. Truncation, parent aggregation, latency budgets, and judged quality belong in the reranking contract.
+
+<Quiz question="What does a cross-encoder logit of 9.5 mean in this lab?" options={[
+  {text: 'A model-specific ranking signal for that query-passage pair.', correct: true, feedback: '😼 Ranking signal, not a truth certificate. The model can prefer a passage without proving its claims.'},
+  {text: 'A 95% probability the passage is factually correct.', feedback: 'The lab does not calibrate factual confidence.'},
+  {text: 'Proof the passage was authorized.', feedback: 'Authorization is enforced before inference, not learned from logits.'},
+]} />
+
+## References
+
+[Reranking model](https://huggingface.co/Xenova/ms-marco-MiniLM-L-6-v2)
+and [Sentence Transformers cross-encoders](https://www.sbert.net/examples/cross_encoder/applications/README.html).

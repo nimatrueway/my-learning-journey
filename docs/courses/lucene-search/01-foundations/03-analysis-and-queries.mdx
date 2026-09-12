@@ -1,0 +1,146 @@
+---
+sidebar_position: 3
+slug: /courses/lucene-search/analysis-and-queries
+title: Analysis and Query Semantics
+description: Inspect tokens, distinguish exact and parsed queries, and keep eligibility separate from relevance.
+---
+
+import LucenePostingsLab from '@site/src/components/LucenePostingsLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+A customer types `BICYCLE`, `bicycles`, and `bike`. They mean roughly the same
+thing. Your index sees three different lookup keys unless you explicitly connect them.
+
+⏱️ **Reading + practice: ~10 min** · folds are optional extra.
+
+<Meme top="The cat says bike. The article says bicycle." visual="😾📝" bottom="StandardAnalyzer did not attend synonym school. Inspect its tokens before giving it homework." />
+
+## Analysis is a contract
+
+An analyzer turns text into a token stream. Character filters can transform the
+input before tokenization; a tokenizer finds boundaries; token filters transform,
+remove, or add tokens. The output includes more than strings: positions and
+offsets matter for phrases and highlighting.
+
+The lab's `StandardAnalyzer` tokenizes text and lowercases terms. Its default
+stopword set is empty; it does not automatically stem English plurals or expand
+synonyms. Run this command in the lab directory:
+
+```bash
+mvn compile exec:java -Dexec.args='analyze "BICYCLE bicycles bike"'
+```
+
+Expect positions `0: bicycle`, `1: bicycles`, and `2: bike`. The quoted string
+must arrive as the second program argument, which is why the command has both
+outer single quotes and inner double quotes. The program prints actual Lucene
+tokens, not an imitation of the analyzer.
+
+Index-time and query-time analysis must produce compatible terms. They need not
+be identical: query-time synonyms are one intentional difference. But if indexing
+keeps `bicycles` and querying stems it to `bicycl`, a term lookup can miss. A schema
+change that alters indexed tokens generally requires reindexing old content.
+
+## Exact terms, phrases, and Boolean queries
+
+`TermQuery` expects a final indexed term. `QueryParser` takes a human-oriented
+query string and uses an analyzer for ordinary text clauses. Its classic default
+operator is OR, not AND. In the supplied lab, `bicycle repair` therefore means
+at least one term, with a separate required public-access filter.
+
+For the fixed literal phrase `bicycle repair`, run:
+
+```bash
+mvn compile exec:java -Dexec.args='phrase'
+```
+
+Public A matches; E (`Bicycle tire repair`) does not. This mode builds the query
+programmatically, avoiding nested shell and Maven quoting. It always searches
+this fixed phrase rather than interpreting a text argument:
+
+```java
+Query phrase = new PhraseQuery("body", "bicycle", "repair");
+```
+
+The lab imports `PhraseQuery` from `org.apache.lucene.search` and puts it in the
+existing Boolean query's `MUST` clause, keeping the `FILTER` clause. For this
+analyzer and these terms, the default phrase slop of zero requires adjacency in
+the specified order. Slop can allow positional movement, but it is not a synonym
+engine and should not be described as simply an arbitrary word count in every case.
+
+## Rehearse the meaning of the query
+
+This is the earlier three-document illustration, not the lab's five-document
+corpus. Choose exact phrase and inspect positions. Now imagine dropping `repair`
+as a stopword: could the remaining term still express the same phrase constraint?
+
+<LucenePostingsLab />
+
+A well-behaved token filter preserves position increments when it removes tokens,
+so gaps may remain. Flattening a token stream into a plain list of words can lose
+information that phrase queries need. Inspect positions when diagnosing a phrase
+that behaves differently from a Boolean query.
+
+## Eligibility is not a relevance signal
+
+Lucene Boolean clauses have different roles. `MUST` requires a match and
+contributes scoring. `FILTER` requires a match without contributing a score.
+`MUST_NOT` excludes matches. `SHOULD` expresses optional scoring clauses unless
+the Boolean query requires some of them. With no `MUST` or `FILTER`, at least one
+`SHOULD` normally must match. Once you add a required clause, set
+`setMinimumNumberShouldMatch(...)` if some optional terms must still match.
+
+That distinction matters for a tenant or permission constraint. Access is not
+a boost: an unauthorized result must be excluded, even if its text is perfect.
+The lab hardcodes `access:public` as an educational stand-in. In a real application,
+derive filters from trusted authentication and authorization state, not a query
+string the client can edit. Apply them to every retrieval branch.
+
+Classic query syntax is also not a complete user-input security policy. It can
+expose fields and expensive query forms. For a plain search box, consider
+`QueryParser.escape(text)` before parsing, or construct queries programmatically
+with a controlled set of fields, limits, and operators. Structured IDs and dates
+should usually become exact or range queries directly.
+
+## Try it yourself 🧪
+
+Add public article F with body `Bicycle storage`. Predict its behavior for
+`bicycle repair`, `bicycle AND repair`, and the phrase. Run all three queries.
+F should match OR only. Then query `BICYCLE` through `QueryParser` and through
+a raw uppercase `TermQuery`; explain the difference using the analyzer output.
+
+As a second check, inspect the lab's access clause. Explain why replacing
+`FILTER` with a boosted `SHOULD` could expose C. The answer should mention
+eligibility, not just C's final score. Restore the original corpus afterward.
+
+<details>
+<summary>🤓 Synonym graphs and languages (optional)</summary>
+
+Multiword synonyms such as `nyc` and `new york city` create alternative paths
+through a token stream. Lucene's graph-aware analysis and query construction
+exist because adding strings to a bag is insufficient to preserve phrase meaning.
+Use the documented synonym graph components and test representative phrase queries.
+Language-specific analyzers can help with stemming and segmentation, but mixing
+languages in one field may require a more deliberate schema. Never change analysis
+on the strength of one successful example: protect proper names, identifiers,
+and negative cases with a small regression set.
+
+</details>
+
+## Recap 🐾
+
+1. Inspect actual terms and positions before blaming retrieval or ranking.
+2. Parser syntax, exact terms, phrases, and Boolean clauses express different contracts.
+3. Trusted access constraints belong in required filters on every retrieval path.
+
+<Quiz question="You add a FILTER to a query with only SHOULD text clauses. What deserves a regression test?" options={[
+  {text: 'Whether a text clause is still required to match.', correct: true, feedback: 'Yes. Required clauses change the default requirement for SHOULD matches; set the minimum explicitly when needed.'},
+  {text: 'Whether FILTER doubles BM25 scores.', feedback: 'FILTER gates eligibility without contributing a score.'},
+  {text: 'Whether all strings are automatically stemmed.', feedback: 'Stemming belongs to analysis, not Boolean clause selection.'},
+]} />
+
+## References
+
+Apache Lucene [StandardAnalyzer](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/analysis/standard/StandardAnalyzer.html),
+[BooleanQuery.Builder](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/search/BooleanQuery.Builder.html),
+and [query parser syntax](https://lucene.apache.org/core/10_3_1/queryparser/org/apache/lucene/queryparser/classic/package-summary.html).

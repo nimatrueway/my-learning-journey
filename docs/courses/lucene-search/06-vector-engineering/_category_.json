@@ -1,0 +1,5 @@
+{
+  "label": "6. Vector Engineering",
+  "position": 6,
+  "link": {"type": "generated-index", "description": "Real local embeddings, token-bounded chunks, measured HNSW tuning, compression, and cross-encoder reranking."}
+}

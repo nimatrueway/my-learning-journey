@@ -1,0 +1,135 @@
+---
+sidebar_position: 8
+slug: /courses/lucene-search/advanced-labs
+title: Advanced Lab Setup
+description: Download the executable full-text, vector, and operations labs and reproduce their experiments.
+---
+
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
+The advanced modules extend the original Java track without changing its six
+commands. Use Java 21+ and Maven 3.9+. Replace the original Maven configuration
+with this expanded one, and put all Java downloads in `src/main/java/` beside
+`SearchLab.java`. Run Maven commands from that lab directory.
+
+- <a href={useBaseUrl('/labs/lucene-search/pom.xml')} download>Updated Maven configuration</a>
+- <a href={useBaseUrl('/labs/lucene-search/FullTextLab.java')} download>FullTextLab.java</a>
+- <a href={useBaseUrl('/labs/lucene-search/VectorLab.java')} download>VectorLab.java</a>
+- <a href={useBaseUrl('/labs/lucene-search/OperationsLab.java')} download>OperationsLab.java</a>
+
+```bash
+mvn compile exec:java -Dexec.mainClass=FullTextLab -Dexec.args='edge bike'
+mvn compile exec:java -Dexec.mainClass=FullTextLab -Dexec.args='patterns'
+```
+
+The first command prints `bi` and `bik`. The second returns A and B for each
+query family. All Lucene modules remain pinned to 10.3.1; Jackson 2.18.3 reads
+and writes the model lab's JSON. The shared
+`exec.mainClass` property selects a lab; omitting it still runs `SearchLab`.
+
+## Full-text modes
+
+| Mode | Input or expected behavior |
+| --- | --- |
+| `standard`, `english`, `keyword` | Optional quoted text as the next argument; inspect tokens and positions |
+| `ngrams bike` | `bi`, `bik`, `ik`, `ike`, `ke` |
+| `edge bike` | `bi`, `bik` |
+| `synonyms nyc` | Alternate `nyc` and `new york city` graph paths |
+| `shingles` | Unigrams plus word bigrams of `Bicycle repair` |
+| `patterns` | Prefix, fuzzy, wildcard, and regex each return A,B |
+| `multifield` | Title-boosted A before B |
+| `proximity` | Slop 0: none; slop 1: B; slop 2: B,A |
+| `suggest` | Bicycle repair/20 before Bicycle rental/10 |
+| `spell` | Suggests bicycle for bicyle from public-only terms |
+| `facets` | Repair=1, Travel=1, with highlighted public snippets |
+| `drilldown` | Repair=1 only, with A's highlighted snippet |
+| `ranges` | Page one A, page two B, descending year |
+| `joins` | Red/small matches one parent; red/large matches none |
+
+The full-text corpus is separate from `SearchLab`: public A is a repair article
+from 2024, public B a travel article from 2022, and private C a repair article
+from 2025. Every article retrieval mode applies `access:public`. The isolated
+join fixture and suggestion dictionary contain only public teaching data, not
+a production authorization implementation.
+
+The mode named `standard` is this lab's custom standard-tokenizer, lowercase,
+ASCII-folding pipeline, **not** an unmodified `StandardAnalyzer`. `keyword`
+preserves its input as one term. Analyzer output reports positions, position
+lengths, and original offsets so you can inspect graph and highlighting behavior.
+
+## Vector benchmark
+
+```bash
+mvn -q compile exec:java -Dexec.mainClass=VectorLab -Dexec.args='benchmark 8 40'
+mvn -q compile exec:java -Dexec.mainClass=VectorLab -Dexec.args='benchmark 16 100'
+mvn -q compile exec:java -Dexec.mainClass=VectorLab -Dexec.args='benchmark 16 100 quantized'
+```
+
+Arguments after `benchmark` are graph maximum connections, construction beam
+width, and optional `quantized`. Each run creates 3,000 seeded 64-dimensional
+vectors, excludes private documents, and compares 30 ANN queries to an exact
+cosine baseline. The output includes recall@10, serialized index bytes, build
+time, and observed warm query percentiles. These in-memory measurements are not
+production SLAs. The [HNSW](./06-vector-engineering/02-hnsw-tuning.mdx) and
+[compression](./06-vector-engineering/03-vector-compression.mdx) lessons explain
+the controls and limitations.
+
+## Real local models
+
+This optional track needs **Node.js 22+**, npm, and initial internet access to
+download two public ONNX models. Allow several hundred MB for weights, runtime,
+and package caches; downloads and first startup are outside the lesson time.
+Inference runs locally without an API key, hosted inference service, or GPU.
+
+Download these into the Maven lab directory, beside its Maven configuration:
+
+- <a href={useBaseUrl('/labs/lucene-search/package.json')} download>Standalone model package.json</a>
+- <a href={useBaseUrl('/labs/lucene-search/model-lab.mjs')} download>model-lab.mjs</a>
+
+Do not replace the Docusaurus project's package configuration with this lab file.
+
+```bash
+npm install
+node model-lab.mjs embed
+mvn -q compile exec:java -Dexec.mainClass=VectorLab -Dexec.args='real embeddings.json'
+node model-lab.mjs rerank
+```
+
+Transformers.js is pinned to 3.8.1 and both model revisions are immutable hashes
+in the script. Keep the generated package lock for reproducible transitive
+dependencies; subsequent installs can use `npm ci`. Review model cards and
+licenses before reuse: [embedding model](https://huggingface.co/Xenova/all-MiniLM-L6-v2)
+and [cross-encoder](https://huggingface.co/Xenova/ms-marco-MiniLM-L-6-v2).
+
+The script writes `embeddings.json`; Java reads it and writes `candidates.json`;
+the reranker reads that authorized candidate pool and writes `reranked.json`.
+All are overwritten on rerun. The default query asks about mending a punctured
+bicycle tube. The verified run produced four 384-dimensional chunks, retrieved
+only three public chunks, and ranked the repair passage first in both stages.
+Model scores can vary slightly by runtime and are not probabilities.
+
+Supply a different query with `node model-lab.mjs embed "your question"`, then
+rerun the Java and reranking commands. To exercise multi-window chunking, extend
+the source fixture beyond 96 tokenizer tokens as described in
+[the embedding lesson](./06-vector-engineering/01-real-embeddings.mdx).
+
+## Operations modes
+
+```bash
+mvn -q compile exec:java -Dexec.mainClass=OperationsLab -Dexec.args=recovery
+mvn -q compile exec:java -Dexec.mainClass=OperationsLab -Dexec.args=performance
+```
+
+`recovery` prints `heldReader=0 refreshedReader=1` and
+`reopenedUpdated=1 restoredOriginal=1`. It leaves a disposable filesystem index
+and backup at the printed temporary path for inspection. It never opens your
+existing indexes. Remove that temporary directory after the exercise.
+
+`performance` checks 20,000 documents, lower-bound versus exact counts, repeated
+filter caching, concurrent counts, and an intentionally expired cooperative
+timeout. Cache admission is forced only to make the small demonstration observable;
+it is not a recommended production policy. Both modes contain executable
+assertions for their central invariants.
+
+The course teaches distributed design but does not launch a cluster, expose a
+network search API, or provide a production authentication/authorization system.

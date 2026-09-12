@@ -1,0 +1,133 @@
+---
+sidebar_position: 2
+slug: /courses/lucene-search/performance-budgets
+title: Collectors, Caches, and Request Budgets
+description: Inspect count accuracy, filter caching, concurrent readers, timeouts, and the memory/I/O costs hidden by small benchmarks.
+---
+
+import LuceneDecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+The interface needs ten results but asks the engine to count every match, build
+every facet, highlight long bodies, and rerank a hundred passages. The final
+display size is not the request's work budget.
+
+⏱️ **Reading + practice: ~9 min** · folds are optional extra.
+
+<Meme top="The cat cached everything and requested more RAM." visual="😼⏱️" bottom="One-off queries do not become useful by occupying memory. Measure reuse, admission, and actual request costs." />
+
+## Count accuracy is an explicit cost
+
+Run the [operations performance mode](../advanced-labs.mdx):
+
+```bash
+mvn -q compile exec:java -Dexec.mainClass=OperationsLab -Dexec.args=performance
+```
+
+It indexes 20,000 simple documents and compares two collectors:
+
+```java
+new TopScoreDocCollectorManager(10, 10);
+new TopScoreDocCollectorManager(10, Integer.MAX_VALUE);
+```
+
+The first returns ten top hits but allows the total-hit count to become a lower
+bound after the threshold. The checked output is `bounded=11+ hits exact=20000 hits`.
+Read both `TotalHits.value()` and `relation()`; never display a lower bound as
+an exact total. The threshold does not mean "stop after examining ten documents"
+or "return approximate relevance scores." Competitive-score skipping and count
+accuracy are related execution choices, not interchangeable product guarantees.
+
+Exact counts can sometimes use specialized shortcuts, so counting is not always
+a full scan. Conversely, exact facets or aggregates can add work even when the
+hit collector itself uses a lower-bound count. Benchmark the actual collector
+combination your endpoint invokes.
+
+## Cache eligibility, not wishful thinking
+
+The lab repeats a numeric range FILTER and prints cache hits, misses, and bytes.
+It deliberately installs an always-cache policy and admits small leaves so the
+tiny demonstration produces observable hits. Those are **teaching settings**, not
+recommended production defaults. Real admission policies avoid spending memory
+on one-off queries, tiny segments, or cheap work whose cache construction costs
+more than recomputation.
+
+Lucene's query cache stores reusable matching document sets for eligible no-score
+work on segments. It is not a cache of all ranked responses, highlighting, model
+inference, or permission decisions outside the query. The semantic query must
+include tenant and access constraints where required. Application response caches
+also need all security, query, sort, version, and freshness inputs in their keys.
+
+<LuceneDecisionLab title="The endpoint exceeds its budget" label="First experiment" choices={[
+  {label: 'Measure retrieval, counts, facets, snippets, and reranking separately', result: 'You can locate the expensive stage before changing semantics.', cost: 'Instrumentation must include queueing and tail latency, not only averages.'},
+  {label: 'Cache every query forever', result: 'Unique inputs can consume memory without useful reuse.', cost: 'Unbounded caching adds eviction pressure and potential stale/security-sensitive results.'},
+  {label: 'Hide timeout status and return partial output', result: 'The caller cannot distinguish incomplete results from complete ones.', cost: 'It may report false zero-result or exact-count claims.'},
+]} />
+
+## Concurrency and cooperative deadlines
+
+The lab shares one `IndexSearcher` across four requests on a two-thread executor
+and asserts that each filtered count is 10,000. Searchers are designed for concurrent
+searching over their immutable reader view. This demonstrates request concurrency,
+not segment-parallel acceleration. Passing an executor to an `IndexSearcher` is
+a separate choice for intra-query work; combining both without bounds can oversubscribe
+CPU and inflate latency.
+
+A separate searcher has an immediately-expired `QueryTimeout` and reports
+`timedOut=true`, with zero partial hits in this fixture. Lucene checks timeouts
+cooperatively; this is not a hard interruption of every instruction, I/O operation,
+automaton construction, or model call. Apply stage-specific limits and a service
+deadline as well. Do not mutate one shared searcher's request-specific deadline
+while other requests are using it. The lab deliberately separates that searcher.
+
+## Memory and I/O experiment
+
+The in-memory fixture excludes filesystem effects. For a bounded follow-up,
+switch only its directory to a disposable `FSDirectory`, keep the corpus fixed,
+and record first-pass and repeated-pass latency plus process memory with OS tools.
+First-pass is not automatically cold-cache: operating-system pages may already be
+cached. Do not flush system caches on a shared machine just to manufacture a label.
+
+Separate heap for objects/caches, vector and postings files, mapped address space,
+resident memory, and filesystem cache. Also record segments, refresh cadence,
+merge activity, concurrent requests, and ingestion rate. A force-merged toy index
+at rest does not model a write-heavy service. Bound queues and reject excess work
+deliberately instead of allowing memory pressure to become an accidental scheduler.
+
+## Try it yourself 🧪
+
+Capture the bounded/exact counts and cache metrics. Remove the forced cache policy
+and explain any missing hits under normal admission. Vary only the repeated filter,
+then compare reuse. Finally write an endpoint budget splitting retrieval, facets,
+snippets, and reranking, with an explicit timeout response or authorized fallback
+for each stage. State which counts remain exact after a timeout.
+
+<details>
+<summary>🤓 Latency distributions (optional)</summary>
+
+Warmup, measurement duration, offered load, concurrency, and queueing all affect
+percentiles. Measuring only completed requests in a saturated closed-loop client
+can hide overload. A useful load test records errors, rejected work, timeouts,
+and achieved throughput alongside latency, and uses a corpus/query mix that
+resembles the deployment. Do not translate a microbenchmark's p95 into a service SLA.
+
+</details>
+
+## Recap 🐾
+
+1. Result limits, count accuracy, facets, and inference each contribute separate work.
+2. Cache admission and bounded concurrency matter as much as cache capacity and thread count.
+3. Cooperative timeouts require explicit incomplete-result handling and broader service budgets.
+
+<Quiz question="What should an API do with a lower-bound total-hit count?" options={[
+  {text: 'Expose or label the lower-bound relation rather than claiming an exact total.', correct: true, feedback: 'Correct. Preserve the engine guarantee in the user-facing contract.'},
+  {text: 'Multiply it by the page size to obtain the exact total.', feedback: 'There is no such relationship.'},
+  {text: 'Treat it as a failed relevance ranking.', feedback: 'Count precision and top-hit ranking are different concerns.'},
+]} />
+
+## References
+
+[TopScoreDocCollectorManager](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/search/TopScoreDocCollectorManager.html),
+[LRUQueryCache](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/search/LRUQueryCache.html),
+and [IndexSearcher](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/search/IndexSearcher.html).

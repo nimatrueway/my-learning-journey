@@ -1,0 +1,149 @@
+---
+sidebar_position: 1
+slug: /courses/lucene-search/hybrid-search
+title: Hybrid Search and Reranking
+description: Fuse lexical and vector candidates with reciprocal-rank fusion while preserving eligibility and stable identities.
+---
+
+import LuceneScoreLab from '@site/src/components/LuceneScoreLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+Exact error codes favor lexical search. Paraphrased troubleshooting questions may
+favor embeddings. A useful search system can ask both retrievers, but it needs a
+deliberate rule for combining their answers.
+
+⏱️ **Reading + practice: ~11 min** · folds are optional extra.
+
+<Meme top="Two ranking lists. One cat walking across the spreadsheet." visual="🐱📋" bottom="Adding unrelated scores is not fusion. RRF combines ranks without pretending the score scales agree." />
+
+## Start with the union of candidates
+
+A hybrid pipeline runs a lexical query and a vector query, each with the same
+trusted eligibility constraints. It collects a bounded list from each, combines
+their candidates by stable identity, and produces a final order. An optional
+reranker can inspect the combined set more deeply before presentation.
+
+This architecture is useful when the two branches make complementary errors.
+It is not automatically better than either branch alone. Weak vector candidates
+can distract a fusion rule, and a shallow branch can miss the document you hoped
+to rescue. Establish lexical-only and vector-only baselines before declaring the
+combined system an improvement.
+
+Our lab's default lexical query is `bicycle repair`. The vector branch uses the
+handwritten query `[1, 0]`, representing a separate synthetic repair-intent fixture.
+They are paired for an educational exercise, not produced by a real encoder.
+The meaningful claim is that fusion combines two different candidate lists; the
+lab cannot prove that its vectors model the input query's meaning.
+
+## Why not add the scores?
+
+BM25 values depend on terms, corpus statistics, and query structure. Vector scores
+depend on the embedding distribution and metric transformation. A BM25 score of
+3 and a cosine-derived score of 0.9 are not calibrated measurements of the same
+quantity. Adding them can make one branch dominate merely because of its scale.
+
+You can learn or validate a score-combination scheme, but reciprocal-rank fusion
+(RRF) provides a simple baseline that uses ranks instead. Each document receives
+`1 / (constant + rank)` from every list containing it; ranks start at one. Missing
+from a list means no contribution, not an invented last-place rank. Sum the
+contributions and sort descending. Here the constant is 60, an experimental choice
+to evaluate, not a law of search.
+
+## Rehearse candidate depth
+
+The fixed lexical list is A, E; the vector list is B, E, A. Both are public-only.
+Reduce depth to one, then increase it to two and three. Predict when agreement
+across branches overtakes a single first-place result. Disable the vector branch
+to recover the lexical baseline.
+
+<LuceneScoreLab mode="fusion" />
+
+At depth one, A and B tie and the widget breaks ties by stable ID. At depth two,
+E receives contributions from both branches and leads. At depth three, A also
+gets two contributions and narrowly leads E. More candidates can change ordering
+in non-obvious ways; the number of displayed results is not the only ranking decision.
+
+## Run the implementation
+
+```bash
+mvn compile exec:java -Dexec.args='hybrid'
+```
+
+Expect A, E, B with the unmodified corpus. The implementation retrieves up to
+three candidates per branch from the same searcher view. `addRanks(...)` fetches
+the stored stable article ID and accumulates a score in a map:
+
+```java
+fused.merge(stableId, 1.0 / (60 + rankIndex + 1), Double::sum);
+```
+
+The zero-based array index becomes a one-based rank. The final comparator sorts
+by descending RRF score and ascending ID for ties. Never persist `ScoreDoc.doc`
+as a business identity: it is valid in a particular reader view and can change
+after index changes. Using one searcher also prevents accidentally mixing internal
+IDs from different snapshots while fetching stored data.
+
+## Reranking and answer generation
+
+A cross-encoder reranker can score query-document pairs together instead of
+comparing independently computed embeddings. That extra computation is why it
+usually operates on a bounded candidate pool. Apply a measured latency budget
+and decide what happens on timeout: return the fusion order, fail the request,
+or another explicit policy. Do not silently return results from an unfiltered
+fallback branch.
+
+For retrieval-augmented generation, search supplies evidence; it does not prove
+the generated answer is correct. Preserve source IDs and passages, limit duplicate
+chunks from one parent, and evaluate whether the retrieved material actually
+supports the requested answer. Retrieved text is untrusted data, not instructions
+that should override the application's behavior. This course stops at retrieval
+and evidence selection rather than pretending that adding an LLM solves relevance.
+
+Deduplication also depends on the result unit. If each chunk has its own ID,
+RRF combines chunk identities, not entire manuals. Decide whether to group by
+parent before reranking, after reranking, or at presentation, and test whether
+that decision suppresses useful passages or improves diversity.
+
+## Try it yourself 🧪
+
+Change both retrieval calls in hybrid mode from three candidates to one, including
+the vector query's requested neighbor count. Predict the fused IDs before running.
+Then try depth two. Compare with the widget and restore depth three afterward.
+
+Write a failure test: C must never enter either branch, the fused map, or the
+returned list. Add another assertion that each stable ID occurs once after fusion.
+Finally, propose a query where vector retrieval could hurt an exact identifier
+lookup. You now have a reason to evaluate by query type, not just one overall average.
+
+<details>
+<summary>What RRF discards (optional)</summary>
+
+RRF ignores how large a score gap was within a branch. A decisive first-place
+match and a barely first-place match contribute the same value at the same rank.
+The constant controls how much rank differences matter relative to appearing in
+multiple lists. Very large constants make contribution sizes more similar.
+Weighted variants can change branch influence, but add tuning choices and therefore
+need held-out evaluation. Rank fusion is robust to raw score scale, not immune
+to bad candidates, duplicates, or biased judgments.
+
+</details>
+
+## Recap 🐾
+
+1. Hybrid search unions complementary, equally filtered candidate sets before final ranking.
+2. RRF combines one-based ranks without assuming raw scores share a scale.
+3. Candidate depth, identity, deduplication, and fallback policy are part of correctness.
+
+<Quiz question="A relevant page appears in neither retrieval branch. Can an RRF reranker promote it?" options={[
+  {text: 'Yes, by raising the fusion constant.', feedback: 'The constant changes contributions only for documents already in a list.'},
+  {text: 'No; improve candidate generation first.', correct: true, feedback: 'Exactly. Ranking cannot score a document the pipeline never retrieved.'},
+  {text: 'Yes, if its stored field is long enough.', feedback: 'Stored text does not place a document into the candidate union.'},
+]} />
+
+## References
+
+The Java implementation is original course code. RRF follows the rank-combination
+method described by Cormack, Clarke, and Buettcher in
+[Reciprocal Rank Fusion](https://plg.uwaterloo.ca/~gvcormac/cormacksigir09-rrf.pdf).
+For Lucene result identities, see [ScoreDoc](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/search/ScoreDoc.html).

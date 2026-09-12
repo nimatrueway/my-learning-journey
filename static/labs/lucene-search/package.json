@@ -1,0 +1,7 @@
+{
+  "name": "lucene-local-model-lab",
+  "private": true,
+  "type": "module",
+  "engines": {"node": ">=22"},
+  "dependencies": {"@huggingface/transformers": "3.8.1"}
+}

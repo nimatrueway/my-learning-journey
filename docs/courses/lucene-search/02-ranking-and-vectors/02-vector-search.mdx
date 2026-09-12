@@ -1,0 +1,147 @@
+---
+sidebar_position: 2
+slug: /courses/lucene-search/vector-search
+title: Embeddings and Vector Search
+description: Understand representation, similarity, model compatibility, and Lucene vector fields.
+---
+
+import LuceneScoreLab from '@site/src/components/LuceneScoreLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+"Bicycle repair" and "fix a flat wheel" share no useful terms in our tiny index.
+A vector retriever offers another route into the candidate set, provided the
+representation actually captures that relationship.
+
+⏱️ **Reading + practice: ~10 min** · folds are optional extra.
+
+<Meme top="Nearest neighbor: the cat sitting next to your laptop." visual="🐈🧭" bottom="Useful neighbor: a passage that answers the question. Your embedding model must earn that connection." />
+
+## Representation comes before retrieval
+
+An embedding model maps an input into a numerical vector. A retrieval-trained model
+tries to place useful query-document pairs close under an intended similarity
+function. Lucene stores and searches those vectors; `KnnFloatVectorField` does not
+call a model, tokenize for that model, or discover semantic meaning by itself.
+
+The operational pipeline has two sides. At ingestion, split content if needed,
+apply the model's document preprocessing, compute an embedding, and index it with
+the text, stable ID, and access metadata. At query time, use the matching query
+encoder or query mode, then search the same vector space. Some models prescribe
+different query and document prefixes; "use the same model" includes those
+documented conventions, not necessarily identical input templates.
+
+Equal dimensions are necessary but not sufficient. Two 768-dimensional models can
+assign completely different meanings to their coordinates. Mixing their vectors
+in one field may pass shape checks and silently ruin retrieval. Record the model
+revision, dimension, similarity, preprocessing, and chunking version as a schema
+contract. A model migration generally means re-embedding and rebuilding a field
+or index, followed by evaluation and a controlled switch.
+
+## Rehearse the geometry
+
+These four public articles have deliberately hand-assigned two-dimensional
+vectors. They are not outputs from a model, and the axes are not universal meanings.
+At zero degrees, the query is `[1, 0]`; at ninety, it is `[0, 1]`.
+Predict the top result at both ends, then move the query.
+
+<LuceneScoreLab mode="vector" />
+
+The widget reports raw cosine similarity. Scaling a document vector by a positive
+constant does not change its direction and therefore does not change cosine.
+Euclidean distance, in contrast, also cares about magnitude. Which behavior is
+appropriate depends on the model's training and documented similarity contract.
+Never select a metric merely because its score range looks convenient.
+
+## Query real Lucene vectors
+
+The Java lab indexes the same public vectors, plus a private article. Its field
+construction makes the similarity explicit:
+
+```java
+document.add(new KnnFloatVectorField(
+    "embedding", article.vector(), VectorSimilarityFunction.COSINE));
+```
+
+Run:
+
+```bash
+mvn compile exec:java -Dexec.args='vector'
+```
+
+Expect B, E, then A. The lab always uses the synthetic query `[1, 0]` in this
+mode; it does **not** embed a text argument. D is less similar and falls outside
+the requested top three. C would be highly similar but is excluded by the trusted
+public-access filter supplied to `KnnFloatVectorQuery`.
+
+```java
+Query query = new KnnFloatVectorQuery(
+    "embedding", new float[]{1.0f, 0.0f}, 3, allowed);
+```
+
+`allowed` is the lab's `TermQuery` for `access:public`. The query vector dimension
+must match the indexed field, all coordinates must be finite, and cosine needs
+nonzero vectors. Keep all values in a field compatible with its dimension and
+similarity. Check the pinned version's field and codec limits before selecting
+a production embedding model.
+
+Lucene transforms similarities into search scores with higher values meaning
+closer matches. Its cosine score is not the raw cosine shown in the widget.
+For these positive examples it corresponds to `(1 + cosine) / 2`, subject to
+floating-point behavior. Compare ordering before assuming two displayed numbers
+should be identical.
+
+## Retrieval units matter
+
+A single vector for a long manual may blur several topics. Chunks can make
+individual procedures retrievable, but tiny chunks can lose context. Keep a stable
+parent ID, chunk ID, text, source location, and access metadata on each chunk.
+At presentation time, several near-identical chunks from one manual should not
+necessarily occupy the entire first page.
+
+Chunk overlap is a tunable choice, not a universal percentage. More overlap can
+preserve boundary context but increases storage, embedding work, and duplicate
+candidates. Use queries whose answers cross a boundary and queries whose answers
+fit inside one passage. Evaluate both before expanding the corpus.
+
+## Try it yourself 🧪
+
+Multiply B's vector by ten in the lab and rerun vector search. With cosine, its
+position should remain first. Then change the query vector to `[0, 1]` and
+predict D's new position. Restore the original values before the hybrid lesson.
+
+Now write a migration checklist for replacing the synthetic coordinates with a
+real embedding model. Include matching query/document encoding, dimension and
+metric checks, rejection of invalid vectors, model-version metadata, reindexing,
+and judged queries. A model is ready when those contracts hold, not when a single
+paraphrase produces an attractive result.
+
+<details>
+<summary>🤓 Cosine, dot product, and normalization (optional)</summary>
+
+Cosine divides the dot product by the product of vector lengths. For unit-length
+vectors it equals the dot product. Lucene's floating-point `DOT_PRODUCT` similarity
+expects both document and query vectors to be normalized to unit length; normalize
+both sides with `VectorUtil.l2normalize(...)` when that matches the model contract.
+Do not feed unnormalized vectors into it and interpret the resulting order as cosine.
+`MAXIMUM_INNER_PRODUCT` exists for models where magnitude is meaningful. These
+choices must agree with training and indexing, not just the query code.
+
+</details>
+
+## Recap 🐾
+
+1. The embedding model defines the representation; Lucene retrieves in that representation.
+2. Dimension, metric, preprocessing, and model revision form a compatibility contract.
+3. Synthetic vectors teach geometry but cannot establish real-world semantic quality.
+
+<Quiz question="Two embedding models both emit 768 numbers. Can you mix their outputs in one field?" options={[
+  {text: 'Yes, equal dimensions guarantee compatible meaning.', feedback: 'Shape compatibility is not semantic compatibility.'},
+  {text: 'Only if their embedding spaces are explicitly compatible.', correct: true, feedback: 'Right. Otherwise re-embed and evaluate a separate field or index.'},
+  {text: 'Yes, if you lowercase the query first.', feedback: 'Lowercasing cannot align two independently learned coordinate systems.'},
+]} />
+
+## References
+
+Apache Lucene [KnnFloatVectorField](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/document/KnnFloatVectorField.html)
+and [VectorSimilarityFunction](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/index/VectorSimilarityFunction.html).

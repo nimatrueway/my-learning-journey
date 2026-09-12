@@ -1,0 +1,123 @@
+---
+sidebar_position: 3
+slug: /courses/lucene-search/nested-joins
+title: Nested Documents and Block Joins
+description: Preserve child attribute relationships and use parent-last blocks for correct parent retrieval.
+---
+
+import LuceneDecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+A shirt comes in red/small and blue/large. A query for red/large returns it.
+Every requested value exists somewhere, but no purchasable variant has both.
+
+⏱️ **Reading + practice: ~9 min** · folds are optional extra.
+
+<Meme top="Red exists. Large exists. The cat adds red/large to the cart." visual="😾🛒" bottom="Not in the same variant, it does not. Flattened values lost the relationship." />
+
+## Flattening loses relationships
+
+If one parent document contains `color=[red, blue]` and `size=[small, large]`,
+a Boolean red AND large query succeeds. Lucene's ordinary multi-valued fields
+do not infer that the first color belongs to the first size. This is not a
+ranking issue and cannot be fixed with a smaller result limit or a larger boost.
+The schema discarded the pairing required by the question.
+
+Sometimes flattening is correct: tags may be independent attributes with no tuple
+relationship. When the requirement is "one child must satisfy all these conditions,"
+index children as distinct documents or choose another representation preserving
+those tuples. A database join and a search-index join also have different update,
+transaction, and execution properties; naming them both joins does not erase that.
+
+## Run a parent-last block
+
+Run `FullTextLab joins` from [the advanced setup](../advanced-labs.mdx).
+It calls `writer.addDocuments(...)` once with red/small child, blue/large child,
+and the parent **last**. The parent is marked `kind:parent`. A
+`QueryBitSetProducer` identifies all parent boundaries in the reader:
+
+```java
+var parents = new QueryBitSetProducer(new TermQuery(new Term("kind", "parent")));
+Query joined = new ToParentBlockJoinQuery(children, parents, ScoreMode.None);
+```
+
+The `children` query requires both color and size on the same child document.
+The output is `red+small parents=1` and `red+large parents=0`. Parent retrieval
+is derived from matching children, not from matching unrelated values scattered
+across the whole block. `ScoreMode.None` expresses matching without child-score
+aggregation in this fixture. Other score modes have different ranking semantics.
+
+## Rehearse the data model
+
+Choose how to index the two variants before asking for red/large. The simulation
+uses exactly these two variants and no production catalog assumptions.
+
+<LuceneDecisionLab title="Is red/large actually available?" label="Representation" choices={[
+  {label: 'Flatten colors and sizes into the parent', result: 'Both requested values match, producing a false positive.', cost: 'The original color/size pairing is absent from the index.'},
+  {label: 'Match both clauses on one child, then join', result: 'No child is red/large, so the parent is not returned.', cost: 'Blocks, updates, parent boundaries, and result units must remain consistent.'},
+  {label: 'Return variant documents directly', result: 'Each hit is a concrete variant; no parent join is required for matching.', cost: 'Grouping and product-level presentation become separate concerns.'},
+]} />
+
+## Block structure is an invariant
+
+Children must be contiguous and followed by their parent when using this block-join
+representation. Add or replace the block atomically through the block APIs. Do
+not independently insert a child elsewhere and expect the parent boundary filter
+to recover your intended relationship. Replacing a product should update its whole
+block under a stable block identity, with the correct deletion term applied to
+all members as required by that update design.
+
+The parent bitset must identify structural parents, not only parents currently
+visible to one user. Omitting an unauthorized parent boundary could associate
+children with the wrong later parent. Apply parent authorization to the resulting
+parent query, and child eligibility to the child query as appropriate, while
+retaining a complete structural boundary filter. The lab has one public block;
+it is not a complete access-control implementation.
+
+Also decide whether counts and pagination operate on children, parents, or groups.
+Five matching variants can represent one product. Facet counts over children may
+answer "how many variants" while the screen claims "how many products." The
+correct choice follows the product question and must be consistent across hits,
+facets, grouping, and evaluation judgments.
+
+## Try it yourself 🧪
+
+Add a red/large child inside the same block before the parent and rerun. The
+second count should become one. Then move that child to a second product block
+and retrieve parent IDs, not only counts, to verify the association. Keep parent
+markers out of the child query and preserve both parent boundaries.
+
+Draw a replacement operation that removes a product's old variants and adds its
+new set without orphaned children. Include the block's stable ID on every document
+if your update term targets all members. Add a regression test for an invisible
+parent followed by a visible parent so access policy cannot corrupt structure.
+
+<details>
+<summary>🤓 Alternatives to block joins (optional)</summary>
+
+Lucene's join module also supports term-based joins across fields with their
+own memory and execution tradeoffs. Denormalization can be simpler when update
+fanout is small; application-side grouping may suffice for variant-first results.
+Choose the least complex representation that preserves the query's required
+relationships. Parent-child structure should not be added merely to imitate a
+relational schema when independent document retrieval already answers the task.
+
+</details>
+
+## Recap 🐾
+
+1. Multi-valued fields preserve values, not arbitrary relationships among values.
+2. Parent-last blocks and child-local predicates preserve variant-level matching.
+3. Structural parent boundaries, access constraints, and parent-level counts are separate concerns.
+
+<Quiz question="Should the block-join parent boundary filter contain only parents authorized for the current user?" options={[
+  {text: 'No; retain all structural parents and apply authorization separately.', correct: true, feedback: '😼 Keep the family tree intact. Removing a boundary can attach a child to the wrong parent; authorization belongs in separate constraints.'},
+  {text: 'Yes; boundaries are merely ranking boosts.', feedback: 'They define block structure, not ranking preferences.'},
+  {text: 'It should contain only matching children.', feedback: 'The bitset identifies parent boundaries; children are matched by a separate query.'},
+]} />
+
+## References
+
+[Join module](https://lucene.apache.org/core/10_3_1/join/index.html)
+and [ToParentBlockJoinQuery](https://lucene.apache.org/core/10_3_1/join/org/apache/lucene/search/join/ToParentBlockJoinQuery.html).

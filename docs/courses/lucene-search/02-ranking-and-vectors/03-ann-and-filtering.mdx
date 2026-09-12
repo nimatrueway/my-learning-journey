@@ -1,0 +1,134 @@
+---
+sidebar_position: 3
+slug: /courses/lucene-search/ann-and-filtering
+title: Approximate Neighbors and Filters
+description: Separate exact and approximate vector retrieval, candidate budgets, filtered search, and recall measurement.
+---
+
+import LuceneDecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+The nearest ten documents are all private. You remove them after retrieval and
+show an empty page, even though useful public documents exist. The filter was
+correct as a gate, but it entered the retrieval process too late.
+
+⏱️ **Reading + practice: ~10 min** · folds are optional extra.
+
+<Meme top="The closest result is in the private cupboard." visual="🐱🔒" bottom="Excellent similarity. Still not your cupboard. Filter eligibility inside retrieval." />
+
+## Why approximate search exists
+
+Exact nearest-neighbor search compares the query with every eligible vector and
+keeps the best results. It provides a useful ground truth for a fixed corpus,
+metric, and eligibility rule, but the work grows with the number and dimension
+of vectors. A tiny dataset often needs no approximation at all.
+
+Approximate nearest-neighbor search, or ANN, trades some retrieval completeness
+for lower work. HNSW, a graph-based approach used by Lucene vector codecs,
+connects vectors into a navigable structure. Search follows promising neighbors
+instead of scoring every vector. Its hierarchy helps navigate from coarse regions
+to more local neighborhoods. It can miss a true nearest neighbor; "nearest" in an
+API name is not a guarantee that every execution is exhaustive.
+
+Graph construction settings influence memory, indexing cost, and the paths search
+can explore. Search-time strategies influence work per query. Their concrete APIs
+and defaults are version- and codec-specific. Do not paste `ef_search` or
+`num_candidates` from a search server's documentation into a Lucene constructor
+and assume the names mean the same thing here.
+
+## Three different sizes
+
+Distinguish the final result count shown to the user, the number of candidates
+retrieved for later fusion or reranking, and the internal graph exploration work.
+These are related, but not interchangeable knobs. In
+`new KnnFloatVectorQuery(field, vector, 100, allowed)`, the `100` is the query's
+requested neighbor count. A later `searcher.search(query, 10)` asks the collector
+for ten top results; it does not redefine every internal search budget as ten.
+
+For a reranker, retrieve enough candidates to give it useful choices, then apply
+the expensive scoring to that bounded set. A reranker cannot recover a document
+neither branch retrieved. Increasing candidates may improve recall while increasing
+latency and memory. Measure the tradeoff instead of assuming a larger value wins.
+
+## Rehearse where the filter belongs
+
+Use this specified ranking fixture: the first three unrestricted neighbors are
+private C, public B, and public E; the next public neighbor is A. Ask for three
+public results. Change the strategy and compare the candidate set, not just
+whether a private document is displayed.
+
+<LuceneDecisionLab title="Three requested public neighbors" label="Eligibility strategy" choices={[
+  {label: 'Retrieve three, then remove private results', result: 'B and E remain. Only two public candidates survive.', cost: 'A was outside the original top three; post-filtering cannot bring it back.'},
+  {label: 'Pass the public filter into vector retrieval', result: 'The eligible target set is B, E, A. This fixture has three public neighbors.', cost: 'Real ANN work and recall still depend on the filtered corpus and search strategy.'},
+  {label: 'Boost public results after retrieval', result: 'C remains a candidate. A score boost is not an access-control rule.', cost: 'Private results can leak unless a mandatory eligibility constraint also exists.'},
+]} />
+
+The fixture illustrates a candidate-set problem; it does not predict the graph
+paths or timing of Lucene. A restrictive filter can make a graph hard to navigate,
+but a small eligible set can also make an exact scan cheap. Filter selectivity
+alone does not imply a simple monotonic latency curve.
+
+## Lucene chooses a strategy
+
+The pinned `KnnFloatVectorQuery` accepts a filter and chooses a strategy per leaf
+segment. Its documented behavior includes exact search for sufficiently small
+filter cost, otherwise filtered approximate search, with a possible fallback to
+exact search if exploration becomes too expensive. That is why saying "this
+constructor always runs HNSW" would be inaccurate.
+
+```java
+Query allowed = new TermQuery(new Term("access", "public"));
+Query neighbors = new KnnFloatVectorQuery(
+    "embedding", new float[]{1.0f, 0.0f}, 3, allowed);
+TopDocs candidates = searcher.search(neighbors, 3);
+```
+
+This fragment is already represented in the downloadable lab. Its five documents
+are enough to test filtering semantics, not enough to benchmark HNSW recall or
+speed. Small data can take exact paths and hide the very approximation you intend
+to measure.
+
+## Try it yourself 🧪
+
+Run `vector` and confirm that C is absent. In a local diagnostic copy only, remove
+the filter argument and rerun. Expect C to enter the top three alongside B and E,
+displacing A. Restore the filter immediately. Record the before-and-after IDs as
+a regression assertion, not a screenshot of scores.
+
+Then design a benchmark without pretending this tiny lab is one. Use a fixed
+larger corpus, fixed query vectors, and the same access filter for both exhaustive
+and approximate runs. For each query, compare the ANN top-k IDs with exact top-k
+IDs, and record latency after warmup. Include broad and restrictive filters,
+segment counts, and repeated measurements. Specify how you will handle ties at
+the kth boundary so equivalent nearest neighbors do not create misleading misses.
+
+<details>
+<summary>🤓 ANN recall is not relevance recall (optional)</summary>
+
+ANN recall@k measures overlap with the exact vector neighbors, divided by the
+number of exact neighbors considered, usually k when enough eligible documents
+exist. It asks whether the approximate algorithm reproduced the metric's answer.
+Relevance recall asks whether useful documents were retrieved according to human
+judgments. You can have perfect ANN recall and poor relevance if the embeddings
+represent the task badly. First isolate approximation quality, then evaluate the
+end-to-end retriever against user needs.
+
+</details>
+
+## Recap 🐾
+
+1. ANN reduces search work but can miss exact neighbors; tiny corpora do not benchmark it.
+2. Final results, retrieved candidates, and graph exploration are distinct quantities.
+3. Supply trusted filters during retrieval and compare ANN with an equally filtered exact baseline.
+
+<Quiz question="ANN recall@10 is perfect, but users dislike the results. What is still possible?" options={[
+  {text: 'The embedding metric retrieves the wrong notion of similarity.', correct: true, feedback: 'Exactly. Reproducing nearest neighbors does not establish human relevance.'},
+  {text: 'Perfect ANN recall proves the relevance judgments are wrong.', feedback: 'The metric and the human task can disagree.'},
+  {text: 'Returning private documents would fix recall.', feedback: 'Eligibility is a required constraint, not something to relax for a nicer metric.'},
+]} />
+
+## References
+
+Apache Lucene [KnnFloatVectorQuery strategy documentation](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/search/KnnFloatVectorQuery.html)
+and [HNSW package](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/util/hnsw/package-summary.html).

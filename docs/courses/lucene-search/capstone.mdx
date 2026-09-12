@@ -1,0 +1,113 @@
+---
+sidebar_position: 9
+slug: /courses/lucene-search/capstone
+title: Capstone and Field Guide
+description: Turn the course lab into an evaluated retrieval prototype with explicit acceptance criteria.
+---
+
+**Reference: ~5 min** · read once, revisit often.
+
+Build a technical-help search prototype that can explain why a result was returned,
+prove that it was eligible, and compare lexical and hybrid retrieval fairly.
+This is an extension project, not functionality already provided by the tiny lab.
+Allow a separate 2–4 hour project session for the basic extension; integrating
+the advanced labs into a service and larger-scale benchmarking may take longer.
+
+## Project boundary
+
+Use a corpus you have permission to index. Start with 50–200 short help articles
+and explicit stable IDs, titles, bodies, and access labels. Keep source data
+outside the index so rebuilding is possible. Use the
+[indexing lesson](./01-foundations/02-build-an-index.mdx) as your executable starting point.
+Do not mistake this corpus size for a meaningful ANN benchmark.
+
+Implement lexical search first. Add vector retrieval using a documented model and
+its query/document encoding conventions, or retain synthetic vectors and clearly
+label the result as a mechanics-only prototype. Then add rank fusion. No paid
+API, hosted search service, or GPU is required for the synthetic track.
+
+## Acceptance criteria
+
+| Deliverable | Evidence to retain |
+| --- | --- |
+| Reproducible indexing | Pinned dependencies, source corpus, schema, and one rebuild command |
+| Exact and analyzed fields | Tests for stable IDs, case handling, phrase positions, and stored display text |
+| Eligibility on both branches | A highly relevant private document absent from lexical, vector, and fused results |
+| Vector contract | Model revision or synthetic label, dimension, metric, preprocessing, and invalid-vector checks |
+| Deterministic fusion | One-based ranks, duplicate-ID handling, stable tie rule, and candidate-depth tests |
+| Judged queries | Intent notes, grades, and a held-out comparison with lexical and vector baselines |
+| Operational behavior | Update/refresh test, documented commit policy, and a tested rebuild or restore path |
+
+## Suggested checkpoints
+
+1. **Index and inspect.** Ingest the corpus, print tokens for five tricky inputs,
+   and retrieve stored titles by stable ID. A second ingestion must not duplicate
+   articles. Add a numeric year only if you also test its required access patterns.
+2. **Retrieve and combine.** Run text and vector queries independently, inspect
+   both candidate sets, and fuse by stable identity. Test an exact code, a paraphrase,
+   a no-match query, and a restrictive access rule.
+3. **Judge and decide.** Expand the evaluation lesson's starter set. Compare
+   per-query precision, recall where known, nDCG, and latency. Record a regression
+   you chose not to accept; a credible report can conclude that lexical-only wins.
+4. **Operate a change.** Update and delete a document while a reader is open.
+   Demonstrate old and new views. Rebuild under a new analyzer or model version
+   and describe the switch and rollback procedure.
+
+## Diagnostic field guide
+
+| Symptom | First check | Relevant lesson |
+| --- | --- | --- |
+| No hit for a known article | Actual terms, query clauses, access, reader age | [Analysis](./01-foundations/03-analysis-and-queries.mdx) |
+| Hit exists but body is null | Stored representation | [Schema](./01-foundations/02-build-an-index.mdx) |
+| Long repetitive text wins | Frequency, norms, judgment, and `explain` | [BM25](./02-ranking-and-vectors/01-bm25.mdx) |
+| Vector neighbors look unrelated | Model alignment, preprocessing, metric | [Vectors](./02-ranking-and-vectors/02-vector-search.mdx) |
+| Too few filtered vector hits | Filter placement, eligible count, candidate depth | [ANN](./02-ranking-and-vectors/03-ann-and-filtering.mdx) |
+| Hybrid ranking gets worse | Branch lists, depth, duplicate units, query slices | [Fusion](./03-hybrid-and-production/01-hybrid-search.mdx) |
+| One impressive demo, broad regressions | Held-out judgments and baseline comparison | [Evaluation](./03-hybrid-and-production/02-evaluation.mdx) |
+| Updates remain invisible | Which reader the request acquired | [Lifecycle](./03-hybrid-and-production/03-index-lifecycle.mdx) |
+
+## Advanced acceptance criteria
+
+Use [Advanced Lab Setup](./advanced-labs.mdx) to reproduce the examples before
+integrating them into your own corpus. Choose application requirements explicitly;
+the goal is not to enable every query family on an unrestricted public endpoint.
+
+| Capability | Evidence to retain |
+| --- | --- |
+| Analysis and autocomplete | Token snapshots for accents, synonyms, n-grams, long prefixes, and supported languages |
+| Query behavior | Typo, wildcard, multifield, phrase-slop, and query-complexity regression cases |
+| Search UI data | Access-correct facets, selected-dimension counts, and safely escaped snippets |
+| Structured documents | Range/sort schema agreement, stable cursor behavior, and no cross-variant false positives |
+| Real embeddings | Model revision, chunk boundaries, token budgets, parent IDs, and private-chunk exclusion |
+| ANN and compression | Exact eligible baseline, recall floor, graph settings, index bytes, and repeated timing runs |
+| Reranking | Candidate recall, held-out ranking quality, truncation measurements, and deadline fallback |
+| Recovery and budgets | Restored snapshot, replay plan, count relations, bounded concurrency, and explicit timeout status |
+| Distributed design | Routing, replicas, per-shard candidates, partial-result policy, freshness, and recovery responsibilities |
+
+## Scope and next steps
+
+The course now includes executable local embeddings, a cross-encoder, facets,
+snippets, suggesters, scalar quantization, and persistent snapshot restoration.
+It teaches sharding and replication architecture but does not implement a cluster,
+production authorization service, or generated-answer interface. For multi-node
+search, compare Solr, Elasticsearch, or OpenSearch as products rather than assuming
+Lucene itself supplies a cluster manager. The next step is evaluation on your own
+authorized corpus, not adding another mechanism without a query that needs it.
+
+## Lab command reference
+
+Run these in the Maven lab directory, not the Docusaurus repository:
+
+```bash
+mvn compile exec:java -Dexec.args='lexical'
+mvn compile exec:java -Dexec.args='phrase'
+mvn compile exec:java -Dexec.args='analyze "BICYCLE bicycles bike"'
+mvn compile exec:java -Dexec.args='vector'
+mvn compile exec:java -Dexec.args='hybrid'
+mvn compile exec:java -Dexec.args='refresh'
+```
+
+The defaults should produce lexical A/E, phrase A, vector B/E/A, hybrid A/E/B, and refresh
+counts zero then one. The process rebuilds its in-memory corpus on every run.
+These foundational commands retain their synthetic vectors; the advanced model
+track supplies a separate real encoder without changing the original fixtures.

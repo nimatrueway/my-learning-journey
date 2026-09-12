@@ -1,0 +1,129 @@
+---
+sidebar_position: 1
+slug: /courses/lucene-search/persistence-recovery
+title: Persistent Indexes, SearcherManager, and Recovery
+description: Reopen FSDirectory indexes, distinguish refresh from commit, and restore a pinned snapshot.
+---
+
+import LuceneDecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+The new article appears in search, so the team reports that it is safely stored.
+Then the process crashes. Visibility and durability were two different promises.
+
+⏱️ **Reading + practice: ~9 min** · folds are optional extra.
+
+<Meme top="The cat has nine lives. Your untested backup has zero proven restores." visual="🐈💾" bottom="Pin a commit, copy its files, reopen the copy, and check the contents. Hope is not a recovery test." />
+
+## Move from memory to files
+
+`FSDirectory.open(path)` stores index files on a filesystem rather than inside
+`ByteBuffersDirectory`. Its concrete implementation can use memory mapping on
+supported platforms. Mapping a large file is not the same as loading every byte
+into the Java heap; operating-system page caching and I/O matter too.
+
+Run the [operations lab](../advanced-labs.mdx):
+
+```bash
+mvn -q compile exec:java -Dexec.mainClass=OperationsLab -Dexec.args=recovery
+```
+
+It creates a disposable directory, writes article A, and commits the original
+version. It then updates A using `updateDocument(new Term("id", "A"), ...)`.
+That operation logically replaces documents matching the stable ID term; old
+segment bytes do not disappear immediately. Correct ID normalization and uniqueness
+remain application responsibilities.
+
+## Manage searcher lifetimes explicitly
+
+The lab holds one searcher, refreshes a `SearcherManager`, and acquires another:
+
+```java
+var searcher = manager.acquire();
+try {
+  return searcher.search(query, 10);
+} finally {
+  manager.release(searcher);
+}
+```
+
+This is the acquisition pattern inside a request handler returning `TopDocs`;
+load required stored fields before releasing the searcher, or retain the reader
+for later use. Internal document IDs in `TopDocs` belong to that reader's view.
+
+The checked lab prints `heldReader=0 refreshedReader=1` for the updated term.
+The old searcher remains valid and unchanged until released. Refresh does not
+mutate it in place. The lab's blocking refresh is deliberately explicit; a service
+normally schedules refreshes according to a visibility target rather than blocking
+every request or refreshing after every individual document.
+
+Before committing the update, a reader opened from the directory still sees the
+original committed state. The writer-backed refreshed searcher can see newer data.
+That difference is asserted by the lab, not inferred from whether a search returned
+a result. A commit is a durable index checkpoint subject to the storage system's
+guarantees, not a substitute for a source-of-truth recovery plan.
+
+<LuceneDecisionLab title="What survived the failure?" label="Last completed action" choices={[
+  {label: 'Writer update and reader refresh only', result: 'A live reader may show the change, but the last commit can still be older.', cost: 'Recovery needs replay of updates beyond the durable checkpoint.'},
+  {label: 'Index commit', result: 'A new directory reader can open that committed state.', cost: 'Machine or storage loss still requires a usable backup or rebuild source.'},
+  {label: 'Verified snapshot copy plus replay position', result: 'You have a restore point and a defined path to recover later updates.', cost: 'The copy, retention, replay, and restore procedure all need testing.'},
+]} />
+
+## Copy a consistent snapshot
+
+The lab wraps `KeepOnlyLastCommitDeletionPolicy` in `SnapshotDeletionPolicy`,
+pins the original commit, then commits the update. It copies only the pinned
+commit's file set into a fresh backup directory and syncs those files before
+releasing the snapshot. Pinning prevents the writer's deletion policy from
+removing files needed by that commit while copying.
+
+Do not recursively copy a live index directory at an arbitrary moment: the file
+set may span incompatible generations. The lab's backup becomes visible only
+after copying finishes. A production backup must likewise publish its manifest
+or completion marker last, verify checksums, and never serve a partially copied
+directory. Snapshot retention itself consumes disk if old files cannot be reclaimed.
+
+After all writers and managers close, the lab reopens both directories and prints
+`reopenedUpdated=1 restoredOriginal=1`. This tests a consistent older recovery
+point, not zero data loss, crash injection, remote object storage, or a complete
+distributed backup system. The printed temporary directory remains available for
+inspection and can be removed after the experiment.
+
+## Try it yourself 🧪
+
+Record the ID and version expected in live and backup indexes before running.
+Inspect both after reopening. Add a third committed version and verify the pinned
+backup remains the original. Then design a restore checklist: checksum verification,
+open/read checks, expected document versions, replay offset, access-policy checks,
+and switching readers only after validation. Measure restore duration separately
+from backup creation. State both acceptable recovery age and recovery time.
+
+<details>
+<summary>🤓 Recovery metadata and process failure (optional)</summary>
+
+`SnapshotDeletionPolicy` tracks its pins in process memory; persisting retention
+across writer restarts requires a suitable persistent policy or an external
+backup protocol. Store source replay checkpoints alongside the index commit's
+metadata under a coherent ingestion design. A checkpoint advanced before its
+documents are durable can skip data during recovery; one advanced afterward
+requires idempotent replay to avoid duplicates.
+
+</details>
+
+## Recap 🐾
+
+1. Refresh controls a reader's visibility; commit controls a durable index checkpoint.
+2. Acquire and release managed searchers around the entire reader-dependent request.
+3. Back up a pinned commit and test reopening plus replay, not merely file copying.
+
+<Quiz question="Why does the restored lab index contain the original article after the live index commits an update?" options={[
+  {text: 'The backup copied the pinned original commit, not the latest live file set.', correct: true, feedback: 'Correct. A backup intentionally represents one specific recovery point.'},
+  {text: 'FSDirectory cannot persist updates.', feedback: 'The live index reopens with the updated version.'},
+  {text: 'Refreshing automatically rolls back commits.', feedback: 'Refresh changes reader visibility; it does not undo committed data.'},
+]} />
+
+## References
+
+[SearcherManager](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/search/SearcherManager.html)
+and [SnapshotDeletionPolicy](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/index/SnapshotDeletionPolicy.html).

@@ -1,0 +1,119 @@
+---
+sidebar_position: 2
+slug: /courses/lucene-search/ngrams-autocomplete
+title: N-Grams, Edge N-Grams, and Autocomplete
+description: Compare substring indexing, prefix indexing, PrefixQuery, and weighted completion suggestions.
+---
+
+import LuceneDecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+A user types `bik`. Another remembers only `ike`. Both want `bike`, but their
+requests require different matching rules. Autocomplete is not one algorithm.
+
+⏱️ **Reading + practice: ~9 min** · folds are optional extra.
+
+<Meme top="The cat typed bik, then sat on the keyboard." visual="🐱⌨️" bottom="Autocomplete can finish a prefix. It cannot finish the incident report." />
+
+## Index fragments or expand a query?
+
+A character n-gram is a contiguous fragment of a token. An edge n-gram starts
+at that token's beginning. In the [advanced lab](../advanced-labs.mdx), both
+filters use minimum length two, maximum length three, and `preserveOriginal=false`.
+Run the actual Lucene pipeline:
+
+```bash
+mvn compile exec:java -Dexec.mainClass=FullTextLab -Dexec.args='ngrams bike'
+mvn compile exec:java -Dexec.mainClass=FullTextLab -Dexec.args='edge bike'
+```
+
+The first prints `bi`, `bik`, `ik`, `ike`, `ke`. The second prints only `bi`,
+`bik`. The token filters place these alternatives at the input token's position,
+with its original offsets. Do not confuse them with n-gram tokenizers or word
+shingles, whose boundaries and positional behavior differ.
+
+The original token `bike` is absent in both outputs. Consequently, a query-time
+analyzer that emits only `bike` cannot match that field by exact term. You can
+preserve originals, raise the maximum gram size, or provide a separate normal
+field and an explicit long-query fallback. Each choice changes storage or query
+behavior. Simply truncating every long query can retrieve unrelated longer words.
+
+## Rehearse prefix versus infix
+
+Predict which index can answer `ike` without query expansion. Compare the choices
+below, then verify the printed term sets. This is a term-membership fixture,
+not a performance simulation.
+
+<LuceneDecisionLab title="🐾 Find bike before the next paw lands" label="Indexed representation" choices={[
+  {label: 'All 2–3 character grams', result: 'Both bik and ike are indexed terms.', cost: 'More terms and ambiguous short fragments increase size and false matches.'},
+  {label: 'Leading 2–3 character grams', result: 'bik is indexed; ike is not.', cost: 'A prefix contract excludes infix matches and does not cover every longer query.'},
+  {label: 'Whole word plus PrefixQuery', result: 'PrefixQuery(bik) can find bike; PrefixQuery(ike) cannot.', cost: 'No gram expansion at ingestion, but matching dictionary terms are expanded at query time.'},
+]} />
+
+## Keep indexing and query analysis asymmetric
+
+A common design indexes edge grams in a dedicated autocomplete field and analyzes
+the user input normally at query time. Applying the same gram expansion to both
+sides with OR semantics can overmatch: `bicycle` and `binary` share `bi`, but that
+does not make them equivalent completions. Keep the ordinary text field for full
+queries and relevance scoring. Test the final unfinished word separately from
+already completed words; a prefix query alone does not implement an entire
+multi-token search-as-you-type policy.
+
+`FullTextLab patterns` demonstrates `PrefixQuery(new Term("body", "bicy"))`
+against whole indexed tokens. It matches the public articles A and B without
+gram fields. A prefix query addresses indexed terms, not arbitrary substrings
+of stored sentences, and a programmatic prefix must already be normalized.
+
+## A suggestion dictionary is another product
+
+Run `FullTextLab suggest`. `AnalyzingSuggester` returns `Bicycle repair/20`
+before `Bicycle rental/10` for `bicy`. These weights come from a separate public
+dictionary. They are not BM25 scores or live document facet counts. Suggesters
+can offer curated phrases or query completions without returning matching articles.
+
+Build dictionaries from authorized, appropriate content. Suggestions can leak
+private titles or sensitive past queries even if the final article search is
+filtered. The lab dictionary contains only two public phrases; it does not have
+per-user filtering or a freshness service. Plan dictionary rebuilding, persistence,
+deduplication, popularity bias, and zero-result completions separately from indexing.
+
+## Try it yourself 🧪
+
+Use `a`, `bike`, and `bicycle` as analyzer inputs. Count emitted grams, predict
+which queries fail below the minimum or above the maximum, and verify the terms.
+Then change the suggestion weights so rental wins. Explain why that changes the
+completion order without changing any article's text score. Finally, specify
+whether your product needs prefixes, infixes, or suggested queries before choosing
+an implementation. A broad substring feature should be an intentional cost.
+
+<details>
+<summary>🤓 Count the expansion (optional)</summary>
+
+For a token of length L, each valid gram length g produces L-g+1 n-grams, but
+only one edge gram. Sum across the configured lengths. Lucene's n-gram filters
+count Unicode code points, not Java UTF-16 code units; grapheme clusters such as
+combined emoji can still involve several code points. Tiny ASCII fixtures show
+the mechanism, not the complete language contract. Measure index bytes and real
+query quality on your corpus rather than extrapolating only token counts.
+
+</details>
+
+## Recap 🐾
+
+1. N-grams support token infixes; edge n-grams and prefix queries support prefixes differently.
+2. Minimum length, maximum length, original preservation, and query analysis jointly define coverage.
+3. Suggesters rank a completion dictionary and need their own access and freshness policies.
+
+<Quiz question="Why can a whole-word bike query miss an edge-gram field configured for lengths two through three?" options={[
+  {text: 'bike was not indexed unless originals or another field preserve it.', correct: true, feedback: '😼 Case closed. bi and bik are not the exact indexed term bike. You checked the evidence, not the vibes.'},
+  {text: 'BM25 rejects all four-character queries.', feedback: '🐱 BM25 has no four-letter blacklist. The term is missing from the index; scoring cannot summon it.'},
+  {text: 'Edge grams always include suffixes instead.', feedback: 'They start at the leading edge of a token.'},
+]} />
+
+## References
+
+[NGramTokenFilter](https://lucene.apache.org/core/10_3_1/analysis/common/org/apache/lucene/analysis/ngram/NGramTokenFilter.html),
+[EdgeNGramTokenFilter](https://lucene.apache.org/core/10_3_1/analysis/common/org/apache/lucene/analysis/ngram/EdgeNGramTokenFilter.html),
+and [AnalyzingSuggester](https://lucene.apache.org/core/10_3_1/suggest/org/apache/lucene/search/suggest/analyzing/AnalyzingSuggester.html).

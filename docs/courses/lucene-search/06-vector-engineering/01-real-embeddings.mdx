@@ -1,0 +1,118 @@
+---
+sidebar_position: 1
+slug: /courses/lucene-search/real-embeddings
+title: Real Embeddings and Token-Bounded Chunks
+description: Generate local model embeddings, preserve chunk identity and access metadata, and retrieve them in Lucene.
+---
+
+import LuceneDecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+Your two-number vectors proved the plumbing. Now a user asks how to mend a
+punctured tube, while the article describes applying a patch. A real model can
+connect those phrasings, but only if the document actually reaches the model.
+
+⏱️ **Reading + practice: ~9 min** · first model download is additional.
+
+<Meme top="The cat read the first page and reviewed the whole manual." visual="🐱📖" bottom="Silent truncation has the same energy. Chunk within a measured token budget." />
+
+## Run local inference
+
+Follow the [advanced lab setup](../advanced-labs.mdx). The optional model lab
+requires Node.js 22+, local disk space for downloaded ONNX weights, and internet
+access for the first download. No paid API or API key is involved. Review the
+linked model cards and licenses before adopting the models in another product.
+
+```bash
+node model-lab.mjs embed
+mvn -q compile exec:java -Dexec.mainClass=VectorLab -Dexec.args="real embeddings.json"
+```
+
+The script uses a pinned revision of `Xenova/all-MiniLM-L6-v2` through
+Transformers.js 3.8.1. Mean pooling and normalization produce one 384-dimensional
+vector per chunk. It writes model ID, revision, query vector, and chunk records
+to structured JSON. Java validates dimensions, finite nonzero vectors, and unique
+chunk IDs, then indexes the vectors using cosine similarity.
+
+The checked default run returned repair, rental, and database chunks, in that
+order. The private repair chunk was excluded inside the vector query. This is a
+small wiring check, not evidence that the model solves all repair queries or
+that three results are all relevant. Lucene's scaled cosine score is not a
+calibrated probability of usefulness.
+
+## A chunk is a retrieval unit
+
+The tokenizer produces token IDs before splitting. The lab takes up to 96 tokens
+with a stride of 80, so adjacent full chunks overlap by 16 tokens. It checks
+decoded text against a 128-token model input budget, including special tokens.
+The default short documents each fit in one chunk; the exercise makes overlap
+visible. IDs include the parent ID and source token interval.
+
+These are tokenizer-token coordinates, not character offsets or original HTML
+positions. Decoding can change casing, spacing, and punctuation. A production
+system should retain original text and source offsets separately for faithful
+citations and highlighting. A sliding token window is a reproducible baseline,
+not a claim that sentence and section boundaries are unimportant.
+
+<LuceneDecisionLab title="🐾 Which chunk survives the reading budget?" label="Chunk policy" choices={[
+  {label: 'Send an entire long manual with truncation', result: 'The model may see only the opening token budget.', cost: 'Relevant instructions near the end can vanish silently.'},
+  {label: 'Bounded overlapping token windows', result: 'Every source token can reach at least one window.', cost: 'Overlap increases storage and can crowd results with sibling chunks.'},
+  {label: 'Section-aware chunks within a token budget', result: 'Headings and coherent passages can stay together.', cost: 'You still need explicit handling for oversized sections and source offsets.'},
+]} />
+
+## Preserve the embedding contract
+
+Index and query embeddings must use compatible model weights, tokenization,
+pooling, normalization, and any required task prompts. Equal dimensionality is
+necessary but insufficient: two different 384-dimensional models need not share
+a coordinate system. This fixture does not add query/document prefixes because
+this particular model does not require the instruction scheme of some other models.
+
+Version the chunker and preprocessing as well as the model. A deployment changing
+any of these can require rebuilding the corpus embeddings and switching to a
+matching query encoder. Do not mix old and new spaces behind one field name.
+Keep stable parent identity separate from a chunk ID that can change when text
+boundaries move. Replace or delete all obsolete chunks when a parent changes.
+
+Access labels are copied to each chunk and used before retrieval. The local
+reranker later trusts its candidate file as already authorized; that file is a
+lab artifact, not a security boundary for a multi-user service. Never send
+unauthorized chunks to a remote model and hope to filter them afterward.
+
+## Try it yourself 🧪
+
+Append enough original repair instructions to cross 200 tokenizer tokens. Rerun
+embedding and inspect the IDs and adjacent decoded texts in the JSON. Verify
+overlap, bounded inputs, and the absence of private IDs from `candidates.json`.
+Move the relevant sentence near the end and compare whole-document truncation
+against the chunked run. Judge relevance manually; a changed score alone is not
+an improvement. Record model revision and chunking parameters with the result.
+
+<details>
+<summary>🤓 Model precision is not index quantization (optional)</summary>
+
+The script requests q8 ONNX model weights to reduce local inference resources.
+Its output is still floating-point embedding coordinates. Quantizing the search
+index is a separate operation applied to stored vectors. Both can change quality,
+and their effects should be measured separately. Batch embeddings in a production
+ingestion worker only after validating memory use and retry/idempotency behavior.
+
+</details>
+
+## Recap 🐾
+
+1. Real embeddings require a versioned model and preprocessing contract, not just a dimension count.
+2. Token-bounded chunks preserve coverage while introducing identity, duplication, and citation decisions.
+3. Apply access policy before retrieval and evaluate semantic usefulness with judgments.
+
+<Quiz question="Can two different embedding models share a vector field just because both output 384 dimensions?" options={[
+  {text: 'No; their coordinate systems and preprocessing may be incompatible.', correct: true, feedback: 'Correct. Matching dimensions do not establish a shared semantic space.'},
+  {text: 'Yes; cosine similarity automatically aligns the models.', feedback: 'Cosine compares coordinates; it does not learn an alignment.'},
+  {text: 'Yes, provided the vectors are stored fields too.', feedback: 'Storage does not resolve model incompatibility.'},
+]} />
+
+## References
+
+[Embedding model](https://huggingface.co/Xenova/all-MiniLM-L6-v2)
+and [Transformers.js documentation](https://huggingface.co/docs/transformers.js).

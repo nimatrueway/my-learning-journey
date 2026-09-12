@@ -1,0 +1,120 @@
+---
+sidebar_position: 5
+slug: /courses/lucene-search/proximity-shingles
+title: Phrase Slop, Positions, and Shingles
+description: Test adjacency, gaps, transpositions, word bigrams, and position-aware indexing choices.
+---
+
+import LuceneDecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+`bicycle repair`, `bicycle tire repair`, and `repair bicycle` contain related
+words, but they do not express the same positional relationship. Slop is not
+just a permission to sprinkle arbitrary words into a phrase.
+
+⏱️ **Reading + practice: ~9 min** · folds are optional extra.
+
+<Meme top="cat naps versus naps cat: same words, suspicious sentence." visual="🐱💤" bottom="Positions remember the order. Phrase slop is not permission to forget it." />
+
+## Observe a positional query
+
+Run `FullTextLab proximity` from [the advanced lab](../advanced-labs.mdx).
+Public A contains `repair bicycle tire safely`; public B contains
+`bicycle tire repair repair`. The phrase terms are `bicycle`, `repair`.
+
+```java
+new PhraseQuery(0, "body", "bicycle", "repair");
+new PhraseQuery(1, "body", "bicycle", "repair");
+new PhraseQuery(2, "body", "bicycle", "repair");
+```
+
+The checked results are none, then B, then B and A. B has a forward gap of one.
+A has the two terms adjacent but reversed; a transposition requires slop two.
+The score order is not a pure distance sort: phrase scoring and corpus statistics
+also matter. Test membership before making claims about exact score values.
+
+Phrase matching needs indexed positions. An index that keeps only document
+membership cannot reconstruct word order from the postings it did not store.
+Stored original text does not retroactively add positions to a field's index.
+Choose field indexing options based on intended query capabilities.
+
+## Rehearse three matching contracts
+
+For the query `bicycle repair`, choose a contract. Predict which of the two
+public documents can match, then compare with the Java mode.
+
+<LuceneDecisionLab title="Same vocabulary, different order" label="Position rule" choices={[
+  {label: 'Exact phrase', result: 'Neither A nor B has adjacent terms in the requested order.', cost: 'Strong precision can miss a useful procedure with one intervening word.'},
+  {label: 'Phrase with slop one', result: 'B matches the forward one-position gap; reversed A does not.', cost: 'The permitted positional movement is broader than exact adjacency.'},
+  {label: 'Phrase with slop two', result: 'Both match, including the reversed adjacent terms in A.', cost: 'Wider tolerance may change the meaning of ordered domain phrases.'},
+]} />
+
+## Word shingles are not character n-grams
+
+Run `FullTextLab shingles`. With the default `Bicycle repair`, the lab's
+`ShingleFilter` emits original unigrams and the word bigram `bicycle repair`.
+A shingle combines neighboring tokens, whereas a character gram splits within
+a token. A shingle can make common word combinations available as dictionary
+terms, but costs index space and requires compatible query construction.
+
+Do not replace the primary body field with only bigrams unless you intend to
+lose ordinary one-word coverage. A separate shingle field can contribute a
+phrase-like signal while retaining normal word retrieval. It is not automatically
+equivalent to a phrase query: gaps, stopword handling, unigram output, and
+scoring statistics change the contract.
+
+## Gaps and offsets mean different things
+
+A stopword filter can remove a token while preserving its positional gap. That
+allows later phrase logic to account for where the remaining terms came from.
+Offsets instead identify spans in the original character sequence. They serve
+highlighting and source alignment, not the same role as token positions.
+
+For repeated field values, configure a position increment gap when phrases must
+not cross values. A phrase with enough slop can still cross a finite gap, so
+query limits and schema policy must agree. Nested objects require a relationship
+model, not just a very large gap. For richer ordered or unordered proximity
+constraints, investigate Lucene intervals or span queries and test their particular
+semantics instead of translating every requirement into one slop number.
+
+## Try it yourself 🧪
+
+Add `bicycle careful tire repair` and predict the smallest slop that matches
+the two-term phrase. Then run shingles over that text and list the adjacent
+bigrams: `bicycle repair` should not be one of them. Compare a bigram TermQuery
+on a dedicated shingle field with the sloppy phrase on the normal field.
+
+As a second test, use two values of the same text field, ending the first with
+`bicycle` and starting the second with `repair`. Inspect positions under different
+gaps before deciding whether the match is a feature or a bug. Keep this separate
+from the original fixture so its expected results remain reproducible.
+
+<details>
+<summary>🤓 Term vectors and payloads (optional)</summary>
+
+Term vectors are per-document term information that can optionally include
+positions and offsets. They support selected downstream tasks but are not required
+for every phrase query; phrase retrieval normally uses indexed postings positions.
+Payloads attach additional bytes to positions for specialized scoring or matching.
+Both add schema and storage choices. Enable them for a measured use case, not
+because their names sound like mandatory full-text features.
+
+</details>
+
+## Recap 🐾
+
+1. Phrase slop measures positional movement, with transpositions differing from simple forward gaps.
+2. Word shingles combine adjacent tokens; character n-grams split tokens into fragments.
+3. Positions, offsets, multi-value gaps, and term vectors serve different contracts.
+
+<Quiz question="Why does repair bicycle need more slop than bicycle tire repair for the phrase bicycle repair?" options={[
+  {text: 'Reversing adjacent terms costs two positional moves rather than one gap.', correct: true, feedback: 'Exactly. Slop is not simply a count of intervening words in every case.'},
+  {text: 'Longer documents always need less slop.', feedback: 'The positions of the matching terms determine this constraint.'},
+  {text: 'Offsets replace positions for reversed queries.', feedback: 'Phrase matching still uses token positions.'},
+]} />
+
+## References
+
+[PhraseQuery](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/search/PhraseQuery.html)
+and [ShingleFilter](https://lucene.apache.org/core/10_3_1/analysis/common/org/apache/lucene/analysis/shingle/ShingleFilter.html).

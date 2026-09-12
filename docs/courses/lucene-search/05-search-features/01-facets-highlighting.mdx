@@ -1,0 +1,119 @@
+---
+sidebar_position: 1
+slug: /courses/lucene-search/facets-highlighting
+title: Facets, Drill-Down, and Safe Highlighting
+description: Count the correct result population, distinguish drill-down from sideways counts, and render escaped snippets.
+---
+
+import LuceneDecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+The result list hides private articles, but a category count reveals that ten
+secret manuals exist. Search security includes the information surrounding hits.
+
+⏱️ **Reading + practice: ~9 min** · folds are optional extra.
+
+<Meme top="The cat hid the private articles but counted them aloud." visual="🐱🙈" bottom="A secret count is still a leak. Facets and snippets need the same eligibility boundary as hits." />
+
+## Count the eligible result population
+
+Facets summarize matching documents by a dimension such as category or author.
+They are not simply counts of the ten hits on screen. The
+[full-text lab](../advanced-labs.mdx) indexes `SortedSetDocValuesFacetField`
+values through `FacetsConfig.build(document)`. Its `facets` mode uses the same
+filtered query for hit retrieval and collection:
+
+```java
+var collector = searcher.search(query, new FacetsCollectorManager());
+var state = new DefaultSortedSetDocValuesReaderState(reader, config);
+var counts = new SortedSetDocValuesFacetCounts(state, collector);
+System.out.println(counts.getTopChildren(10, "category"));
+```
+
+Run `FullTextLab facets`. The result is Repair=1 and Travel=1, total two.
+Private C is another repair article, but must not contribute. `getTopChildren`
+limits the returned category labels, not the number of matching documents
+examined. Collecting all matches can cost more than returning top-scoring hits.
+
+Sorted-set doc-values facets are one implementation. Taxonomy-based facets use
+a separate taxonomy index and support other dimension configurations. Choose
+based on hierarchy, cardinality, multi-value semantics, and update workload.
+For multi-valued fields, a document can contribute to multiple labels; adding
+label counts does not necessarily equal the number of distinct results.
+
+## Drill-down changes the population
+
+Run `FullTextLab drilldown` to see Repair=1 and A's snippet only. The lab wraps
+its already authorized query in
+`new DrillDownQuery(config, query)` and call `add("category", "Repair")`.
+Import `org.apache.lucene.facet.DrillDownQuery`. Collect and highlight using
+that resulting query; A remains and Travel has no matching documents.
+
+A product may instead show counts for alternative categories as though the
+category filter were temporarily removed. Those are drill-sideways counts.
+They must retain all other constraints, especially tenant and access filters.
+Lucene's `DrillSideways` supports this pattern with facet-specific configuration.
+Do not remove the entire filter query merely to recover alternative counts.
+
+<LuceneDecisionLab title="What should the Repair count include?" label="Population" choices={[
+  {label: 'All indexed articles', result: 'The count includes private C and reports two Repair articles.', cost: 'The visible count leaks information outside the public result population.'},
+  {label: 'All public bicycle matches', result: 'Repair=1 and Travel=1, even if only one hit is displayed.', cost: 'Counting the full matching population requires work beyond the display limit.'},
+  {label: 'Only the current result page', result: 'Counts change when the page size or page number changes.', cost: 'These are page summaries, not ordinary corpus-level search facets.'},
+]} />
+
+## Highlight using analysis-aware spans
+
+The same lab mode builds `UnifiedHighlighter` and prints snippets containing
+`<b>bicycle</b>`. It uses the stored body, the query, and the same reader's
+`TopDocs`. Depending on indexing options, highlighting may use postings offsets,
+term vectors, or reanalysis of stored text. Each has a storage/runtime tradeoff.
+
+The configured `DefaultPassageFormatter("<b>", "</b>", " ... ", true)` escapes
+source text as HTML while inserting controlled emphasis tags. That matters if
+the body contains `<script>` or other markup. A string replace on raw stored
+text both misunderstands analyzer behavior and risks unsafe HTML. A frontend
+must preserve the escaping contract or render structured spans safely; arbitrary
+HTML supplied by another system is not trusted just because it resembles a snippet.
+
+Highlight only authorized hits. Pass the correct field name and do not confuse
+an embedding match with a textual span: a purely semantic neighbor might contain
+none of the query words. Returning a passage without emphasis is more honest
+than inventing a lexical match. A snippet can explain matching, not prove factual
+correctness or answer support.
+
+## Try it yourself 🧪
+
+Run the facet mode, then the Repair drill-down mode described above and verify
+that A is the only hit. Increase private C's category membership and confirm
+public counts do not change. Next put `<em>unsafe source</em>` in A's stored
+body and inspect the escaped snippet output. Distinguish formatter-owned `<b>`
+tags from source-owned markup. Restore the fixture after both experiments.
+
+<details>
+<summary>🤓 Cardinality and matching costs (optional)</summary>
+
+High-cardinality dimensions can consume substantial memory and collection work.
+Request only the dimensions and labels the interface needs, and benchmark broad
+queries separately from selective ones. An exact facet count and an approximate
+top-hit count can coexist; label the guarantees explicitly. Cache policies must
+include the complete eligibility context, not only the text query.
+
+</details>
+
+## Recap 🐾
+
+1. Facets count a defined matching population, not automatically the visible page.
+2. Drill-sideways removes a selected dimension constraint, never authorization.
+3. Analysis-aware highlighting still needs an explicit escaping and display contract.
+
+<Quiz question="Why must a facet collector use the access-filtered query?" options={[
+  {text: 'Counts can reveal private content even when hits are hidden.', correct: true, feedback: 'Correct. Eligibility applies to counts and snippets as well as ranked results.'},
+  {text: 'Facets otherwise become BM25 scores.', feedback: 'Facet values are counts, not text relevance scores.'},
+  {text: 'Only the first ten documents may be counted.', feedback: 'The display limit is not the facet population.'},
+]} />
+
+## References
+
+[Facet module](https://lucene.apache.org/core/10_3_1/facet/index.html)
+and [UnifiedHighlighter](https://lucene.apache.org/core/10_3_1/highlighter/org/apache/lucene/search/uhighlight/UnifiedHighlighter.html).

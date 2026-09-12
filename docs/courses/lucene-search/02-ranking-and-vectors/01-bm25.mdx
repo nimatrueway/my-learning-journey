@@ -1,0 +1,146 @@
+---
+sidebar_position: 1
+slug: /courses/lucene-search/bm25
+title: BM25 and Relevance Debugging
+description: Explore term rarity, saturation, length normalization, and Lucene score explanations.
+---
+
+import LuceneScoreLab from '@site/src/components/LuceneScoreLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+An article repeats "bicycle" twenty times. Another explains the repair in one
+sentence. Should repetition win? Full-text ranking needs more judgment than
+counting highlighted words.
+
+⏱️ **Reading + practice: ~10 min** · folds are optional extra.
+
+<Meme top="The cat wrote repair 400 times and called it SEO." visual="😼📈" bottom="BM25 saturates term frequency. Repetition is evidence, not an unlimited snack dispenser." />
+
+## Three signals, one score
+
+Lucene's default BM25 similarity combines term rarity, term frequency, and field
+length. A term appearing in relatively few documents carries more identifying
+information than one appearing almost everywhere. Seeing a query term several
+times can strengthen a match, but the benefit saturates. A long field offers more
+opportunities to contain any word, so length normalization can reduce its advantage.
+
+These are statistical signals, not proof of relevance. A short spam article can
+still match well. A perfect article with different vocabulary can still be absent.
+BM25 neither understands correctness nor overrides your query's matching rules.
+Treat it as a strong lexical baseline that you can inspect and evaluate.
+
+The default parameters are `k1 = 1.2` and `b = 0.75`. `k1` controls term-frequency
+saturation. `b` controls length normalization: zero turns that length effect off;
+one applies its full strength. Increasing `b` is not universally better, especially
+when comparing content types with different natural lengths.
+
+## Rehearse a ranking tradeoff
+
+The widget isolates the term-frequency component with `k1 = 1.2`, a fixed average
+length of 100 tokens, and the same rarity factor for both documents. It uses exact
+lengths, not Lucene's compressed norms. It is not a complete score emulator.
+
+Set the long article's frequency to one. Move `b` from zero to one and explain
+why the two scores separate. Then increase frequency: does the twentieth mention
+help as much as the second?
+
+<LuceneScoreLab mode="bm25" />
+
+At `b = 0`, both documents with frequency one receive the same term weight.
+Once length normalization is enabled, the shorter field gains an advantage.
+Holding average length constant isolates the mechanism; adding documents to a real
+index can also change average length and rarity statistics.
+
+## Read a real explanation
+
+Run the Java lab's `lexical` mode. It already calls:
+
+```java
+System.out.println(searcher.explain(query, hit.doc));
+```
+
+Locate `idf`, `freq`, `dl`, and `avgdl` in a hit's explanation. `freq` is the
+matched term frequency; `dl` is field length as decoded from the norm; `avgdl`
+is the collection average for that field. `idf` captures rarity. A multi-term
+query can sum contributions, while boosts and query structure introduce other
+factors. Follow the explanation tree instead of assuming every line is additive.
+
+To experiment with a different `b`, import
+`org.apache.lucene.search.similarities.BM25Similarity` and put this immediately
+after the lab creates its searcher:
+
+```java
+searcher.setSimilarity(new BM25Similarity(1.2f, 0.0f));
+```
+
+Changing these scoring parameters does not require regenerating token postings.
+Changing analysis or omitting norms at indexing time is a different kind of change.
+Keep index-time and search-time similarity assumptions compatible; do not treat
+all similarity implementations as interchangeable readers of the same metadata.
+
+## Debug in the right order
+
+First check whether the document is indexed and visible to this reader. Then
+check its tokens, query clauses, and access filters. Only after it matches should
+you investigate score ordering. `explain` can also show why a chosen document
+does not match, but you must supply its internal ID from the same reader view.
+
+Next distinguish a model problem from a presentation problem. Sorting by newest
+publication date is not BM25 order. A title boost changes the query's contribution
+weights; it does not teach the analyzer synonyms. Highlighting can explain which
+spans matched, but naive string replacement misses analyzer behavior and can create
+unsafe HTML. Lucene has highlighter modules; the tiny lab deliberately omits snippets.
+
+Scores are not probabilities. A score of 2 does not mean twice as useful as 1,
+and values from different queries or corpora are not automatically comparable.
+That is why the hybrid-search lesson does not just add BM25 to cosine scores.
+
+## Try it yourself 🧪
+
+Change E's body to `Bicycle tire repair repair repair repair`. Record its score
+and position with default BM25, then with `b = 0`. In each run, find the frequency
+and length terms that explain the difference. Restore the corpus afterward.
+
+Write one relevance judgment before choosing the winning setting: for the query
+`bicycle repair`, is a tools list really worse than a tire-repair page? The query
+is underspecified. If you cannot justify the expected order, the score change is
+an observation, not evidence of an improvement. Save explicit repair-intent and
+tools-intent queries for evaluation later.
+
+<details>
+<summary>🤓 The scoring shape (optional)</summary>
+
+For a single term, a useful representation of Lucene's BM25 contribution is
+proportional to:
+
+$$
+\operatorname{idf}(t)\frac{f}{f+k_1(1-b+bL/\overline{L})}
+$$
+
+Here $f$ is term frequency, $L$ is document field length, and $\overline{L}$ is
+average field length. Lucene's rarity term is
+$\log(1+(N-n+0.5)/(n+0.5))$, where $N$ counts documents with the field and $n$
+counts documents containing the term. Textbook BM25 often includes an additional
+$(k_1+1)$ numerator factor; do not use textbook arithmetic as a byte-for-byte
+assertion for Lucene's implementation. Use `explain`, especially around norm
+encoding, overlap tokens, boosts, and compound queries.
+
+</details>
+
+## Recap 🐾
+
+1. BM25 rewards informative matching terms while saturating repetition and accounting for length.
+2. Diagnose eligibility before ranking, and use `explain` on the same reader view.
+3. Parameter changes need judged queries, not just more impressive score numbers.
+
+<Quiz question="With b set to zero, which effect disappears from this term-weight model?" options={[
+  {text: 'Term-frequency saturation.', feedback: 'That remains controlled by k1.'},
+  {text: 'Field-length normalization.', correct: true, feedback: '😼 One knob, one mechanism. Rarity and saturation still matter; the cat cannot disable the whole formula with b.'},
+  {text: 'The need for query terms to match.', feedback: 'Matching is determined by the query, not the b parameter.'},
+]} />
+
+## References
+
+Apache Lucene [BM25Similarity](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/search/similarities/BM25Similarity.html)
+and [IndexSearcher](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/search/IndexSearcher.html).

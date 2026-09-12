@@ -1,0 +1,146 @@
+---
+sidebar_position: 0
+slug: /courses/lucene-search
+title: "😼 Apache Lucene & Search"
+description: Build and evaluate full-text, vector, and hybrid retrieval with Apache Lucene and Java.
+---
+
+import Meme from '@site/src/components/Meme';
+
+Your search engine returned nothing. The document is right there. A cat has been
+appointed head of relevance and is blaming the database. 🐱🔎
+
+Build a small technical-help search engine with Apache Lucene and learn to check
+the evidence: what was indexed, what became a candidate, how it ranked, and who
+was allowed to see it. The cat supplies confidence. You supply tests.
+
+<Meme top="Chief Meow Officer: have you tried increasing the boost?" visual="😼🔎" bottom="You: it is not even in the candidate set. First debugging win unlocked." />
+
+## Start here 🐾
+
+Start with [the inverted index](./01-foundations/01-inverted-index.mdx), then
+[run the Java lab](./01-foundations/02-build-an-index.mdx). By the end you should
+be able to explain a missing match, inspect a BM25 score, retrieve vector neighbors,
+fuse ranked lists, and evaluate the result against a baseline.
+
+**24 lessons · 7 modules · ~228 min of reading and guided practice**, plus a
+**~5 min field guide** and the advanced setup reference. The capstone is a separate
+extension project; first-time model downloads are additional.
+
+## Prerequisites
+
+Basic Java, collections, and a terminal. No machine-learning background required.
+The runnable track targets **Java 21+ and Apache Lucene 10.3.1**, a deliberately
+pinned teaching version, not a claim about the newest release. Browser exercises
+work without Java. Lucene is a Java library, not a hosted search service; your
+application owns ingestion, authorization, deployment, and the API around it.
+
+## 1. Indexing and full-text search · ~32 min
+
+1. [The Inverted Index](./01-foundations/01-inverted-index.mdx) · **~9 min**.
+	Terms, postings, positions, and candidate generation.
+2. [Build an Index You Can Query](./01-foundations/02-build-an-index.mdx) · **~13 min**.
+	Downloadable Maven lab, field capabilities, writers, readers, and searchers.
+3. [Analysis and Query Semantics](./01-foundations/03-analysis-and-queries.mdx) · **~10 min**.
+	Real token inspection, phrases, Boolean clauses, and trusted filters.
+
+## 2. Ranking and vector retrieval · ~30 min
+
+1. [BM25 and Relevance Debugging](./02-ranking-and-vectors/01-bm25.mdx) · **~10 min**.
+	Rarity, saturation, length normalization, and scoring explanations.
+2. [Embeddings and Vector Search](./02-ranking-and-vectors/02-vector-search.mdx) · **~10 min**.
+	Vector fields, similarity, model compatibility, and chunking.
+3. [Approximate Neighbors and Filters](./02-ranking-and-vectors/03-ann-and-filtering.mdx) · **~10 min**.
+	HNSW intuition, exact fallback, candidate limits, and ANN recall.
+
+## 3. Hybrid search and production · ~31 min
+
+1. [Hybrid Search and Reranking](./03-hybrid-and-production/01-hybrid-search.mdx) · **~11 min**.
+	Reciprocal-rank fusion, candidate depth, stable IDs, and evidence selection.
+2. [Evaluate Search Without Fooling Yourself](./03-hybrid-and-production/02-evaluation.mdx) · **~10 min**.
+	Judgments, precision, recall, nDCG, query slices, and latency.
+3. [Freshness, Durability, and Operations](./03-hybrid-and-production/03-index-lifecycle.mdx) · **~10 min**.
+	Refresh versus commit, updates, merges, pagination, backups, and migrations.
+
+## 4. Text analysis and matching · ~45 min
+
+1. [Custom Analysis, Synonyms, and Languages](./04-text-retrieval/01-custom-analysis.mdx) · **~9 min**.
+	Per-field pipelines, folding, stemming, multilingual choices, and synonym graphs.
+2. [N-grams and Autocomplete](./04-text-retrieval/02-ngrams-autocomplete.mdx) · **~9 min**.
+	Character grams, edge grams, asymmetric analysis, and a weighted suggester.
+3. [Fuzzy, Wildcard, and Regex Queries](./04-text-retrieval/03-query-patterns.mdx) · **~9 min**.
+	Typo tolerance, spelling suggestions, term expansion, and complexity budgets.
+4. [Multi-field Search and Boosting](./04-text-retrieval/04-multifield-ranking.mdx) · **~9 min**.
+	Title/body evidence, DisMax, boosts, and query construction.
+5. [Proximity, Shingles, and Positions](./04-text-retrieval/05-proximity-shingles.mdx) · **~9 min**.
+	Phrase slop, word shingles, multi-valued gaps, term vectors, and payloads.
+
+## 5. Search features and data modeling · ~27 min
+
+1. [Facets, Drill-Down, and Safe Highlighting](./05-search-features/01-facets-highlighting.mdx) · **~9 min**.
+	Eligible counts, drill-sideways semantics, offsets, and escaped snippets.
+2. [Numeric Ranges, Sorting, and Pagination](./05-search-features/02-ranges-pagination.mdx) · **~9 min**.
+	Points, doc values, missing values, tie-breaks, and searchAfter snapshots.
+3. [Nested Documents and Block Joins](./05-search-features/03-nested-joins.mdx) · **~9 min**.
+	Variant relationships, parent-last blocks, structural boundaries, and update invariants.
+
+## 6. Vector engineering · ~36 min
+
+1. [Real Embeddings and Token-Bounded Chunks](./06-vector-engineering/01-real-embeddings.mdx) · **~9 min**.
+	Pinned local ONNX inference, chunk IDs, access metadata, and Lucene retrieval.
+2. [HNSW Internals and Measured Tuning](./06-vector-engineering/02-hnsw-tuning.mdx) · **~9 min**.
+	Construction parameters, exact eligible baselines, recall, latency, and size.
+3. [Vector Compression and Quantization](./06-vector-engineering/03-vector-compression.mdx) · **~9 min**.
+	Executable scalar-quantized comparison and honest resource/quality accounting.
+4. [Executable Cross-Encoder Reranking](./06-vector-engineering/04-cross-encoder.mdx) · **~9 min**.
+	Local query-passage scoring, candidate coverage, truncation, and parent deduplication.
+
+## 7. Operations and architecture · ~27 min
+
+1. [Persistent Indexes, SearcherManager, and Recovery](./07-operations/01-persistence-recovery.mdx) · **~9 min**.
+	Disk-backed commits, acquired searchers, pinned snapshots, and verified restore.
+2. [Collectors, Caches, and Request Budgets](./07-operations/02-performance-budgets.mdx) · **~9 min**.
+	Count relations, filter-cache admission, concurrency, timeouts, and memory/I/O experiments.
+3. [Shards, Replicas, and Distributed Search](./07-operations/03-distributed-search.mdx) · **~9 min**.
+	Routing, global merge, replica freshness, partial failures, and service boundaries.
+
+Use [Advanced Lab Setup](./advanced-labs.mdx) for the additional Java files and
+optional Node.js 22+ local-model track. Run these in a separate lab directory,
+not inside the site's package installation.
+
+## Put it together 🛠️
+
+[Capstone and Field Guide](./capstone.mdx) · **~5 min · read once, revisit often**.
+Build an evaluated help-article search prototype with explicit acceptance criteria.
+Allow 2–4 hours for the basic project extension; production-scale benchmarks and
+service integration are additional work.
+
+## How to use the course
+
+Each lesson includes a browser rehearsal, a concrete example, a bounded exercise,
+an optional-depth fold, and a feedback quiz. The three-article postings illustration
+and five-article Java corpus are named separately so their expected results are
+not confused. The Java lab includes lexical, phrase, analyzer, vector, hybrid, and refresh
+modes, and rebuilds its in-memory index on every run.
+
+The foundational Java lab and ANN benchmark use explicitly synthetic coordinates.
+Module 6 separately runs a real local embedding model and cross-encoder. The
+operations lab uses disposable filesystem indexes and tests snapshot restoration.
+No lab implements a production cluster or authorization service. Browser scoring
+widgets isolate mechanisms; they are not Lucene running in JavaScript.
+
+Lesson estimates use approximately 200 words per minute for prose, meme captions, and code,
+rounded up, plus five minutes for the short rehearsal, quiz, and experiment
+(eight minutes for initial lab setup). Optional folds are included in the word
+counts; extended benchmark and service-design exercises may take longer.
+
+## Version and sources
+
+API links target the [Lucene 10.3.1 documentation](https://lucene.apache.org/core/10_3_1/).
+The prose, fixtures, and lab are original teaching material, with primary references
+linked at the end of each lesson. External reading is optional. This is not an
+Apache Software Foundation course or endorsement.
+
+After the first module, note whether lesson length, humor, interaction density,
+source depth, and optional technical detail fit your learning pace. Use that feedback
+to choose which capstone extensions deserve a deeper follow-up module.

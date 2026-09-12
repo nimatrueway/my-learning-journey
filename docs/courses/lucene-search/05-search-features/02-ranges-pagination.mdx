@@ -1,0 +1,129 @@
+---
+sidebar_position: 2
+slug: /courses/lucene-search/ranges-pagination
+title: Numeric Ranges, Sorting, and Pagination
+description: Combine point indexes and doc values with deterministic searchAfter pagination and explicit snapshot guarantees.
+---
+
+import LuceneDecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+Page two repeats a result from page one after an update. A stable-looking sort
+order is not enough: pagination also needs a stable view and a clear cursor contract.
+
+⏱️ **Reading + practice: ~9 min** · folds are optional extra.
+
+<Meme top="The cat rearranged page one while you opened page two." visual="🐈📑" bottom="Stable ties help. A stable reader view finishes the job. Pagination needs more than good intentions." />
+
+## One year, three representations
+
+The [advanced lab](../advanced-labs.mdx) stores each year as an `IntPoint` for
+range matching, `NumericDocValuesField` for sorting, and `StoredField` for display.
+These share the name `year` but support different access paths. All three must
+represent the same value when your application intends one logical property.
+
+```java
+document.add(new IntPoint("year", year));
+document.add(new NumericDocValuesField("year", year));
+document.add(new StoredField("year", year));
+```
+
+An `IntPoint.newRangeQuery("year", 2020, 2024)` has inclusive endpoints. For
+timestamps, choose a consistent numeric representation such as UTC epoch
+milliseconds in a `LongPoint`; decide inclusive versus exclusive boundaries at
+the application layer and avoid overflowing when adjusting endpoints.
+Dates rendered as strings do not automatically acquire date semantics.
+
+The point type and numeric sort type must agree when Lucene uses point-based
+sort optimizations. The fixture uses `SortField.Type.INT` for its `IntPoint`,
+even though numeric doc values carry a long-valued representation. A LONG
+comparator on this same point field causes a dimension-width error in the pinned
+version. Compiler success alone does not verify the schema's runtime contract.
+
+## Run deterministic pages
+
+Run `FullTextLab ranges`. It returns `page1=A`, `page2=B`. A is from 2024,
+B from 2022; private C is excluded before sorting. The sort is descending year,
+then ascending stable ID:
+
+```java
+var sort = new Sort(new SortField("year", SortField.Type.INT, true),
+    new SortField("id", SortField.Type.STRING));
+var first = searcher.search(query, 1, sort);
+var second = searcher.searchAfter(first.scoreDocs[0], query, 1, sort);
+```
+
+Both calls use the same searcher. The stored ID supports display; the separate
+`SortedDocValuesField` supports this tie-break sort. Adding `Store.YES` alone
+would not provide sortable doc values. Sorting by a field is not automatically
+BM25 sorting, and scores may not be computed or populated when not requested.
+
+## Rehearse the cursor promise
+
+Suppose A and B share a year and a new article arrives between page requests.
+Choose the product behavior before selecting a cursor implementation.
+
+<LuceneDecisionLab title="What does next page promise?" label="Pagination policy" choices={[
+  {label: 'Offset against a new reader each time', result: 'New or deleted documents can shift the prefix between requests.', cost: 'Duplicates and omissions are possible, and deep offsets collect large prefixes.'},
+  {label: 'searchAfter with a pinned reader and stable sort', result: 'Pages traverse one consistent view with explicit tie-breaking.', cost: 'Holding snapshots retains resources; cursors need expiration and release.'},
+  {label: 'Fresh results on every page by design', result: 'Each page reflects newer data rather than a frozen result set.', cost: 'Document the weaker consistency promise and test duplicates or missing results.'},
+]} />
+
+## Missing and multi-valued fields
+
+Choose a missing-value policy explicitly with the appropriate `SortField`
+configuration. Zero is a real value, not always a sensible stand-in for missing.
+Test absent years and absent tie-break values; ingestion should usually guarantee
+the stable ID used by every result and cursor.
+
+Multi-valued numbers require sorted-numeric doc values and a defined selection
+rule such as minimum or maximum for sorting. Multi-valued strings similarly use
+sorted-set values with an explicit sort policy. The lesson's single-valued fixture
+does not settle those choices. An index sort configured at write time can help
+some query patterns, but must match supported fields and cannot be changed by
+just selecting another query-time sort on existing segments.
+
+`searchAfter` avoids requesting every preceding hit for each successive page;
+it is not an unbounded cheap random-access API. Encode query, filters, sort,
+snapshot identity, and last-hit sort values in a server-controlled cursor design.
+Do not accept client-controlled cursor fields as permission constraints. A
+reader's internal document ID is not a portable cross-snapshot address.
+
+## Try it yourself 🧪
+
+Give B the same year as A and verify that the ID tie-break remains deterministic.
+Then remove B's numeric doc values while retaining its point and stored year.
+Observe the missing-sort behavior, choose an explicit missing-value policy, and
+restore schema consistency. Finally, open a different reader between page calls
+after inserting an earlier-sorting document and explain why a snapshot guarantee
+cannot be inferred merely from the method name `searchAfter`.
+
+<details>
+<summary>🤓 Counting and paging are independent (optional)</summary>
+
+The number of returned `ScoreDoc` entries is not necessarily an exact total-hit
+count. Lucene reports a total value and a relation indicating exactness or a lower
+bound. An interface can support stable next-page navigation while declining an
+expensive exact global count. Do not turn a lower bound into a precise page-count
+promise. The performance lesson demonstrates the collector threshold explicitly.
+
+</details>
+
+## Recap 🐾
+
+1. Points, doc values, and stored fields must implement one consistent numeric contract.
+2. Stable sorting needs explicit tie-breaks and missing-value behavior.
+3. searchAfter pagination also needs a deliberate reader lifetime and cursor policy.
+
+<Quiz question="Why does storing an article ID not make it available for the lab's string sort?" options={[
+  {text: 'The sort needs doc values; stored fields serve retrieval for display.', correct: true, feedback: 'Exactly. Add the required representation rather than treating storage as universal indexing.'},
+  {text: 'String sorting is impossible in Lucene.', feedback: 'Sorted doc values and SortField support it.'},
+  {text: 'IDs must be replaced by internal document numbers.', feedback: 'Stable business IDs remain essential for deterministic ties and identity.'},
+]} />
+
+## References
+
+[SortField](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/search/SortField.html),
+[IndexSearcher](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/search/IndexSearcher.html),
+and [IntPoint](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/document/IntPoint.html).

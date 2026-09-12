@@ -1,0 +1,116 @@
+---
+sidebar_position: 2
+slug: /courses/lucene-search/hnsw-tuning
+title: HNSW Internals and Measured Tuning
+description: Compare approximate neighbors with an exact eligible baseline while varying graph construction parameters.
+---
+
+import LuceneDecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+An ANN benchmark returns in a fraction of a millisecond. Excellent, unless it
+quietly missed half the neighbors. Speed without a quality denominator is an
+incomplete experiment.
+
+⏱️ **Reading + practice: ~9 min** · folds are optional extra.
+
+<Meme top="The cat took a shortcut and found almost all the neighbors." visual="🐈🗺️" bottom="Almost needs a denominator. Compare ANN against exact eligible neighbors before celebrating the stopwatch." />
+
+## How graph navigation saves work
+
+HNSW links vectors into a navigable, layered graph. Sparse upper layers provide
+long-range navigation; denser lower layers refine a neighborhood. Query execution
+uses vector distances to explore promising connections rather than evaluating
+every vector. Construction selects connections among candidate neighbors, so
+build effort influences the routes available to later searches.
+
+`maxConn`, often described as M, controls graph connectivity. The construction
+`beamWidth` controls candidate exploration while building. Larger settings may
+improve recall at the expense of build work and graph memory, but the outcome
+depends on the data and workload. Construction beam width is **not** a generic
+query-time `efSearch` setting, and this Lucene query API does not expose the same
+configuration surface as every other HNSW library or search server.
+
+## Compare against the same eligible universe
+
+The [VectorLab](../advanced-labs.mdx) creates 3,000 seeded synthetic 64-dimensional
+vectors and 30 independent query vectors. Every fifth document is private. Its
+exact baseline computes Lucene's cosine function over the same public documents
+eligible for ANN, sorts by score with a stable-ID tie-break, and takes ten.
+
+```bash
+mvn -q compile exec:java -Dexec.mainClass=VectorLab -Dexec.args="benchmark 8 40"
+mvn -q compile exec:java -Dexec.mainClass=VectorLab -Dexec.args="benchmark 16 100"
+mvn -q compile exec:java -Dexec.mainClass=VectorLab -Dexec.args="benchmark 32 200"
+```
+
+Each run builds a new index with an explicit `Lucene99HnswVectorsFormat` under
+`Lucene103Codec`, performs five warmups, and reports graph settings, documents,
+segments, total index bytes, build time, recall@10, and observed p50/p95 query time.
+The pinned codec makes the experiment explicit; it is not a recommendation to
+override Lucene's default codec in every application.
+
+Recall@10 is the fraction of exact top-ten IDs recovered by ANN, averaged across
+queries. It is not judged relevance recall. An embedding can faithfully return
+its exact nearest neighbors while being poor at the user's actual task. Near-ties
+also deserve inspection: a different equally good neighbor can lower strict
+ID-overlap recall without meaningful user harm.
+
+<LuceneDecisionLab title="Which comparison diagnoses ANN loss?" label="Baseline" choices={[
+  {label: 'Exact public cosine neighbors versus public ANN', result: 'Differences isolate approximate retrieval under the same metric and eligibility.', cost: 'You still need a separate human relevance evaluation.'},
+  {label: 'Exact all-document neighbors versus public ANN', result: 'Private neighbors appear as apparent ANN misses.', cost: 'The two systems answer different questions, so the recall number is misleading.'},
+  {label: 'ANN results versus BM25 order', result: 'The comparison mixes lexical and vector relevance behavior.', cost: 'It cannot isolate graph approximation error.'},
+]} />
+
+## What the benchmark does not establish
+
+These Gaussian vectors are a mechanics fixture, not a real embedding distribution.
+The directory lives in memory; timing excludes model inference, network overhead,
+stored-field loading after search, and service queues. Thirty queries are too few
+to characterize a production tail. A single run also includes JVM and machine
+noise. Report observed measurements, not an SLA.
+
+The public filter can change execution strategy. Lucene may choose exact work
+for sufficiently small eligible sets or fall back when exploration is not useful.
+The four-document real-model fixture therefore cannot establish HNSW graph recall.
+Inspect behavior across filter selectivity, segment counts, deletions, concurrent
+indexing, and realistic query distributions before choosing production settings.
+
+## Try it yourself 🧪
+
+Run the three configurations three times each. Record build time, bytes, recall,
+and latency together; do not select the fastest row while ignoring quality.
+Change only the filter selectivity, then repeat the table. Explain whether a
+latency change might come from a different execution path rather than a better
+graph. Finally replace the synthetic corpus with representative authorized model
+embeddings before proposing a deployment configuration.
+
+<details>
+<summary>🤓 Segments and candidate breadth (optional)</summary>
+
+Lucene maintains vector structures per segment and combines results at search
+time. Refresh and merging therefore affect the shape of work even when the logical
+corpus is unchanged. Requesting a larger candidate pool can improve the recall
+available to downstream reranking, but costs work and is not identical to setting
+a library-specific graph exploration parameter. Keep retrieval depth, returned
+display depth, and reranking depth as separately named quantities.
+
+</details>
+
+## Recap 🐾
+
+1. Graph connectivity and construction search trade build resources for potential recall.
+2. ANN recall needs an exact baseline with the same vectors, metric, and access filters.
+3. Synthetic in-memory timings explain mechanics, not production relevance or latency guarantees.
+
+<Quiz question="What does a recall@10 of 1.0 against exact vectors establish?" options={[
+  {text: 'The approximate search recovered the exact top-ten IDs for those queries.', correct: true, feedback: 'Yes. That isolates approximation, not whether the neighbors are useful to users.'},
+  {text: 'All ten results answer the query correctly.', feedback: 'That requires relevance or answer-quality judgments.'},
+  {text: 'The same recall is guaranteed after any model or filter change.', feedback: 'Those changes alter the tested workload.'},
+]} />
+
+## References
+
+[HNSW format](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/codecs/lucene99/Lucene99HnswVectorsFormat.html)
+and [KnnFloatVectorQuery](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/search/KnnFloatVectorQuery.html).

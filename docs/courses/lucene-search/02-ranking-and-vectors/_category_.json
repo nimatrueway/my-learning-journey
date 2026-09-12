@@ -1,0 +1,5 @@
+{
+  "label": "2. Ranking & Vector Retrieval",
+  "position": 2,
+  "link": {"type": "generated-index", "description": "Explain BM25, introduce embeddings, and understand approximate nearest-neighbor search."}
+}

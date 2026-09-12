@@ -1,0 +1,115 @@
+---
+sidebar_position: 1
+slug: /courses/lucene-search/custom-analysis
+title: Custom Analyzers, Synonyms, and Languages
+description: Build an analyzer pipeline, inspect multiword synonym graphs, and choose normalization per field and language.
+---
+
+import LuceneDecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+Searching `cafe` misses `café`. Stemming fixes one plural but damages a product
+name. Analysis is a set of domain decisions, not a checkbox labeled "better text."
+
+⏱️ **Reading + practice: ~9 min** · folds are optional extra.
+
+<Meme top="The cat ran every field through the same grooming routine." visual="🐱🪮" bottom="Prose wanted stemming. The product ID did not. Pick analysis per field, not per mood." />
+
+## Build a pipeline you can inspect
+
+Use the [advanced lab setup](../advanced-labs.mdx). `FullTextLab.analyzer(...)`
+constructs `StandardTokenizer`, then `LowerCaseFilter`, then `ASCIIFoldingFilter`.
+Its `standard` mode is a custom folding pipeline, not Lucene's stock analyzer.
+Run these commands with the same input and compare what survives:
+
+```bash
+mvn compile exec:java -Dexec.mainClass=FullTextLab -Dexec.args='standard "Café bicycles"'
+mvn compile exec:java -Dexec.mainClass=FullTextLab -Dexec.args='english "Café bicycles"'
+mvn compile exec:java -Dexec.mainClass=FullTextLab -Dexec.args='keyword "Café bicycles"'
+```
+
+The custom pipeline folds the accent and preserves the plural. `EnglishAnalyzer`
+applies its own stopword and stemming rules; it is not the same pipeline plus
+one extra operation. `KeywordAnalyzer` emits the entire input unchanged. Read
+the actual terms before predicting matching. A normalized natural-language body
+and a case-sensitive catalog identifier should not automatically share analysis.
+
+For multiple fields, use `PerFieldAnalyzerWrapper`. The lab assigns a keyword
+analyzer to `id` and the text analyzer elsewhere. Its `id` is a `StringField`,
+which bypasses analysis anyway; the wrapper matters when a tokenized field or
+query construction actually invokes it. This distinction prevents a surprisingly
+common mistake: configuring an analyzer and assuming every field must use it.
+
+## Rehearse a normalization policy
+
+Choose a policy for a catalog containing both article prose and exact part IDs.
+These outcomes are design fixtures; use the Java token output to test your data.
+
+<LuceneDecisionLab title="One policy for two kinds of text?" label="Normalization policy" choices={[
+  {label: 'Stem every field', result: 'Related inflections may converge, but exact identifiers can be altered.', cost: 'An identifier lookup is not a language-retrieval problem.'},
+  {label: 'Separate prose and exact fields', result: 'Prose gets language-aware analysis; identifiers keep their explicit exact contract.', cost: 'Queries must address the correct field and normalize exact values consistently.'},
+  {label: 'Preserve everything as one token', result: 'Exact strings remain available, but individual words no longer retrieve prose.', cost: 'Keyword analysis is useful, but it is not full-text tokenization.'},
+]} />
+
+## Synonyms are paths, not extra words
+
+Run `FullTextLab` with `-Dexec.args='synonyms nyc'`. It emits a `nyc` token with
+position length three alongside `new`, `york`, and `city` at consecutive positions.
+Those are alternative paths through the same span. A bag of four strings would
+lose which words belong together. The lab encodes the multiword synonym using
+`SynonymMap`'s word separator and keeps the original path.
+
+Prefer graph-aware query-time expansion for this example. Lucene's `QueryBuilder`
+can consume the graph when building Boolean or phrase queries. Feeding a graph
+directly into indexing does not preserve arbitrary position-length semantics;
+index-time synonym designs need deliberate flattening and phrase regression tests.
+Changing an indexed analysis pipeline requires reindexing; changing query-time
+synonyms can avoid that, but still changes query behavior and cost.
+
+## Language is part of the schema
+
+English stemming is not multilingual analysis. CJK segmentation may use bigrams
+or language-aware tokenization; ICU analysis offers additional Unicode processing
+in the separate `lucene-analysis-icu` module. Choose based on actual language data,
+not a translation of an English test. Test combining characters, full-width forms,
+accents, mixed-script names, and identifiers. ASCII folding is not comprehensive
+Unicode normalization or transliteration. Preserve original stored text for display.
+
+## Try it yourself 🧪
+
+Compare ten real domain strings in all three analyzer modes. Include `USB-C`, a
+plural, an accented name, and a case-sensitive ID. Record desirable equivalences
+and collisions. Then inspect `synonyms nyc`: draw both paths from position zero
+to position three and explain why `nyc city` is not simply the same phrase.
+Before adopting synonyms, add a negative example such as a company whose name
+contains an otherwise common synonym. Relevant expansion can also create false hits.
+
+<details>
+<summary>🤓 Offsets and character filters (optional)</summary>
+
+A character filter changes input before tokenization and must maintain offset
+corrections so later tokens can refer to original stored text. Token filters may
+change term text without changing the original span. The printed offsets therefore
+need not equal a transformed term's character count. Highlighting depends on this
+contract. Test the full analyzer rather than independently slicing normalized text.
+
+</details>
+
+## Recap 🐾
+
+1. Inspect a complete pipeline, and choose normalization separately for prose and exact fields.
+2. Multiword synonyms require graph-aware query construction and phrase tests.
+3. Language and Unicode behavior need representative data and versioned analysis policies.
+
+<Quiz question="Why does the nyc token span three positions in the synonym fixture?" options={[
+  {text: 'It shares endpoints with the alternative new york city path.', correct: true, feedback: 'Yes. Position length preserves the alternative path through the graph.'},
+  {text: 'Every three-letter word spans three token positions.', feedback: 'Characters and token positions are different units.'},
+  {text: 'It must occur three times in the document.', feedback: 'Position length is not term frequency.'},
+]} />
+
+## References
+
+[SynonymGraphFilter](https://lucene.apache.org/core/10_3_1/analysis/common/org/apache/lucene/analysis/synonym/SynonymGraphFilter.html),
+[QueryBuilder](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/util/QueryBuilder.html),
+and [ICU analysis](https://lucene.apache.org/core/10_3_1/analysis/icu/index.html).

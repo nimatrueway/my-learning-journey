@@ -1,0 +1,125 @@
+---
+sidebar_position: 3
+slug: /courses/lucene-search/query-patterns
+title: Fuzzy, Wildcard, and Regex Queries
+description: Use term-dictionary expansion for typo tolerance and patterns without confusing it with semantic retrieval.
+---
+
+import LuceneDecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+`bicyle` is a typo. `*cycle` is a pattern. `two-wheeled transport` is a paraphrase.
+Treating all three as "fuzzy search" hides the actual retrieval problem.
+
+⏱️ **Reading + practice: ~9 min** · folds are optional extra.
+
+<Meme top="Fuzzy search: finally, a feature named after me." visual="🐈🧶" bottom="It tolerates spelling edits, not arbitrary meaning. The cat remains disappointed by this specification." />
+
+## Expand terms under an explicit rule
+
+Run `FullTextLab patterns` after [lab setup](../advanced-labs.mdx). It builds
+four real queries against the normal, lowercased body field:
+
+```java
+new PrefixQuery(new Term("body", "bicy"));
+new FuzzyQuery(new Term("body", "bicyle"), 1);
+new WildcardQuery(new Term("body", "*cycle"));
+new RegexpQuery(new Term("body", "bi.*"));
+```
+
+Each returns A and B, never private C. They happen to agree on this corpus;
+they do not have equivalent semantics. Prefix requires an initial sequence.
+Fuzzy matching allows bounded edits. Wildcards use `*` for a sequence and `?`
+for a character. Lucene regular expressions describe an automaton over terms,
+not a Java regex running against an entire stored document.
+
+These query objects do not apply your ordinary analyzer to the supplied term.
+Normalize intentional literal input consistently. A raw uppercase prefix can miss
+a lowercased dictionary, while analyzing regex metacharacters as ordinary prose
+can destroy the pattern. Expose an explicit pattern mode instead of guessing
+whether punctuation represents user syntax.
+
+## Typo tolerance has boundaries
+
+`FuzzyQuery` supports at most two edits in this implementation and normally allows
+adjacent transpositions. The longer constructor exposes maximum edits, an exact
+prefix length, maximum expansions, and transposition behavior. A longer required
+prefix reduces work but prevents recovering a typo in that prefix. Short terms
+also have scaled-distance constraints; "two edits" does not mean every tiny string
+can match every other tiny string.
+
+Fuzzy matching retrieves documents for spelling variants. A spell checker instead
+proposes replacement words or queries, possibly requiring corpus frequency or a
+dictionary. Lucene's suggest module includes spell-checking utilities such as
+`DirectSpellChecker`; their outputs still need domain tests. Run `FullTextLab spell`
+to suggest `bicycle` for `bicyle`. Its separate `public_terms` field contains only
+public source text: spell suggestions must not leak a private vocabulary. This
+fixed-public fixture is not a dynamic per-user dictionary. Neither fuzzy terms
+nor spelling suggestions imply that `bike` means `bicycle`. That is a synonym
+or embedding decision, not edit distance.
+
+## Rehearse a query policy
+
+Consider a public product search endpoint. Choose a policy before exposing arbitrary
+query syntax. The outcomes below describe tradeoffs, not measured request times.
+
+<LuceneDecisionLab title="How much syntax should a search box accept?" label="Request policy" choices={[
+  {label: 'Exact query, then bounded fuzzy fallback', result: 'Correct spellings keep the original ranking; a typo can trigger a second path.', cost: 'Define the fallback threshold and protect short identifiers from accidental expansion.'},
+  {label: 'Leading wildcard on every word', result: 'Suffix and infix-style term patterns can broaden candidates.', cost: 'Large term dictionaries may require expensive enumeration even for a short result list.'},
+  {label: 'Unrestricted client regex', result: 'Users can express flexible term languages.', cost: 'Automaton construction limits, request budgets, field allowlists, and abuse handling become essential.'},
+]} />
+
+## Why ten returned hits may still be expensive
+
+Multi-term queries find matching dictionary terms and rewrite them into an
+executable representation. Rewrite methods differ: some combine or blend term
+statistics, some assign constant scores, and some use bounded top-term expansions.
+Inspect the pinned API rather than assuming all expansions behave like an OR
+of equally scored terms. A top-ten collector does not cap the cost of discovering
+those terms. Leading wildcards often remove a useful dictionary prefix.
+
+Limit input size, permitted fields, fuzzy expansions, automaton determinization
+work, and overall request time. A regex complexity limit is not a complete query
+timeout. Cancellation, queue limits, and fallback behavior also belong in the
+service. Return a clear validation error rather than silently replacing an
+expensive request with a different, surprising query.
+
+## Try it yourself 🧪
+
+Add public bodies containing `tricycle`, `bicycles`, and `binary` to the fixture.
+Predict which queries match each term and run the mode. Change the typo to
+`xbicycle`, then require a nonzero fuzzy prefix length. Record what recall you
+lost. Finally, add an exact part number whose nearest edit-distance neighbor is
+a different product; explain why fuzzy recovery should not be unconditional.
+
+<details>
+<summary>🤓 Automata and rewrite costs (optional)</summary>
+
+Lucene can intersect an automaton with a term dictionary rather than check every
+stored body. That structure is powerful, but the number of accepted terms and
+postings still matters. Automaton construction complexity and execution complexity
+are different costs. Benchmark high-cardinality fields with broad patterns, not
+only a three-document example. Record rejected requests as well as successful
+ones so a faster service is not merely discarding harder workloads unnoticed.
+
+</details>
+
+## Recap 🐾
+
+1. Fuzzy edits, prefix matching, wildcards, and regex encode different term-level rules.
+2. Programmatic patterns need deliberate normalization, syntax policy, and bounded expansion.
+3. Small result limits do not guarantee cheap dictionary expansion or safe requests.
+
+<Quiz question="Why is FuzzyQuery not a general solution for matching bike with bicycle?" options={[
+  {text: 'Edit distance measures spelling changes, not semantic equivalence.', correct: true, feedback: '😼 Fuzzy fur, precise distinction. Use a tested synonym or semantic representation for that relationship.'},
+  {text: 'It only searches stored fields.', feedback: 'Fuzzy queries work through indexed terms.'},
+  {text: 'It removes all access filters.', feedback: 'The lab retains a required public filter around each query.'},
+]} />
+
+## References
+
+[FuzzyQuery](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/search/FuzzyQuery.html),
+[MultiTermQuery](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/search/MultiTermQuery.html),
+[RegExp](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/util/automaton/RegExp.html),
+and [DirectSpellChecker](https://lucene.apache.org/core/10_3_1/suggest/org/apache/lucene/search/spell/DirectSpellChecker.html).

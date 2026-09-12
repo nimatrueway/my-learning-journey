@@ -1,0 +1,140 @@
+---
+sidebar_position: 3
+slug: /courses/lucene-search/index-lifecycle
+title: Freshness, Durability, and Operations
+description: Manage readers, commits, updates, segments, pagination, and schema migrations.
+---
+
+import LuceneDecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+An update succeeds, but the search results still show the old title. You commit
+again. Still old. The missing step may be reader refresh, not another disk write.
+
+⏱️ **Reading + practice: ~10 min** · folds are optional extra.
+
+<Meme top="New document. Same old reader. Deeply offended cat." visual="😾🔄" bottom="A commit does not give an existing reader new eyes. Refresh visibility; commit durability." />
+
+## A reader is a view, not a live subscription
+
+An `IndexWriter` accepts additions, updates, and deletions. Existing readers do
+not automatically adopt those changes. A near-real-time reader can expose writer
+changes before a durable commit, but you must reopen or refresh it to obtain a
+new view. Searchers that use an older reader continue searching that older view.
+
+This separates three concerns. **Ingestion acknowledgement** says what the writer
+accepted. **Search visibility** says what a particular reader can see.
+**Durability** says which state can be recovered after a failure. A service must
+define promises for each rather than returning an ambiguous "saved" status.
+
+The lab's in-memory directory has no process-restart durability at all. That is
+intentional. For filesystem-backed indexes, `commit()` establishes a committed
+index state, subject to the storage system honoring durability operations. A
+near-real-time refresh is not a replacement for commits or a recoverable source
+of truth.
+
+## Rehearse the timeline
+
+Start with a filesystem index committed at version 1 and a reader opened on that
+version. The writer then accepts version 2. Choose the next action. These outcomes
+describe the specified existing reader and last explicit commit, not every possible
+reader-opening path.
+
+<LuceneDecisionLab title="Version 2 has reached the writer" label="Next action" choices={[
+  {label: 'Commit only; keep the old reader', result: 'Version 2 is committed, but this reader still shows version 1.', cost: 'Durability advanced without advancing this search view.'},
+  {label: 'Refresh from writer only', result: 'A new near-real-time reader can see version 2; the last explicit commit is version 1.', cost: 'Visibility advanced without a new durability checkpoint.'},
+  {label: 'Commit and refresh from writer', result: 'Version 2 is committed and available to searches using the new reader.', cost: 'Commit and refresh costs must fit the service freshness and durability targets.'},
+]} />
+
+If updates continue concurrently, "commit then refresh" is not automatically an
+application-wide transaction boundary: a refresh can include later uncommitted
+changes. Define snapshot semantics deliberately when exporting results or promising
+a particular version to a caller.
+
+## Observe the behavior in Java
+
+```bash
+mvn compile exec:java -Dexec.args='refresh'
+```
+
+Expect `Old reader matches: 0` followed by `New reader matches: 1`. The lab updates
+A to contain `Updated`, then queries for the lowercased term `updated`. The old
+reader was opened before the update. The new reader comes from:
+
+```java
+DirectoryReader refreshed = DirectoryReader.openIfChanged(reader, writer);
+```
+
+This method can return `null` when nothing changed. The lab checks that its known
+update produced a new reader and closes it after use. In a service, use a managed
+lifecycle such as `SearcherManager`: acquire a searcher, execute the request,
+release it in `finally`, and let a controlled refresh policy swap views while
+in-flight requests finish. Do not close a shared reader underneath another request.
+
+## Updates, segments, and identifiers
+
+`updateDocument(new Term("id", "A"), replacement)` replaces matching documents
+through delete-and-add semantics. An ID field is not a uniqueness constraint;
+plain `addDocument` can create duplicates. Make ingestion replay-safe with stable
+IDs and a deliberate update policy, and handle ordering when older source events
+arrive after newer ones.
+
+Segments are largely immutable retrieval structures. Deletes mark documents as
+not live; merges can reclaim deleted data and combine segments. Merges consume
+I/O, CPU, and temporary space, so an index that looks fast during a quiet query
+demo may behave differently under sustained ingestion. Do not routinely force-merge
+a live write-heavy index to one segment; evaluate merge policy and operational
+workload instead of treating segment count as a beauty contest.
+
+Document IDs can change across reader views and merges. Pagination should use
+`searchAfter` with a well-defined query, sort, and compatible reader snapshot,
+rather than fetching an ever-larger prefix for every deep page. For deterministic
+sorting, add a stable tie-break field with the appropriate doc-values representation.
+Snapshot lifetime, cursor expiry, and fresh updates are product decisions, not
+properties that an offset parameter resolves automatically.
+
+## Try it yourself 🧪
+
+Run the refresh mode and explain both counts. Then remove the update call in a
+scratch copy and replace the assertion with explicit handling of a `null` refreshed
+reader. Verify that "no changes" is a normal outcome, not a leaked resource or a
+reason to keep retrying. Restore the original lab afterward.
+
+Write a service contract with three numbers: maximum indexing lag, maximum search
+visibility lag, and tolerated data loss after a crash. Identify the source of truth
+from which you can rebuild. Then list metrics that would reveal violated promises:
+ingestion failures, refresh age, commit age, query p95, merge backlog, disk headroom,
+and authorization failures. Pick targets based on the product rather than copying
+an arbitrary refresh interval from a tutorial.
+
+<details>
+<summary>🤓 Backups and migrations (optional)</summary>
+
+Do not copy arbitrary files from an actively changing index and assume the result
+is a coherent backup. Use a consistent committed snapshot and a retention policy
+that keeps its files alive during copying, then test restoration. For an analyzer,
+schema, or embedding-model change, build a new versioned index from a recoverable
+source, evaluate it, catch up changes, switch readers deliberately, and retain a
+rollback path. Follow Lucene's documented index compatibility and upgrade process;
+opening every historical index with every future release is not guaranteed.
+
+</details>
+
+## Recap 🐾
+
+1. Accepted writes, reader visibility, and durable commits are separate promises.
+2. Manage shared searcher lifetimes and use stable business IDs for updates and results.
+3. Measure ingestion and merge behavior, and test consistent backups and versioned migrations.
+
+<Quiz question="A commit succeeds while an existing reader remains open. What must be true?" options={[
+  {text: 'That reader now sees every committed update.', feedback: 'Existing reader views do not refresh themselves.'},
+  {text: 'The commit does not by itself refresh that reader.', correct: true, feedback: 'Exactly. Durability and this reader\'s visibility are separate operations.'},
+  {text: 'All internal document IDs are now permanent.', feedback: 'Internal IDs remain tied to a reader view, not a business identity.'},
+]} />
+
+## References
+
+Apache Lucene [DirectoryReader](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/index/DirectoryReader.html),
+[IndexWriter](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/index/IndexWriter.html),
+and [SearcherManager](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/search/SearcherManager.html).

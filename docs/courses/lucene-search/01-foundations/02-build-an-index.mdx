@@ -1,0 +1,149 @@
+---
+sidebar_position: 2
+slug: /courses/lucene-search/build-an-index
+title: Build an Index You Can Query
+description: Run a complete Java lab and distinguish indexed fields, stored fields, points, and doc values.
+---
+
+import useBaseUrl from '@docusaurus/useBaseUrl';
+import LuceneDecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+Your search finds the right article, but its title comes back as `null`. The index
+isn't broken. You asked it to make a field searchable, not retrievable.
+
+⏱️ **Reading + practice: ~13 min** · folds are optional extra.
+
+<Meme top="I put the text in a box. Why is it not searchable?" visual="🐈📦" bottom="Stored fields are a box. An index is a lookup structure. The cat likes both; Lucene distinguishes them." />
+
+## Run the complete lab
+
+Use **JDK 21 or newer and Maven 3.9+**. Check `java -version` and `mvn -version`;
+Maven must also report a compatible Java runtime. Download these two course assets:
+
+- <a href={useBaseUrl('/labs/lucene-search/pom.xml')} download>Maven project configuration</a>
+- <a href={useBaseUrl('/labs/lucene-search/SearchLab.java')} download>Complete SearchLab.java</a>
+
+Place them in this structure in a scratch directory outside the learning-site project:
+
+```text
+lucene-search-lab/
+  pom.xml
+  src/main/java/SearchLab.java
+```
+
+From `lucene-search-lab`, run:
+
+```bash
+mvn compile exec:java -Dexec.args='lexical'
+```
+
+The first invocation downloads dependencies from Maven Central. All Lucene modules
+are pinned to **10.3.1**. The lab creates five articles, opens a reader, queries
+`bicycle repair`, prints hits and scoring explanations, then closes its resources.
+Expect public articles A and E. Private article C must not appear. A and E have
+the same relevant term counts and lengths, so do not rely on a semantic distinction
+between their tied scores.
+
+This program uses `ByteBuffersDirectory`: every run creates a fresh in-memory
+index. It deliberately does not demonstrate persistence, a web server, or real
+embeddings. The vector and hybrid modes introduced later use hand-assigned vectors.
+
+## A field is a set of capabilities
+
+The lab constructs documents with `StringField` for a stable ID and access label,
+`TextField` for prose, and `KnnFloatVectorField` for vector retrieval. A document is
+a collection of named fields, not an object whose Java properties automatically
+become searchable.
+
+| Need | Typical representation | What it does not imply |
+| --- | --- | --- |
+| Exact article ID or tenant | `StringField` | No tokenization or automatic normalization |
+| Searchable prose | `TextField` | Not sortable by default |
+| Display original content | `Store.YES` or `StoredField` | Storage alone does not create search terms |
+| Numeric range | `IntPoint`, `LongPoint`, or similar | Not automatically stored or sortable |
+| Sort or aggregate a number | `NumericDocValuesField` | Not the same as a point index |
+| Vector neighbors | `KnnFloatVectorField` | Does not generate an embedding |
+
+Often one logical property needs several physical fields with the same name.
+For a publication year you might add an `IntPoint` for range filtering, a
+`NumericDocValuesField` for sorting, and a `StoredField` for display. They support
+different access patterns; none is a universal substitute for the others.
+
+## Rehearse a schema decision
+
+Choose a representation for the body `Bicycle repair tools`. Before looking at
+the outcome, predict whether `bicycle` can match and whether the original body
+can be displayed. These are specified field behaviors, not a live Lucene instance.
+
+<LuceneDecisionLab title="One body, three schemas" label="Body field" choices={[
+  {label: 'TextField, Store.NO', result: 'Analyzed tokens can match. storedFields().document(...).get("body") returns null.', cost: 'Fetch the display text from another store or index a stored copy.'},
+  {label: 'TextField, Store.YES', result: 'Analyzed tokens can match, and the original body can be retrieved.', cost: 'The index carries a stored copy as well as retrieval structures.'},
+  {label: 'StringField, Store.YES', result: 'The whole body is one exact term. A bicycle TermQuery alone does not match.', cost: 'Useful for exact values, but the wrong representation for ordinary prose search.'},
+]} />
+
+## Follow the resource lifetime
+
+Read the `try` blocks in the downloaded lab from outside inward. The analyzer
+defines text processing. The directory owns storage. The writer consumes
+documents and creates index structures. `DirectoryReader.open(writer)` opens
+a near-real-time view of the writer's changes; an `IndexSearcher` uses that view.
+
+```java
+try (var reader = DirectoryReader.open(writer)) {
+    var searcher = new IndexSearcher(reader);
+    var query = new TermQuery(new Term("body", "bicycle"));
+    for (var hit : searcher.search(query, 10).scoreDocs) {
+        var stored = searcher.storedFields().document(hit.doc);
+        System.out.println(stored.get("id"));
+    }
+}
+```
+
+This fragment belongs inside the existing writer scope. Java's try-with-resources
+closes the reader even if a query fails. The searcher itself does not require
+closing. In a service, reuse a writer and managed searchers; opening everything
+for every HTTP request would add unnecessary work and complicate consistency.
+
+## Try it yourself 🧪
+
+In `document(...)`, change only the body's `Field.Store.YES` to `Field.Store.NO`.
+Run the lexical command again. The hit IDs should remain A and E, but displayed
+bodies become `null`. Restore the setting, then change the body to a `StringField`.
+The same query should now return no hits. Restore `TextField` before continuing.
+
+This is a useful debugging sequence: first ask whether the document matches,
+then whether the requested display data exists. A missing snippet and a missing
+candidate require different fixes. Keep the access filter intact in every experiment.
+
+<details>
+<summary>🤓 Durability is a separate decision (optional)</summary>
+
+`FSDirectory.open(Path.of("index"))` uses filesystem storage, but changing the
+directory alone is not a complete persistence design. Decide when to commit,
+how to reopen, and how to avoid duplicating ingestion on restart. `addDocument`
+does not enforce uniqueness of an ID field. An update by stable ID requires
+`updateDocument(new Term("id", id), replacement)` and a schema that indexes
+that ID exactly. A commit creates a durable index commit; refreshing a reader
+changes search visibility. Later lessons separate these operations explicitly.
+
+</details>
+
+## Recap 🐾
+
+1. Indexed, stored, point, and doc-values representations serve different access patterns.
+2. A writer changes the index; a reader exposes a view; a searcher executes queries.
+3. The downloadable lab resets on each run, so its output is reproducible without cleanup.
+
+<Quiz question="A numeric field must support year ranges, sorting, and display. What should you design?" options={[
+  {text: 'A stored string and hope Lucene infers the rest.', feedback: 'Storage does not create a numeric range index or doc values.'},
+  {text: 'Separate point, doc-values, and stored representations.', correct: true, feedback: 'Right. Model each access pattern explicitly.'},
+  {text: 'A TextField containing the year.', feedback: 'Text terms are not a numeric range or numeric sort representation.'},
+]} />
+
+## References
+
+Apache Lucene [document package](https://lucene.apache.org/core/10_3_1/core/org/apache/lucene/document/package-summary.html)
+and [Java requirements](https://lucene.apache.org/core/10_3_1/SYSTEM_REQUIREMENTS.html).
+The lab and examples are original course material.

@@ -1,0 +1,5 @@
+{
+  "label": "5. Search Features & Data Modeling",
+  "position": 5,
+  "link": {"type": "generated-index", "description": "Facets, safe snippets, numeric sorting, pagination, and relationship-preserving joins."}
+}

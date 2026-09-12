@@ -1,0 +1,143 @@
+---
+sidebar_position: 2
+slug: /courses/lucene-search/evaluation
+title: Evaluate Search Without Fooling Yourself
+description: Build judgments and compare precision, recall, nDCG, latency, and query slices.
+---
+
+import LuceneScoreLab from '@site/src/components/LuceneScoreLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+You tune a boost until your favorite query looks perfect. The next customer
+searches an error code and gets a worse result. Congratulations: you optimized
+the demonstration, not necessarily the search system.
+
+⏱️ **Reading + practice: ~10 min** · folds are optional extra.
+
+<Meme top="The cat tested one query. The cat declares victory." visual="😸🏆" bottom="The held-out query set would like a word. Preferably several different words." />
+
+## Define usefulness before tuning
+
+Build a small set of representative queries with explicit intent and eligibility
+context. For each, judge documents by stable ID. A four-level scale can distinguish
+irrelevant (0), related but not sufficient (1), useful (2), and directly answers
+the need (3). Write the rubric so another person can disagree constructively.
+
+For `fix a flat bicycle wheel`, our original illustrative judgments are A=1,
+B=3, E=2, D=0. A is a tools list, B is a direct procedure, E concerns tire repair,
+and D is a database guide. These are invented labels for teaching metrics, not
+human research results. Private C is outside the eligible corpus and must not
+be counted as a relevant document the public retriever ought to return.
+
+Keep a development set for tuning and a held-out set for the final comparison.
+If you repeatedly inspect and optimize the held-out queries, they have become
+development data. A small early benchmark can expose regressions, but its size
+and coverage limit the conclusions you can draw.
+
+## Three metrics, different questions
+
+**Precision@k** asks what fraction of the first k results is relevant. Here binary
+relevance means grade 2 or 3. **Recall@k** asks what fraction of all eligible
+relevant documents appears in those results. State the denominator: with incomplete
+judgments, true corpus-wide recall is generally unknown.
+
+**nDCG@k** rewards higher grades and earlier positions. Discounted cumulative gain
+adds a gain at each rank, reducing the contribution farther down the list. Divide
+by the gain of the ideal ordering for that query so its best possible score is
+one. This course uses exponential gain `2^grade - 1` and a base-two logarithmic
+rank discount. Other gain choices exist; name yours in any comparison.
+
+## Rehearse a ranking change
+
+Switch A,E,B to B,E,A. Precision and recall remain unchanged, but nDCG improves:
+the most useful article moved to the top. Then choose A,E,D. This loses B from
+the candidate set, which is a different failure from poor ordering.
+
+<LuceneScoreLab mode="evaluation" />
+
+For the first two orders, precision@3 is 2/3 and recall@3 is 2/2. A,E,D has
+precision 1/3 and recall 1/2. The widget's ideal top three is B,E,A, including
+A's partial-relevance gain of one. The binary threshold used for precision does
+not erase graded relevance from nDCG.
+
+## A tiny reproducible calculation
+
+Run this in a browser console or Node.js. It calculates nDCG for A,E,B with the
+same labels as the widget; it is independent of Lucene's raw scores.
+
+```js
+const grades = {A: 1, B: 3, E: 2, D: 0};
+const dcg = ids => ids.reduce((total, id, index) =>
+  total + (2 ** grades[id] - 1) / Math.log2(index + 2), 0);
+console.log(dcg(['A', 'E', 'B']) / dcg(['B', 'E', 'A']));
+```
+
+Expect approximately 0.681. If a query has no relevant or partially relevant
+documents, ideal DCG can be zero. Define whether to report zero, mark the metric
+undefined, or exclude such queries from a particular aggregate; report the count
+either way. Do not let division by zero silently corrupt a dashboard.
+
+## Build a comparison you can trust
+
+Run lexical-only, vector-only, and hybrid retrieval on the same corpus snapshot,
+query set, eligibility rules, and result depth. For a real vector comparison,
+replace the lab's synthetic coordinates with a documented embedding pipeline.
+Store query ID, document ID, rank, configuration version, and latency so results
+can be reproduced. Average per-query metrics instead of pooling all hits and
+letting long or common queries dominate without saying so.
+
+Slice the results by exact identifiers, paraphrases, short ambiguous queries,
+rare vocabulary, and restrictive filters. An overall average can hide a severe
+regression on one important category. Collect new judgments from the union of
+retrievers' candidates; judging only the old system's top results biases the
+comparison toward that system. Unjudged does not automatically mean irrelevant.
+
+Measure latency alongside quality: warmup, corpus size, concurrency, hardware,
+segment state, and embedding time all matter. Separate retrieval-only timing from
+end-to-end timing. Report p50 and p95 with enough repeated requests to make a
+percentile meaningful, and record errors and timeouts. A metric computed only
+from successful fast requests can conceal operational failures.
+
+## Try it yourself 🧪
+
+Create twelve queries: four exact-term or identifier queries, four paraphrases,
+and four filtered or ambiguous cases. Before tuning, write an intent sentence
+and judge the union of candidate results for each. Reserve four queries untouched
+for a final check. This is a starter exercise, not a statistically decisive benchmark.
+
+Compare two configurations and write a short decision: which query slice improved,
+which regressed, what happened to p95, and what evidence would reverse your choice?
+Add a hard assertion that no unauthorized ID is returned. Treat that assertion
+as a correctness gate, not a relevance metric that can be averaged away.
+
+<details>
+<summary>🤓 Beyond an offline benchmark (optional)</summary>
+
+Clicks are convenient but biased by position, presentation, and user expectations.
+An unclicked result is not necessarily irrelevant, and more clicks may indicate
+confusion rather than success. Online experiments need a task-aligned outcome,
+guardrails, and enough exposure to distinguish noise from a useful change.
+Offline judgments help debug why a change works; online evidence tests its effect
+in the product. Neither makes the other redundant. Keep raw sensitive queries
+out of casual logs and apply the appropriate retention and access controls.
+
+</details>
+
+## Recap 🐾
+
+1. Define intent, eligibility, and graded judgments before tuning a retrieval configuration.
+2. Precision, recall, and nDCG reveal different failures; name their conventions and denominators.
+3. Compare baselines on held-out queries and query slices, with latency and authorization gates.
+
+<Quiz question="Two rankings contain the same three documents, but the best answer moves from third to first. Which metric captures that here?" options={[
+  {text: 'Recall@3 alone.', feedback: 'The same relevant IDs remain in the top three, so recall is unchanged.'},
+  {text: 'nDCG@3.', correct: true, feedback: '😼 Better evidence, higher up. The graded gain receives less rank discount; the victory lap now has a metric.'},
+  {text: 'Raw BM25 score averaged across different queries.', feedback: 'Those scores are not calibrated measures of user usefulness across queries.'},
+]} />
+
+## References
+
+Metric definitions and evaluation context:
+[Introduction to Information Retrieval, evaluation chapter](https://nlp.stanford.edu/IR-book/html/htmledition/evaluation-in-information-retrieval-1.html).
+All judgments and numerical examples on this page are original teaching fixtures.

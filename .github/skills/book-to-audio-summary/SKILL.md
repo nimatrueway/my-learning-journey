@@ -11,6 +11,10 @@ not a directory of chapter pages.
 
 ## Repository contract
 
+- Read [the shared course instructions](../../instructions/course-authoring.instructions.md)
+   for the site's visual theme, navigation, and verification requirements. Apply
+   their book/reference-page exceptions: preserve TTS-friendly prose, without
+   importing the technical courses' cat memes, emoji signposts, or quiz template.
 - Publish books at `docs/courses/books/NN-subject/<book-slug>.md`.
 - Group books by author or a coherent subject. Reuse an existing module when it
    fits; otherwise create the next numbered module and its `_category_.json`.
@@ -23,6 +27,7 @@ not a directory of chapter pages.
       "collapsed": false,
       "link": {
          "type": "generated-index",
+         "slug": "/category/6-subject",
          "description": "A concise description of the books in this module."
       }
    }
@@ -50,6 +55,11 @@ not a directory of chapter pages.
 - Use the next `sidebar_position` within an existing module. Route segments omit
    numeric directory prefixes, matching routes such as
    `/courses/books/reid-hoffman/blitzscaling`.
+- Direct Books subjects require an explicit generated-index `slug`. Choose a
+   unique stable route for a new subject and preserve it during later renames.
+   `navigation.ts` reads subject labels, positions, and slugs from this metadata
+   for the top menu; the sidebar uses the same category files. Do not add a second
+   hardcoded subject list to the navbar.
 - Keep extraction artifacts and chapter drafts under
    `.cache/book-summaries/<book-slug>/`; `.cache/` is already ignored. Only the
    final book page and navigation/catalog changes belong in published docs.

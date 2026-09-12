@@ -1,0 +1,127 @@
+---
+sidebar_position: 3
+slug: /courses/lucene-search/distributed-search
+title: Shards, Replicas, and Distributed Search
+description: Define routing, merge, freshness, authorization, failure, and recovery contracts beyond Lucene's local search primitives.
+---
+
+import LuceneDecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+Two shards answer quickly. A third times out. Returning the first two responses
+is easy; deciding what "the results" now means is the real distributed-search work.
+
+⏱️ **Reading + practice: ~9 min** · folds are optional extra.
+
+<Meme top="The cat added a replica and announced twice as many documents." visual="🐱🪞🐱" bottom="A mirror is not another logical cat. Count distinct shards, not duplicate copies." />
+
+## What Lucene does and does not supply
+
+A Lucene index is a local search/indexing abstraction. A shard is an application
+partition usually backed by its own index. A replica is another copy serving the
+same partition, with a defined replication and freshness protocol. Lucene does
+not by itself supply a complete cluster with routing, leader election, placement,
+authentication, admission control, replicated ingestion, and automatic recovery.
+
+Choose an established search server such as Solr or Elasticsearch when those
+operational features are requirements, then learn that product's actual APIs and
+guarantees. This lesson is an architecture exercise, not a runnable cluster or a
+claim that two local `IndexSearcher` objects provide production distribution.
+
+## Work a two-shard merge by hand
+
+For a deliberately comparable numeric score, shard one returns A=0.90, B=0.60,
+C=0.55. Shard two returns D=0.85, E=0.80, F=0.10. Global top three is A,D,E.
+Asking each shard for just one result returns A,D and loses E. For exact ranking
+under one comparable ordering, requesting at least global k from each shard is
+sufficient to merge global top k, assuming complete shard responses and no
+later deduplication or filtering changes.
+
+Run this tiny JavaScript example in Node to rehearse the merge:
+
+```js
+const shards = [
+  [{id: 'A', score: .90}, {id: 'B', score: .60}, {id: 'C', score: .55}],
+  [{id: 'D', score: .85}, {id: 'E', score: .80}, {id: 'F', score: .10}],
+];
+console.log(shards.flat().sort((left, right) =>
+  right.score - left.score || left.id.localeCompare(right.id)).slice(0, 3));
+```
+
+That guarantee does not erase ANN approximation, shard-local candidate loss,
+parent deduplication, or reranking needs. Nor can you assume BM25 scores computed
+with different shard-local term statistics are identical to scores from one
+global index. Search products make explicit choices about distributed statistics
+and merging. RRF uses ranks rather than score magnitudes, but per-shard ranks
+still are not automatically the global lexical/vector rankings intended by a
+hybrid design.
+
+<LuceneDecisionLab title="🐾 One shard is late. What do you tell the caller?" label="Response policy" choices={[
+  {label: 'Fail the request with a retryable status', result: 'The caller does not mistake partial coverage for a complete search.', cost: 'Availability decreases when a required shard is unavailable.'},
+  {label: 'Return explicitly marked partial results', result: 'The interface can show useful hits while identifying incomplete coverage.', cost: 'Counts, facets, and zero-result claims must reflect missing shards.'},
+  {label: 'Silently return the responding shards', result: 'A missing shard looks indistinguishable from no matching documents.', cost: 'The API makes an unsupported completeness promise.'},
+]} />
+
+## Routing and replication contracts
+
+Routing by tenant can reduce fanout and isolate workloads, but large tenants can
+create hot shards. Hashing by document ID spreads documents but may require every
+query to reach every shard. Preserve a stable routing function for updates and
+deletes; changing the shard count requires a migration plan, not merely changing
+the modulus in a running writer.
+
+Replicas can provide availability and read capacity, not extra logical documents.
+Query one appropriate replica per shard or deduplicate explicitly; adding duplicate
+replica hits or facet counts double-counts the same data. Define how a replica
+becomes ready, what freshness lag is acceptable, and how read-after-write requests
+are routed when a normal replica is behind.
+
+Apply authorization on every shard before candidate retrieval and aggregation.
+The coordinator must propagate a trusted identity/eligibility context, not accept
+arbitrary tenant IDs as proof of access. Distributed pagination also needs a
+coherent snapshot or documented weaker semantics across shard reader versions.
+One local cursor cannot stand in for the entire cluster's state.
+
+## Try it yourself 🧪
+
+Take the six-document merge above and write a one-page service contract covering
+routing, per-shard candidate depth, timeouts, partial results, and replica freshness.
+Remove shard two and predict every visible count and completeness flag. Add a
+second replica of shard one and verify you do not count A twice. Then put two
+chunks of A near the top and decide how much overfetch parent deduplication needs.
+
+Finish with a failure drill: a shard machine is lost during ingestion. Identify
+its last recoverable commit, source replay position, replica promotion rule,
+backup location, and checks before routing traffic back. Explain which pieces
+the [local recovery lab](./01-persistence-recovery.mdx) already exercises and
+which require a real distributed service to test.
+
+<details>
+<summary>🤓 Fanout and tail latency (optional)</summary>
+
+A request waiting for all shards is exposed to the slowest required response,
+not the average shard time. More fanout adds opportunities for a straggler and
+more coordinator work. Hedged requests can reduce some tails but increase load
+and need cancellation/deduplication; they are not a substitute for capacity
+planning. Measure full-request latency, shard timing, retries, and partial-response
+rates together, under realistic routing and skew.
+
+</details>
+
+## Recap 🐾
+
+1. Shards partition logical data; replicas copy partitions under an explicit freshness protocol.
+2. Global merging needs sufficient candidates, comparable semantics, and honest failure reporting.
+3. Routing, security, replication, recovery, and cluster coordination live beyond a local Lucene index.
+
+<Quiz question="Should a coordinator sum facet counts from two replicas of the same shard?" options={[
+  {text: 'No; replicas represent the same logical partition and would double-count it.', correct: true, feedback: '😼 One cat, two mirrors, still one cat. Combine distinct shard populations, not replicas of the same population.'},
+  {text: 'Yes; more replicas mean more logical documents.', feedback: 'Replication copies documents for availability or capacity.'},
+  {text: 'Only when both replicas have the same refresh time.', feedback: 'Equal freshness still leaves duplicate logical data.'},
+]} />
+
+## References
+
+[Solr distributed search](https://solr.apache.org/guide/solr/latest/deployment-guide/solrcloud-distributed-requests.html)
+and [Elasticsearch documentation](https://www.elastic.co/docs/deploy-manage/distributed-architecture).

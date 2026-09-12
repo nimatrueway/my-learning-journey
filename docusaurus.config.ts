@@ -4,9 +4,11 @@ import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
+import {collections, footerItems, navbarItems} from './navigation';
 
 const gitCommit = execSync('git rev-parse --short HEAD').toString().trim();
 const gitDate = execSync('git log -1 --format=%cs HEAD').toString().trim();
+const baseUrl = '/my-learning-journey/';
 
 const config: Config = {
   title: 'My Learning Journey',
@@ -18,7 +20,7 @@ const config: Config = {
   },
 
   url: 'https://nimatrueway.github.io',
-  baseUrl: '/my-learning-journey/',
+  baseUrl,
   organizationName: 'nimatrueway',
   projectName: 'my-learning-journey',
   trailingSlash: false,
@@ -37,6 +39,11 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
+          async sidebarItemsGenerator({defaultSidebarItemsGenerator, ...args}) {
+            const items = await defaultSidebarItemsGenerator(args);
+            const landing = collections.find(entry => entry.directory === args.item.dirName);
+            return items.filter(item => item.type !== 'doc' || item.id !== landing?.docId);
+          },
           routeBasePath: '/',
           remarkPlugins: [remarkMath],
           rehypePlugins: [rehypeKatex],
@@ -98,43 +105,7 @@ const config: Config = {
           type: 'dropdown',
           label: '☰ Contents',
           position: 'left',
-          items: [
-            {to: '/', label: 'All contents'},
-            {
-              type: 'html',
-              className: 'contentsNestedGroup',
-              value: `
-                <details>
-                  <summary>Courses</summary>
-                  <div class="contentsNestedLinks">
-                    <a href="/my-learning-journey/courses/deep-learning/">😼 Deep Learning</a>
-                    <a href="/my-learning-journey/courses/performance-foundations/">⚡ Performance Foundations</a>
-                    <a href="/my-learning-journey/courses/startup-school/">🚀 Startup School</a>
-                  </div>
-                </details>
-              `,
-            },
-            {
-              type: 'html',
-              className: 'contentsNestedGroup',
-              value: `
-                <details>
-                  <summary>📚 Books</summary>
-                  <div class="contentsNestedLinks">
-                    <a href="/my-learning-journey/courses/books/">All books</a>
-                    <a href="/my-learning-journey/category/1-ikea">1. IKEA</a>
-                    <a href="/my-learning-journey/category/2-reid-hoffman">2. Reid Hoffman</a>
-                    <a href="/my-learning-journey/category/3-steve-jobs">3. Steve Jobs</a>
-                    <a href="/my-learning-journey/category/4-elon-musk">4. Elon Musk</a>
-                    <a href="/my-learning-journey/category/5-founders-and-founding-teams">5. Founders and Founding Teams</a>
-                    <a href="/my-learning-journey/courses/books/paul-graham">6. Paul Graham Essays</a>
-                    <a href="/my-learning-journey/category/6-product-led-growth">6. Product-Led Growth</a>
-                  </div>
-                </details>
-              `,
-            },
-            {to: '/courses/calculator/', label: '🧮 Calculator'},
-          ],
+          items: navbarItems(baseUrl),
         },
         {
           href: 'https://github.com/nimatrueway/my-learning-journey',
@@ -163,17 +134,7 @@ const config: Config = {
       links: [
         {
           title: 'Contents',
-          items: [
-            {label: 'All contents', to: '/'},
-            {label: '😼 Deep Learning', to: '/courses/deep-learning/'},
-            {
-              label: '⚡ Performance Foundations',
-              to: '/courses/performance-foundations/',
-            },
-            {label: '🚀 Startup School', to: '/courses/startup-school/'},
-            {label: '📚 Books', to: '/courses/books/'},
-            {label: '🧮 Calculator', to: '/courses/calculator/'},
-          ],
+          items: footerItems,
         },
         {
           title: 'Source',
