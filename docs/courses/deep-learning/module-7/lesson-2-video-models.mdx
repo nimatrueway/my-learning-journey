@@ -1,0 +1,108 @@
+---
+title: "7.2 — Video models: teaching an image model about time"
+description: "Frames, space-time patches, temporal attention, and why recognizing motion is harder than recognizing an image."
+---
+
+import MediaTokenViz from '@site/src/components/MediaTokenViz';
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 7.2 — Video models: teaching an image model about time ⏱️ ~6 min
+
+## The hook
+
+Freeze a video of someone opening a door. One frame may show a hand near a handle. Is the person opening it, closing it, knocking, or merely walking past?
+
+An image model sees **what is present**. A video model must also learn **what changed, in which order, and how quickly**. Time is not metadata sprinkled on top; for many actions, time is the label.
+
+## The token avalanche 🎮
+
+A vision transformer turns one image into patch tokens. Video repeats those spatial patches across sampled frames, then adds temporal position information so “before” and “after” are distinguishable.
+
+<MediaTokenViz initialMode="video" />
+
+**Things to try:**
+
+1. Raise frames per second. Fast motion becomes easier to resolve, while token count rises linearly.
+2. Shrink patch size. Small objects survive, but every frame contains many more tokens.
+3. Increase clip length. You gain context, then watch the full-attention pair count become rude.
+
+Real systems respond with sparse or factorized attention, temporal pooling, compressed latent tokens, or separate spatial and temporal stages. The goal is not to process every pixel at every instant equally. It is to keep enough evidence for the task.
+
+## Three ways to model motion
+
+**Frame encoder plus temporal model:** run a 2D CNN or vision transformer on each frame, producing one embedding per frame. Feed that shorter sequence to an RNN or transformer. This is simple and lets you reuse an image model, but early frame compression may discard small movements.
+
+**3D convolution:** slide filters through height, width, **and time**. A 3D kernel can directly learn a short motion such as an edge moving left between adjacent frames. Models such as R3D extend the Module 4 convolution idea by one axis.
+
+**Space-time transformer:** create tokens from spatial patches across multiple frames and use attention to connect them. Some architectures attend across space and time jointly; others first mix patches within each frame, then mix corresponding information across frames. Factorizing the work is usually cheaper.
+
+None is universally best. A short gesture classifier, hour-long video search system, and live robot camera have different latency, context, and memory constraints.
+
+<Meme top="image model: there is a ball" visual="⚽ → 🥅" bottom="video model: and somebody just scored" />
+
+## Tiny example: the extra dimension
+
+PyTorch video models conventionally receive batches shaped `[batch, channels, frames, height, width]`:
+
+```python
+import torch
+from torchvision.models.video import r3d_18
+
+model = r3d_18(weights="DEFAULT").eval()
+clip = torch.randn(1, 3, 16, 112, 112)
+
+with torch.inference_mode():
+    class_scores = model(clip)
+
+print(class_scores.shape)  # [1, 400] for Kinetics-400 actions
+```
+
+Compare this with an image batch: `[batch, channels, height, width]`. That frame axis is the architectural difference in one line. In real inference you must use the resize, crop, normalization, frame count, and frame rate expected by the pretrained weights. A tensor with the right shape but wrong preprocessing can run perfectly and predict nonsense.
+
+## Sampling is part of the model
+
+Suppose a camera records 30 frames per second but your network consumes 8. Which frames do you choose?
+
+- **Uniform sampling** spans the clip and works for slow, broad actions
+- **Dense sampling** keeps adjacent frames and captures quick motion
+- **Multiple clips** test different moments, then average or pool predictions
+- **Keyframe selection** spends compute where the scene changes
+
+This decision changes what evidence can reach the network. Sampling one frame per second makes a blink effectively invisible; sampling only the first two seconds misses the punchline at the end. Data loading is therefore not neutral plumbing. It defines the model's observable world.
+
+## Beyond action labels
+
+Video understanding includes action recognition, object tracking, temporal localization (“when did the goal happen?”), captioning, retrieval, and question answering. Systems often combine modalities: visual frames, audio, subtitles, and text queries each become token sequences. Cross-attention or shared embeddings connect them.
+
+Video generation adds another challenge: predict plausible future visual content while keeping objects and identity consistent across frames. Diffusion models can denoise space-time latents, while autoregressive models predict compressed visual tokens. Either way, temporal consistency is expensive; a beautiful frame is easier than a coherent ten-second event.
+
+<details>
+<summary>🤓 A rough attention budget (optional)</summary>
+
+For a 224×224 frame with 16×16 patches, each frame yields $14 \times 14 = 196$ tokens. Sixteen frames yield $3,136$ tokens. Full self-attention forms roughly $3,136^2 \approx 9.8$ million token-pair scores in every layer and head group before considering batch size.
+
+Halving patch width to 8 creates four times as many spatial tokens, not twice as many. That is why resolution, clip length, and frame rate are product constraints as much as model settings.
+
+</details>
+
+## Try it yourself
+
+Choose an action that reverses meaning when played backward: opening versus closing, sitting versus standing, pouring versus un-pouring. Sketch the minimum frame sample that distinguishes the two directions. Then ask what a single-frame classifier would predict. This separates appearance evidence from motion evidence before you touch code.
+
+## Recap 📌
+
+- Video models add time to image representations, using frame encoders, 3D convolutions, or space-time attention
+- Frame rate, patch size, and clip length determine both visible evidence and computational cost
+- Preprocessing and temporal sampling are part of model behavior, not interchangeable input plumbing
+
+## Quiz
+
+<Quiz
+  question="A model recognizes objects in each frame but confuses opening a door with closing it. What is most directly missing?"
+  options={[
+    {text: 'More image classes', feedback: "The objects are already recognized. More nouns will not reveal the direction of the verb. Try again."},
+    {text: 'A temporal representation that preserves frame order and motion', correct: true, feedback: "Right. The same objects appear in both actions; their ordering and movement carry the label."},
+    {text: 'A larger text tokenizer', feedback: "No text is entering this pipeline. The missing tokens are temporal visual evidence, not subwords. Try again."},
+  ]}
+/>

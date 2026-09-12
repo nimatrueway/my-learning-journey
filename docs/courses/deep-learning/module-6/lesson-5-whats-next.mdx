@@ -12,7 +12,7 @@ import Quiz from '@site/src/components/Quiz';
 
 ## What you actually know now
 
-Six modules ago, "deep learning" was a black box. Now trace the whole chain, no magic anywhere:
+At the start of the course, "deep learning" was a black box. Now trace the whole chain, no magic anywhere:
 
 **Neurons** (multiply-add-squish) → **layers** → **loss** (one number for wrongness) → **gradient descent + backprop** (blame, distributed) → **training discipline** (data splits, overfitting, regularization) → **CNNs** (sliding pattern-detectors) → **transfer learning** (steal the eyes) → **embeddings** (meaning as coordinates) → **attention** (look, don't remember) → **transformers** → **tokenizers** → **pretraining/fine-tuning/LoRA**.
 
@@ -25,7 +25,8 @@ Pick by pull, not by obligation:
 - **Build things** (recommended first) — fine-tune models on your own data; build a semantic search with embeddings; enter a beginner Kaggle competition. Skills grow by shipping.
 - **Go deeper on fundamentals** — Andrej Karpathy's *"Neural Networks: Zero to Hero"* videos: build GPT from scratch, by hand, in code. The perfect sequel to this course's intuition-first approach.
 - **Read the classics** — you're ready for the real papers: *Attention Is All You Need* (2017), the ResNet paper (2015), *LoRA* (2021). Papers are just lessons with more Greek letters.
-- **Specialize** — vision (segmentation, detection), audio (whisper-style models), RL (models that act), diffusion (image generation — the one big family this course didn't cover).
+- **Cross modalities** — continue to [Module 7](/courses/deep-learning/module-7/) for audio and video models, where spectrogram and space-time patches become transformer tokens.
+- **Specialize** — vision (segmentation, detection), RL (models that act), and diffusion (image and video generation).
 - **Engineering track** — serving models, quantization, evaluation pipelines: turning models into products. Scarce, valuable, very MSc-SE-shaped.
 
 ## The three habits that matter more than any topic
@@ -36,7 +37,7 @@ Pick by pull, not by obligation:
 
 <Meme top="day 1: what's a neuron?" visual="🐱🎓" bottom="today: ah yes, a low-rank adapter on the attention projections" />
 
-One more thing: the final project awaits. Go fine-tune an actual language model on your own machine — the thing that, six modules ago, sounded like science fiction.
+One more thing: the module project awaits. Go fine-tune an actual language model on your own machine — the thing that, at the start of the course, sounded like science fiction.
 
 ## Recap 📌
 
@@ -47,10 +48,10 @@ One more thing: the final project awaits. Go fine-tune an actual language model 
 ## Quiz
 
 <Quiz
-  question="Final exam (one question, very serious): what is deep learning?"
+  question="Checkpoint (one question, very serious): what is deep learning?"
   options={[
     {text: 'Magic that only PhDs understand', feedback: "You did NOT just click that after six modules. Go stand in the corner and think about gradient descent. (Then try again — you know this.)"},
-    {text: 'Stacked multiply-add-squish units, tuned by following the gradient of a wrongness score over lots of examples', correct: true, feedback: "Graduated. 🎓 That one sentence, plus clever architectures for images (convolution) and text (attention), plus obscene compute — is the entire field. Now go build something. The final project is waiting."},
+    {text: 'Stacked multiply-add-squish units, tuned by following the gradient of a wrongness score over lots of examples', correct: true, feedback: "Correct. 🎓 That one sentence, plus architectures for images (convolution), text (attention), and soon sound and motion — is the field. The module project is waiting."},
     {text: 'If-else statements at scale', feedback: "The oldest meme in ML — and wrong in one crucial way: nobody writes the rules. The 'if's are LEARNED from data via backprop, which changes everything. (Also try counting the if-statements in a matrix multiply.) Try again."},
   ]}
 />

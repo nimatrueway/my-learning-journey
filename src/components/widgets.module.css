@@ -108,6 +108,21 @@
   background: var(--ifm-color-emphasis-200);
 }
 
+.mediaPatchGrid {
+  display: grid;
+  gap: 3px;
+  min-height: 9rem;
+  margin-top: 1rem;
+  padding: 3px;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  background: var(--ifm-color-emphasis-100);
+}
+
+.mediaPatchGrid span {
+  min-width: 0;
+  background: var(--ifm-color-primary);
+}
+
 .formula,
 .statusLine {
   margin: 0.75rem 0 0;

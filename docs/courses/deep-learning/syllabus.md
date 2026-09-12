@@ -5,7 +5,7 @@ title: Syllabus
 
 # Syllabus 📋
 
-Six modules, ~30 lessons, each 10–15 minutes. Every module ends with a mini-project you run on your own machine.
+Seven modules, 31 lessons and 7 projects, mostly 10–15 minutes. Every module ends with a mini-project you run on your own machine.
 
 > **Status:** the full course is built. ✅ Start at [Module 1](/courses/deep-learning/module-1/) and go in order — every lesson builds on the last.
 
@@ -84,4 +84,14 @@ Six modules, ~30 lessons, each 10–15 minutes. Every module ends with a mini-pr
 | 6.3 | [Pretraining vs. fine-tuning: born smart vs. taught well](/courses/deep-learning/module-6/lesson-3-pretraining-finetuning) | ~12 min |
 | 6.4 | [Fine-tune a small model on your Mac](/courses/deep-learning/module-6/lesson-4-finetune-mac) | ~12 min |
 | 6.5 | [What's next: your map of the field](/courses/deep-learning/module-6/lesson-5-whats-next) | ~10 min |
-| 🛠 | [**Final project:** fine-tune a small LLM on your own text](/courses/deep-learning/module-6/mini-project) | ~40 min |
+| 🛠 | [**Project:** fine-tune a small LLM on your own text](/courses/deep-learning/module-6/mini-project) | ~40 min |
+
+## Module 7 — [Audio & Video Models](/courses/deep-learning/module-7/) 🎧🎬
+
+*How sound and motion become tokens, and how models learn patterns across time.*
+
+| # | Lesson | Time |
+|---|--------|------|
+| 7.1 | [Audio models: from waveforms to words](/courses/deep-learning/module-7/lesson-1-audio-models) | ~6 min |
+| 7.2 | [Video models: teaching an image model about time](/courses/deep-learning/module-7/lesson-2-video-models) | ~6 min |
+| 🛠 | [**Mini-project:** run pretrained audio and video models](/courses/deep-learning/module-7/mini-project) | ~30 min |
