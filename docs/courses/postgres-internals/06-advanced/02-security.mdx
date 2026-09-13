@@ -1,0 +1,122 @@
+---
+sidebar_position: 2
+slug: /courses/postgres-internals/roles-security
+title: Roles, Search Paths, and Row Security
+description: Separate authentication, privileges, ownership, name resolution, and row-level policies.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+The application uses a WHERE tenant_id filter everywhere. One forgotten query
+now reads another tenant's rows. Security depends on boundaries that survive
+ordinary implementation mistakes, not on remembering one convention forever.
+
+⏱️ **Reading + practice: ~9 min** · includes five minutes of role and policy practice.
+
+<Meme top="The security cat tested the row policy as a superuser." visual="🐱🔐" bottom="The master key bypassed the lock. This was not a lock test." />
+
+## Separate who connects from what they may do
+
+Authentication determines which role a connection can act as. Privileges and
+role membership determine allowed operations; ownership brings additional powers.
+Network access and pg_hba.conf rules are another boundary. The isolated course
+container's trust authentication is a local teaching convenience, not a deployable
+security configuration.
+
+Use separate migration/owner and runtime roles. A runtime connection rarely
+needs superuser, database creation, or object ownership. Table permissions,
+schema USAGE, sequence permissions, and function execution are distinct concerns.
+Default privileges affect future objects created by the specified creating role;
+they are not a retroactive grant on every existing object.
+
+Search_path controls unqualified name resolution. A writable schema on a trusted
+path can let an unexpected object influence resolution. Schema-qualify sensitive
+references and restrict who can CREATE in trusted schemas. SECURITY DEFINER
+functions run with the owner's privileges, so their search path, object references,
+input validation, and execution grants need deliberate hardening. Parameterized
+queries protect data values from SQL injection, but do not automatically choose
+safe dynamic identifiers or establish authorization.
+
+## RLS is evaluated under an actual role
+
+Row-level security policies restrict which rows a role may see or modify in
+addition to ordinary grants. USING governs existing-row visibility; WITH CHECK
+governs allowed new row values. Enabling RLS without an applicable policy gives
+a default-deny result for ordinary access. Superusers and BYPASSRLS roles bypass
+these policies; table owners normally do too unless FORCE ROW LEVEL SECURITY
+applies. FORCE does not remove the superuser/BYPASSRLS bypass.
+
+Run this self-contained transaction **only as the disposable lab administrator**.
+Rollback removes the test role and table; an existing role of the same name
+must not be present.
+
+```sql
+BEGIN;
+CREATE ROLE course_reader NOLOGIN;
+CREATE TABLE course_lab.policy_probe (
+  id integer PRIMARY KEY,
+  tenant_name text NOT NULL
+);
+INSERT INTO course_lab.policy_probe VALUES (1, 'alpha'), (2, 'beta');
+ALTER TABLE course_lab.policy_probe ENABLE ROW LEVEL SECURITY;
+CREATE POLICY alpha_only ON course_lab.policy_probe
+  FOR SELECT TO course_reader USING (tenant_name = 'alpha');
+GRANT USAGE ON SCHEMA course_lab TO course_reader;
+GRANT SELECT ON course_lab.policy_probe TO course_reader;
+SET LOCAL ROLE course_reader;
+SELECT current_user, id, tenant_name FROM course_lab.policy_probe;
+RESET ROLE;
+ROLLBACK;
+```
+
+Expect only row 1 for course_reader. This hardcoded policy demonstrates the
+boundary, not a complete tenant-authentication design. An application-controlled
+session setting is trustworthy only if callers cannot freely spoof the tenant
+identity through the allowed interface. Connection reuse must reset tenant state
+and preserve transaction boundaries.
+
+<DecisionLab title="🐾 Test the real boundary" label="Security test" choices={[
+  {label: 'Query the policy as superuser', result: 'This does not test the ordinary runtime role restriction.', cost: 'A bypass role can see rows that an application role cannot.'},
+  {label: 'Use the intended restricted role', result: 'Test SELECT and prohibited writes under that actual role.', cost: 'Ownership, memberships, grants, and tenant context must match deployment.'},
+  {label: 'Trust a caller-supplied tenant setting', result: 'First establish who can choose or change that setting.', cost: 'A policy using spoofable identity can faithfully enforce the wrong identity.'},
+]} />
+
+## Try it yourself 🧪
+
+Run the transaction and verify the role and single returned row. Before rolling
+back on a second run, RESET ROLE and query as the administrator to see the bypass.
+Describe a negative test for the runtime role, such as attempting an unauthorized
+INSERT, and explain whether rejection comes from grants or a row policy. Do
+not confuse an operation never granted with an exercised WITH CHECK policy.
+
+<details>
+<summary>🤓 Row policies are not a complete secrecy model (optional)</summary>
+
+Constraint checks and operations such as TRUNCATE have different interactions
+with RLS. Referential integrity checks can bypass row security to preserve
+integrity, potentially revealing information through errors. Backup correctness,
+security-definer behavior, and policy performance also need review. Read the
+documented limitations; do not treat RLS as a replacement for careful application
+authorization and threat modeling.
+
+</details>
+
+## Recap 🐾
+
+1. Authentication, object privileges, ownership, and row policies are distinct security layers.
+2. Trusted name resolution and security-definer behavior require controlled schemas and explicit privileges.
+3. Test policies as the deployed restricted role, including negative cases and connection reuse.
+
+<Quiz question="Which test best establishes that a row policy protects the runtime application?" options={[
+  {text: 'Exercise allowed and denied operations as the actual restricted role.', correct: true, feedback: 'Correct. Test the key the application holds, not the administrator master key.'},
+  {text: 'SELECT everything as a superuser.', feedback: 'Superusers bypass row policies, so this does not test the intended restriction.'},
+  {text: 'Check only that a policy name exists.', feedback: 'Its role applicability, expressions, grants, and bypass conditions determine behavior.'},
+]} />
+
+## References
+
+[Privileges](https://www.postgresql.org/docs/17/ddl-priv.html),
+[row security](https://www.postgresql.org/docs/17/ddl-rowsecurity.html), and
+[safe security-definer functions](https://www.postgresql.org/docs/17/sql-createfunction.html#SQL-CREATEFUNCTION-SECURITY).

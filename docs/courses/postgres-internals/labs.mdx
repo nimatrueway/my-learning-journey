@@ -1,0 +1,96 @@
+---
+sidebar_position: 90
+slug: /courses/postgres-internals/labs
+title: PostgreSQL Lab Setup
+description: A disposable PostgreSQL 17 database and a reproducible relational schema for the course.
+---
+
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
+## A disposable database, not your application database
+
+Use PostgreSQL **17.x** and psql. Examples target this supported major version;
+planner output, timing, transaction IDs, and physical tuple locations can vary.
+The SQL uses a dedicated `course_lab` schema and fails if it already exists,
+rather than overwriting your previous work.
+
+Docker users can start a disposable server with no published network port:
+
+```bash
+docker run --name pg-internals-lab -d \
+  -e POSTGRES_HOST_AUTH_METHOD=trust \
+  postgres:17
+docker exec pg-internals-lab pg_isready -U postgres
+```
+
+Wait for the readiness command to report accepting connections. This container
+uses trust authentication **only for an isolated local exercise**. Do not expose
+it to a network or reuse that authentication setting for an application. The
+major-version image tag follows maintenance releases; record `SELECT version()`
+with your results. Production systems should use supported, patched versions and
+an explicitly managed image policy.
+
+<a href={useBaseUrl('/labs/postgres-internals/setup.sql')} download>Download setup.sql</a>
+
+From the repository root, initialize the fixture:
+
+```bash
+docker exec -i pg-internals-lab psql -X -U postgres -v ON_ERROR_STOP=1 \
+  < static/labs/postgres-internals/setup.sql
+docker exec -it pg-internals-lab psql -X -U postgres
+```
+
+Open the interactive command in two terminals for sessions A and B. With an
+existing **disposable** local PostgreSQL server, use psql against a new empty
+database and run the same setup file. Never point these experiments at production.
+
+```sql
+SELECT version();
+SELECT * FROM course_lab.products ORDER BY id;
+SELECT count(*) FROM course_lab.orders;
+```
+
+Expect two products with stock 10 and 20, and 20,000 orders. No extensions or
+external datasets are required. The course's superuser connection simplifies
+local inspection; applications should use a separate least-privilege role.
+
+## Reset small concurrency fixtures
+
+End transactions in **both** sessions before resetting in one session:
+
+```sql
+UPDATE course_lab.products SET stock = 10 WHERE id = 1;
+UPDATE course_lab.on_call SET available = true;
+```
+
+The lessons say when a statement should wait, fail, or affect zero rows. Those
+outcomes are evidence. After an intentional error inside a transaction, issue
+`ROLLBACK` before retrying. `VACUUM` must run outside a transaction block.
+
+## Automated concurrency checks
+
+<a href={useBaseUrl('/labs/postgres-internals/verify.mjs')} download>Download verify.mjs</a>
+
+With Node.js 20+ and the initialized container running:
+
+```bash
+node static/labs/postgres-internals/verify.mjs pg-internals-lab
+```
+
+The script uses two real psql connections to verify snapshots, write skew,
+Serializable rejection, same-row conflicts, lock-only xmax visibility, lock
+timeouts, aborted deletion, constraints, and a deadlock. It resets the small
+concurrency fixtures, so use only the disposable lab. It is not a MySQL test,
+performance benchmark, or power-loss recovery test.
+
+## Cleanup
+
+When finished, this removes only the named disposable container and its anonymous
+volume. All lab data in that container is lost:
+
+```bash
+docker rm -f -v pg-internals-lab
+```
+
+Browser widgets are fixed explanatory scenarios. Use the SQL schedules, not the
+widgets, as evidence of real PostgreSQL concurrency and performance behavior.

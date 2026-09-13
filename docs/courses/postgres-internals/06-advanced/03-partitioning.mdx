@@ -1,0 +1,124 @@
+---
+sidebar_position: 3
+slug: /courses/postgres-internals/partitioning
+title: Partitioning and Pruning
+description: Use partition bounds to avoid irrelevant relations while preserving key, routing, and lifecycle constraints.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+A table grows every month, but most queries ask only for recent events. Splitting
+data by month can help retention and pruning. It does not magically make every
+query faster or distribute writes across servers.
+
+⏱️ **Reading + practice: ~10 min** · includes five minutes of partition-plan practice.
+
+<Meme top="The partition cat built a thousand drawers for a two-row table." visual="🐱🗄️" bottom="Congratulations: the furniture now costs more than finding the rows." />
+
+## Partition bounds select relations
+
+Declarative partitioning routes rows from a partitioned parent into child
+partitions using range, list, or hash bounds. The parent is a logical entry
+point; the child relations store rows. Partition pruning uses compatible query
+conditions to exclude children that cannot contribute, at planning or execution
+time depending on available values and plan shape. Indexes solve a separate
+problem: efficiently locating rows within the chosen partitions.
+
+Range lower bounds are inclusive and upper bounds exclusive. A row with no
+matching partition fails unless a suitable default partition exists. A default
+partition can catch unexpected rows but introduces lifecycle work when attaching
+new explicit ranges. Define timezone and boundary semantics deliberately for
+timestamp partition keys.
+
+```sql
+BEGIN;
+CREATE TABLE course_lab.event_probe (
+  event_date date NOT NULL,
+  id bigint NOT NULL,
+  PRIMARY KEY (event_date, id)
+) PARTITION BY RANGE (event_date);
+CREATE TABLE course_lab.event_probe_jan PARTITION OF course_lab.event_probe
+  FOR VALUES FROM ('2025-01-01') TO ('2025-02-01');
+CREATE TABLE course_lab.event_probe_feb PARTITION OF course_lab.event_probe
+  FOR VALUES FROM ('2025-02-01') TO ('2025-03-01');
+INSERT INTO course_lab.event_probe VALUES
+  ('2025-01-12', 1), ('2025-02-12', 2);
+EXPLAIN (ANALYZE, COSTS OFF)
+SELECT * FROM course_lab.event_probe
+WHERE event_date >= DATE '2025-02-01'
+  AND event_date < DATE '2025-03-01';
+SELECT tableoid::regclass, * FROM course_lab.event_probe ORDER BY event_date;
+ROLLBACK;
+```
+
+Expect the filtered plan to access only the February partition with one row.
+The exact access node may differ; scanning a tiny child is reasonable. The
+tableoid projection reveals the physical child containing each row. Rollback
+removes this whole bounded fixture so the example can be repeated.
+
+## Keys and lifecycle shape the design
+
+In PostgreSQL 17, a PRIMARY KEY or UNIQUE constraint on a partitioned table must
+include all partition-key columns, with restrictions on partition expressions.
+Local child indexes alone cannot enforce arbitrary global uniqueness across
+partitions. The example allows the same id on different dates; including the date
+in the key is a real semantic decision, not a syntax workaround that preserves
+global id uniqueness.
+
+Detaching or dropping an old partition can make time-based retention more
+manageable than deleting millions of rows individually. Lock requirements,
+foreign keys, concurrent operations, backups, and application expectations still
+matter. Partition attachment may validate bounds by scanning existing data unless
+appropriate constraints prove compatibility. A fast-looking DDL command needs a
+lock and rollback plan before production use.
+
+Too many partitions increase planning, metadata, memory, and management overhead.
+Queries lacking useful partition-key conditions may touch many children. Updating
+a partition key can move a row to another partition and has concurrency
+implications. Partitioning is neither sharding across servers nor an automatic
+replacement for indexes, vacuum, statistics, or sensible query design.
+
+<DecisionLab title="🐾 Is partitioning the right lever?" label="Workload" choices={[
+  {label: 'Time-range queries and monthly retention', result: 'Range partitions can support pruning and lifecycle operations.', cost: 'Choose boundaries, indexes, constraints, and detach/drop locking deliberately.'},
+  {label: 'Look up arbitrary IDs without the partition key', result: 'The query may need to inspect many partitions.', cost: 'Partitioning alone does not supply a global lookup index or uniqueness guarantee.'},
+  {label: 'Distribute writes across independent servers', result: 'Declarative local partitioning does not implement that distribution.', cost: 'Sharding requires additional routing, consistency, and operational architecture.'},
+]} />
+
+## Try it yourself 🧪
+
+Run the fixture and identify the pruned child. Repeat with only `WHERE id = 2`
+and compare the accessed children. Before rollback, try an additional row with
+the same id on a different date: explain why the composite primary key permits
+it. Then predict where March 1 would route with the current bounds. Separate
+the routing error from uniqueness enforcement in your explanation.
+
+<details>
+<summary>🤓 Pruning is not constraint exclusion (optional)</summary>
+
+Declarative partition pruning understands partition bounds directly. The older
+constraint-exclusion mechanism reasons from constraints and has different timing
+and capabilities. Prepared parameters can make execution-time pruning relevant;
+EXPLAIN evidence such as removed subplans or never-executed children needs to be
+interpreted with that plan. See `src/backend/partitioning/partprune.c` for the
+version-specific implementation.
+
+</details>
+
+## Recap 🐾
+
+1. Partition pruning excludes irrelevant child relations; indexes locate rows inside selected children.
+2. Partition keys constrain uniqueness, routing, and data-lifecycle operations.
+3. Partitioning should match measured access and retention patterns, not serve as a universal speed switch.
+
+<Quiz question="Does PRIMARY KEY (event_date, id) enforce globally unique id values across dates?" options={[
+  {text: 'No; it enforces uniqueness of the date-and-id pair.', correct: true, feedback: 'Correct. The partition cat cannot quietly change a pair into a globally unique identifier.'},
+  {text: 'Yes; the second column is automatically globally unique.', feedback: 'Composite uniqueness applies to the combination, not each column independently.'},
+  {text: 'Yes; pruning checks all other partitions on every insert.', feedback: 'Pruning is an execution optimization, not an invented global uniqueness mechanism.'},
+]} />
+
+## References
+
+[Table partitioning](https://www.postgresql.org/docs/17/ddl-partitioning.html) and
+[CREATE TABLE](https://www.postgresql.org/docs/17/sql-createtable.html).

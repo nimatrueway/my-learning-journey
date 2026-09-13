@@ -1,0 +1,129 @@
+---
+sidebar_position: 3
+slug: /courses/postgres-internals/isolation
+title: Write Skew and Serializable Retries
+description: Reproduce a cross-row invariant failure under snapshot isolation and protect it with Serializable transactions.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+Two operators each see another person on call and sign off. Both updates touch
+different rows and commit. No dirty read was needed to leave nobody available.
+
+⏱️ **Reading + practice: ~11 min** · includes six minutes of two-session practice.
+
+<Meme top="Both database cats checked that the other was on call." visual="🐱📟🐱" bottom="Two stable snapshots. Zero available operators." />
+
+## Stable reads are not serial execution
+
+PostgreSQL Repeatable Read provides snapshot isolation and prevents phantoms
+from concurrent commits. It can still permit **write skew**. Alice's transaction
+reads Bob and writes Alice; Bob's reads Alice and writes Bob. A same-row
+write-write conflict does not arise, but the cross-row rule is broken.
+
+Under a serial execution, the second transaction would see only one available
+operator and would not sign off. The outcome therefore cannot be explained by
+any serial ordering of these correctly implemented decisions. Consistency
+requires protecting the read-based decision, not merely the final row update.
+
+## Reproduce the anomaly
+
+Initialize the [lab](../labs.mdx), finish old transactions, and reset both
+operators to available. In **both A and B**, run:
+
+```sql
+BEGIN ISOLATION LEVEL REPEATABLE READ;
+SELECT count(*) FROM course_lab.on_call WHERE available;
+```
+
+Both see 2. A runs:
+
+```sql
+UPDATE course_lab.on_call SET available = false WHERE name = 'alice';
+COMMIT;
+```
+
+B then runs:
+
+```sql
+UPDATE course_lab.on_call SET available = false WHERE name = 'bob';
+COMMIT;
+```
+
+A fresh count returns 0. The application decision was "update only if my
+earlier count exceeded one," and that was true in both snapshots.
+
+## Serializable tracks dependencies
+
+Reset and repeat with `BEGIN ISOLATION LEVEL SERIALIZABLE` in both sessions.
+PostgreSQL Serializable Snapshot Isolation tracks read/write dependencies and
+rejects dangerous executions with SQLSTATE `40001`. At least one transaction
+must fail in this conflicting schedule. In a general race, do not depend on a
+particular victim or exact failure statement.
+
+The predicate locks shown as SIReadLock track dependencies; they do not block
+writers like ordinary row locks. Monitoring adds overhead and can abort
+conservatively. All transactions participating in the invariant must follow the
+chosen isolation or locking protocol. Serializable cannot fix an application
+that unconditionally turns everybody off call.
+
+<DecisionLab title="🐾 Keep one operator awake" label="Concurrency policy" choices={[
+  {label: 'Repeatable Read; update different rows', result: 'Both decisions can commit and leave nobody available.', cost: 'A stable snapshot does not protect this cross-row rule.'},
+  {label: 'Serializable for participating decisions', result: 'A dangerous execution can fail with 40001 instead of committing the anomaly.', cost: 'Retry the whole decision with a fresh snapshot and bounded attempts.'},
+  {label: 'Lock one shared guard row first', result: 'Cooperating transactions serialize their check and update.', cost: 'Every writer must acquire the same guard; contention concentrates there.'},
+]} />
+
+## Retrying means recomputing
+
+Roll back after a serialization failure, start a new transaction, reread the
+state, and recompute the decision. The remaining operator may now be the only
+one available, so the correct result is "cannot sign off." Resending only the
+old UPDATE defeats the business logic that justified it. Use bounded attempts
+and backoff, and keep non-idempotent external effects out of replayable work.
+
+Read Committed has another behavior for same-row writes: after waiting for a
+committed updater, it can recheck the WHERE condition on the new version and
+apply its operation there. Repeatable Read instead raises `40001` if a targeted
+row changed after its snapshot. This internal recheck is not an automatic retry
+of all your application code. Both PostgreSQL and InnoDB coordinate conflicting
+writers with locks; they differ in subsequent isolation semantics.
+
+## Try it yourself 🧪
+
+Run both on-call schedules and record the failure statement and SQLSTATE.
+Retry the failed business decision from BEGIN and explain why it now declines.
+Next establish a Repeatable Read snapshot of product 1 in A, update it and commit
+in B, then try updating it in A. Expect a concurrent-update serialization failure.
+Repeat at Read Committed with `stock = stock - 1` and compare the result. Finish
+both sessions and restore stock to 10 and both operators to available.
+
+<details>
+<summary>🤓 Safe read-only reporting (optional)</summary>
+
+`SERIALIZABLE READ ONLY DEFERRABLE` can wait for a safe snapshot, then avoid
+serialization failure for the read-only transaction. That changes startup latency
+and is useful for some consistency-sensitive reports, not a universal speed
+switch. Serializable means equivalence to some serial execution, not a promise
+of distributed linearizability. Start a source reading at
+[`predicate.c`](https://github.com/postgres/postgres/blob/REL_17_STABLE/src/backend/storage/lmgr/predicate.c).
+
+</details>
+
+## Recap 🐾
+
+1. Write skew breaks cross-row rules without dirty reads or same-row overwrites.
+2. Serializable detects dangerous dependencies and can abort with SQLSTATE 40001.
+3. A retry must reread and recompute the whole decision under a consistent protocol.
+
+<Quiz question="What should the operator transaction do after a serialization failure?" options={[
+  {text: 'Roll back, begin again, and re-evaluate the rule.', correct: true, feedback: 'Yes. The new answer may be no. Retrying is not permission to force the old decision.'},
+  {text: 'Resend only the final UPDATE until it succeeds.', feedback: 'The earlier read justified that UPDATE. A fresh snapshot can change the decision.'},
+  {text: 'Disable isolation because the rows are different.', feedback: 'Different write rows are exactly how write skew escapes simple write-write conflict detection.'},
+]} />
+
+## References
+
+[Isolation](https://www.postgresql.org/docs/17/transaction-iso.html) and
+[serialization failure handling](https://www.postgresql.org/docs/17/mvcc-serialization-failure-handling.html).

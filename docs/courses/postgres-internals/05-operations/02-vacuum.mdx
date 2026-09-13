@@ -1,0 +1,115 @@
+---
+sidebar_position: 2
+slug: /courses/postgres-internals/vacuum-wraparound
+title: Vacuum, Freezing, and XID Wraparound
+description: Connect version retention, reusable space, visibility maps, transaction age, and anti-wraparound maintenance.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+DELETE removes half the rows, yet the table file barely shrinks. Vacuum runs,
+and the file still looks large. The missing distinction is between reusable
+space inside the relation and returning bytes to the filesystem.
+
+⏱️ **Reading + practice: ~10 min** · includes five minutes of maintenance inspection.
+
+<Meme top="The maintenance cat deleted rows and demanded a smaller file." visual="🐱🧹" bottom="Empty shelves can be reused without demolishing the warehouse." />
+
+## Cleanup waits for visibility horizons
+
+Updates and deletes leave obsolete tuple versions. Vacuum can remove versions
+no relevant transaction still needs, clean index entries, maintain free-space
+and visibility information, and freeze sufficiently old transaction metadata.
+Page pruning can reclaim some local space earlier; it does not replace all of
+vacuum's duties. ANALYZE updates planner statistics and is a distinct operation,
+though VACUUM ANALYZE requests both.
+
+A long-lived snapshot can retain old versions even when ordinary writes continue.
+Prepared transactions, replication slots, and standby feedback can also affect
+retention horizons. Inspect the actual horizon holder before declaring vacuum
+broken. A low dead-tuple estimate is not a guarantee of healthy XID age, and a
+large table is not by itself proof of pathological bloat.
+
+Plain VACUUM generally makes space reusable in the relation. It may truncate
+empty tail pages under suitable conditions, but does not generally compact all
+live rows and return every internal hole to the OS. VACUUM FULL rewrites the
+table, requires extra working space and an AccessExclusive lock, and is not
+the routine cure for normal steady-state churn. Plan disruptive rewrites explicitly.
+
+## Wraparound is about age, not calendar time
+
+Raw tuple XIDs have 32 bits. PostgreSQL interprets their order with wraparound-aware
+rules, so sufficiently old unfrozen references cannot be kept forever. Freezing
+records that old committed tuple origins can be treated as ancient without
+depending on an ambiguous old XID. Modern PostgreSQL can mark a tuple frozen in
+flags without physically replacing its visible xmin value with one magic number.
+
+Monitor transaction age and maintenance progress, not just days since the last
+vacuum. A high-write-rate database consumes XIDs much faster than a quiet one.
+MultiXact IDs have their own age/maintenance concerns. Anti-wraparound vacuum
+exists to protect correctness; disabling autovacuum is not an acceptable response
+to a busy maintenance process. Extreme risk can cause PostgreSQL to refuse work
+to avoid data loss.
+
+```sql
+SELECT datname, age(datfrozenxid) AS xid_age
+FROM pg_database ORDER BY xid_age DESC;
+SELECT relname, n_live_tup, n_dead_tup, last_autovacuum,
+       last_autoanalyze, n_tup_upd, n_tup_hot_upd
+FROM pg_stat_user_tables WHERE schemaname = 'course_lab';
+VACUUM (VERBOSE, ANALYZE) course_lab.products;
+SELECT * FROM pg_stat_progress_vacuum;
+```
+
+Statistics are estimates and cumulative counters with update/reset behavior.
+The progress query can be empty because the tiny vacuum has already finished;
+empty does not mean it failed. Execute VACUUM outside an explicit transaction.
+The lab must not attempt to consume billions of XIDs to "test" wraparound.
+
+<DecisionLab title="🐾 Diagnose the cleanup constraint" label="Evidence" choices={[
+  {label: 'Old reader still needs deleted versions', result: 'Vacuum must retain versions protected by that snapshot.', cost: 'More aggressive vacuum cannot violate visibility; resolve the transaction lifecycle.'},
+  {label: 'Plain vacuum succeeds but file size stays similar', result: 'Space may now be reusable inside the relation.', cost: 'Returning interior free space to the OS usually needs more disruptive work.'},
+  {label: 'XID age rises despite few visible dead rows', result: 'Freezing and anti-wraparound progress still matter.', cost: 'Do not disable maintenance just because a dead-tuple counter looks small.'},
+]} />
+
+## Try it yourself 🧪
+
+Keep a Repeatable Read snapshot in A after selecting product 1. Update the
+product in B and commit. Run VERBOSE vacuum in B, then confirm A still sees
+its original version. End A and vacuum again. Record what changed without
+expecting a particular table-size reduction from two rows. Restore stock to 10.
+Then inspect database XID ages and explain why those values cannot be converted
+to an exact number of safe days without a workload-rate estimate.
+
+<details>
+<summary>🤓 Tune triggers and capacity together (optional)</summary>
+
+Autovacuum scheduling uses thresholds and scale factors, with separate paths
+for insert activity and wraparound protection. A scale factor suitable for a
+small table can allow too much churn on a huge hot table. Per-table settings,
+worker capacity, I/O budgets, and retention blockers all matter. Read the
+REL_17_STABLE vacuum code in
+[`vacuumlazy.c`](https://github.com/postgres/postgres/blob/REL_17_STABLE/src/backend/access/heap/vacuumlazy.c)
+alongside verbose output rather than applying a copied configuration globally.
+
+</details>
+
+## Recap 🐾
+
+1. Vacuum reclaims only versions outside all relevant retention horizons and maintains more than free space.
+2. Reusable internal space and a smaller filesystem allocation are different outcomes.
+3. Freezing and XID/MultiXact age are correctness requirements, not optional cosmetic cleanup.
+
+<Quiz question="Why might a successful plain VACUUM leave a table file nearly the same size?" options={[
+  {text: 'It can make internal space reusable without rewriting all live tuples.', correct: true, feedback: 'Correct. The shelves are available again; the building did not have to shrink.'},
+  {text: 'It never removes any obsolete versions.', feedback: 'It can remove versions once visibility horizons permit cleanup.'},
+  {text: 'It always requires VACUUM FULL immediately afterwards.', feedback: 'Routine workloads normally reuse space; rewrites need a measured reason and downtime/resource plan.'},
+]} />
+
+## References
+
+[Routine vacuuming](https://www.postgresql.org/docs/17/routine-vacuuming.html),
+[VACUUM](https://www.postgresql.org/docs/17/sql-vacuum.html), and
+[progress reporting](https://www.postgresql.org/docs/17/progress-reporting.html).

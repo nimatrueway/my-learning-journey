@@ -1,0 +1,120 @@
+---
+sidebar_position: 4
+slug: /courses/postgres-internals/extensions-source
+title: Extensions and Reading PostgreSQL Source
+description: Inspect optional capabilities and follow an observed behavior into version-matched source without overstating a toy experiment.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+CREATE EXTENSION succeeds, but the monitoring view still needs server startup
+configuration. Installing SQL objects and activating server hooks are not the
+same step. Extensions have a lifecycle, privilege model, and compatibility story.
+
+⏱️ **Reading + practice: ~9 min** · includes five minutes of extension/source investigation.
+
+<Meme top="The source-reading cat opened a million lines and searched for database." visual="🐱🔬" bottom="One observed behavior and one function make a much better starting point." />
+
+## An extension packages database capabilities
+
+An extension groups related SQL objects and upgrade scripts under a versioned
+installation. Some extensions are primarily SQL; others load native libraries,
+define types/operator classes, or hook into planner/executor behavior. Required
+server-side files must be installed before CREATE EXTENSION can use them.
+Managed services may expose only an approved subset and restrict configuration.
+
+Native extension code runs inside the server process environment and belongs
+to the database's trusted computing base. Evaluate provenance, supported PostgreSQL
+versions, privileges, maintenance, and backup/restore dependencies. Do not install
+an arbitrary downloaded binary just to reproduce a screenshot. Trusted extension
+status has a specific privilege meaning, not a universal security endorsement.
+
+```sql
+SELECT name, default_version, installed_version
+FROM pg_available_extensions
+WHERE name IN ('pageinspect', 'pg_stat_statements', 'pg_trgm')
+ORDER BY name;
+SELECT extname, extversion FROM pg_extension ORDER BY extname;
+SHOW shared_preload_libraries;
+```
+
+Available means server-side installation files are discoverable. Installed means
+the extension's objects exist in this database. Neither alone proves every
+startup hook is active or that the caller has privileges to use every function.
+pg_stat_statements requires shared preload configuration and a restart for its
+shared-memory tracking; CREATE EXTENSION exposes its SQL interface. It aggregates
+normalized statement statistics, not a guaranteed history of every parameter
+value or every individual execution plan. Timing counters still need observation
+window and reset context.
+
+## Inspect storage without mistaking bytes for semantics
+
+pageinspect exposes low-level page structures. Use it only in the disposable
+lab with the documented privileges. Raw tuple flags and XID fields still need
+MVCC status interpretation; an xmax number alone is not proof of deletion.
+Internal layouts are version-dependent and raw inspection can expose sensitive data.
+
+```sql
+BEGIN;
+CREATE EXTENSION IF NOT EXISTS pageinspect;
+SELECT lp, t_xmin, t_xmax, t_ctid
+FROM heap_page_items(get_raw_page('course_lab.products', 0))
+WHERE lp_flags = 1;
+ROLLBACK;
+```
+
+The fixture's products heap has a first page. Expect physical tuple metadata,
+not a fixed number of historical versions: prior updates, pruning, vacuum, and
+page reuse change it. If the extension was not installed before this transaction,
+rollback removes its SQL installation. If the server lacks the required files,
+the example fails clearly; do not silently substitute invented output.
+
+<DecisionLab title="🐾 Narrow the investigation" label="Question" choices={[
+  {label: 'Why is a tuple invisible to this snapshot?', result: 'Start with the snapshot and transaction outcomes, then HeapTupleSatisfiesMVCC.', cost: 'Tuple fields alone omit command IDs, status, flags, and snapshot semantics.'},
+  {label: 'Why is pg_stat_statements not tracking?', result: 'Inspect extension installation and shared preload configuration.', cost: 'SQL objects and server-startup hooks are separate prerequisites.'},
+  {label: 'Why did the planner choose a scan?', result: 'Capture EXPLAIN and statistics before following cost and path code.', cost: 'Reading a cost function without the actual inputs can explain the wrong decision.'},
+]} />
+
+## Try it yourself 🧪
+
+Run the availability and page inspection queries. Choose one behavior already
+measured in this course, such as a Repeatable Read snapshot ignoring a later
+commit. Open the PostgreSQL 17 source function linked by that lesson. Identify
+the relevant branch, its required inputs, and one simplification in the browser
+widget that the real function must handle. Write your explanation before reading
+surrounding modules. A bounded question is more useful than memorizing filenames.
+
+<details>
+<summary>🤓 Source navigation map (optional)</summary>
+
+Start with `src/backend/access/heap/heapam_visibility.c` for tuple visibility,
+`utils/time/snapmgr.c` for snapshots, `storage/lmgr/` for locks,
+`optimizer/` for paths/costs, `executor/` for plan nodes,
+`access/transam/` for WAL and transaction status, and `commands/` for many SQL
+commands. Extension examples live under `contrib/`. Use the REL_17_STABLE branch
+or a release tag matching the tested version, not an unqualified claim based
+on today's development branch. A debugger or instrumented build is optional
+advanced work and must stay away from production data.
+
+</details>
+
+## Recap 🐾
+
+1. Extension files, per-database SQL installation, and startup configuration are separate prerequisites.
+2. Raw pages and aggregated statistics are evidence with interpretation and privilege limits.
+3. Follow one observed behavior into version-matched source, carrying the actual inputs and caveats with you.
+
+<Quiz question="What is the best starting point for understanding a visibility decision in source?" options={[
+  {text: 'A reproduced snapshot, tuple state, transaction outcomes, and the relevant visibility function.', correct: true, feedback: 'Correct. Give the source-reading cat a concrete question and the inputs that decide it.'},
+  {text: 'Assume every nonzero xmax is a committed deletion.', feedback: 'Lock-only state, aborted transactions, MultiXacts, and snapshot timing can invalidate that shortcut.'},
+  {text: 'Read the entire development branch before running any example.', feedback: 'A version-matched local question makes source investigation testable and manageable.'},
+]} />
+
+## References
+
+[Extension packaging](https://www.postgresql.org/docs/17/extend-extensions.html),
+[pageinspect](https://www.postgresql.org/docs/17/pageinspect.html),
+[pg_stat_statements](https://www.postgresql.org/docs/17/pgstatstatements.html), and
+[PostgreSQL 17 source](https://github.com/postgres/postgres/tree/REL_17_STABLE/src/backend).

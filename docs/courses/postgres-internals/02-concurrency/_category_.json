@@ -1,0 +1,5 @@
+{
+  "label": "2. MVCC & Concurrency",
+  "position": 2,
+  "link": {"type": "generated-index", "description": "Row versions, snapshots, isolation anomalies, and lock schedules."}
+}

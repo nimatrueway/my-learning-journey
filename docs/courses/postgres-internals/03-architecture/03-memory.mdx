@@ -1,0 +1,120 @@
+---
+sidebar_position: 3
+slug: /courses/postgres-internals/memory
+title: Buffers, Memory Contexts, and Spills
+description: Separate shared page caching, private executor memory, planner cache assumptions, and temporary-file spills.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+One report gets faster after increasing work_mem. Fifty concurrent reports
+then exhaust memory. A per-operation budget was mistaken for a server-wide cap.
+
+⏱️ **Reading + practice: ~9 min** · includes five minutes of sort experiments.
+
+<Meme top="The memory cat gave every sort a bigger bowl." visual="🐱🥣" bottom="Then discovered there were fifty queries and several bowls per query." />
+
+## Separate the memory budgets
+
+`shared_buffers` holds a shared cache of PostgreSQL data pages. Backends locate
+a page, pin its buffer while using it, and take appropriate short-term locks
+to inspect or change contents. Pins prevent unsafe reuse; they do not replace
+SQL row locks. The operating system also caches file data, so a shared-buffer
+miss does not prove a physical device read.
+
+`work_mem` is a base budget for eligible executor operations such as sorts and
+hashing, not a single allocation per server or connection. A complex plan can
+have several such operations. Multiple queries and parallel workers can multiply
+their use. Hash operations can use a budget scaled by `hash_mem_multiplier`.
+Actual lifetime, sharing, and allocation vary by node, so this is a planning
+bound, not an exact multiplication formula for every plan.
+
+`maintenance_work_mem` serves maintenance commands such as index creation and
+manual vacuum. Autovacuum has additional configuration considerations, including
+`autovacuum_work_mem`. `effective_cache_size`, by contrast, is a planner estimate
+of cache likely available to a query; it does **not** allocate a cache. Increasing
+it cannot create RAM, though it can change cost comparisons.
+
+## Observe a spill without changing global settings
+
+Run in the disposable lab:
+
+```sql
+BEGIN;
+SET LOCAL work_mem = '64kB';
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT id, customer_id, created_at
+FROM course_lab.orders
+ORDER BY md5(id::text), id;
+ROLLBACK;
+```
+
+This intentionally artificial sort has no matching index. Look for Sort Method
+and disk or memory usage. At a small budget it should spill on the seeded
+20,000-row dataset, but record the actual plan rather than asserting a specific
+byte count. Repeat with a larger local budget and compare temp reads/writes,
+elapsed time, and sort method. EXPLAIN ANALYZE executes the query.
+
+Spilling is a safety mechanism, not automatically a failure. Making all spills
+impossible by raising a global budget can be less reliable than accepting bounded
+temporary I/O. Conversely, repeated large spills on a hot path can justify better
+indexes, fewer intermediate rows, a rewritten query, or a scoped memory setting.
+
+<DecisionLab title="🐾 Account for every memory bowl" label="Proposed change" choices={[
+  {label: 'Raise effective_cache_size', result: 'Planner cache assumptions change; no memory is allocated by this setting.', cost: 'An unrealistic estimate can encourage a poor plan.'},
+  {label: 'Raise global work_mem sharply', result: 'More sort/hash operations can stay in memory.', cost: 'Concurrent operations and workers can multiply memory pressure across sessions.'},
+  {label: 'SET LOCAL work_mem for one report', result: 'Scope the budget to a measured transaction.', cost: 'You still need concurrency limits and evidence that the report benefits.'},
+]} />
+
+## Private memory has ownership and lifetime
+
+PostgreSQL organizes much private allocation into **memory contexts**. A context
+owns allocations so a query or transaction can release related memory together
+rather than individually tracking every object. This helps cleanup on errors,
+but does not mean any value can be safely retained after its context is reset.
+Extension authors must choose lifetimes carefully.
+
+In your own backend, inspect `pg_backend_memory_contexts` where permitted.
+The result describes backend allocations, not total cluster resident memory or
+the operating-system page cache. Measure the level relevant to the question.
+
+## Try it yourself 🧪
+
+Compare the two sort budgets, then run the query a second time at each budget.
+Separate cache warming from the memory change. Estimate a conservative exposure
+for 20 concurrent queries, each with two 16 MB sorts: 640 MB before considering
+hash multipliers, shared buffers, private overhead, or other work. Explain why
+this is neither a precise resident-memory forecast nor permission to run without
+a concurrency limit.
+
+<details>
+<summary>🤓 Buffer replacement is not a query-result cache (optional)</summary>
+
+The buffer manager tracks page identity, references, dirty state, and usage to
+support replacement. Reusing a cached page still requires execution, filtering,
+and visibility checks. Start at
+[`bufmgr.c`](https://github.com/postgres/postgres/blob/REL_17_STABLE/src/backend/storage/buffer/bufmgr.c)
+and `src/backend/utils/mmgr/`. An EXPLAIN buffer hit records a page access
+satisfied from shared buffers, not a complete cached answer to the SQL statement.
+
+</details>
+
+## Recap 🐾
+
+1. Shared buffers, OS cache, and private executor memory have different roles.
+2. work_mem can multiply across operations and concurrency; effective_cache_size allocates nothing.
+3. Measure spills and cache state before changing scoped budgets or global limits.
+
+<Quiz question="Does work_mem = 16 MB limit the whole server to 16 MB of query memory?" options={[
+  {text: 'No; multiple operations and concurrent workers can each consume budgets.', correct: true, feedback: 'Correct. Count the operations and concurrency before the memory cat orders more bowls.'},
+  {text: 'Yes; it includes shared_buffers too.', feedback: 'Shared buffers are configured separately, and work_mem is not a cluster-wide ceiling.'},
+  {text: 'Only if effective_cache_size is also 16 MB.', feedback: 'effective_cache_size is a cost-model estimate, not an allocation or hard cap.'},
+]} />
+
+## References
+
+[Resource settings](https://www.postgresql.org/docs/17/runtime-config-resource.html),
+[planner settings](https://www.postgresql.org/docs/17/runtime-config-query.html), and
+[memory contexts view](https://www.postgresql.org/docs/17/view-pg-backend-memory-contexts.html).

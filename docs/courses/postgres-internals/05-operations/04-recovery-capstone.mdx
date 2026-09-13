@@ -1,0 +1,129 @@
+---
+sidebar_position: 4
+slug: /courses/postgres-internals/recovery-capstone
+title: Backups, Recovery, and the Incident Capstone
+description: Define recovery objectives, verify a logical restore, and diagnose a mixed lock/vacuum/query incident with evidence.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+A replica faithfully replays an accidental DELETE. You now have two copies
+of the mistake. High availability and recovering yesterday's data are different
+requirements.
+
+⏱️ **Reading + practice: ~13 min** · includes eight minutes of restore and incident practice.
+
+<Meme top="The backup cat counted two replicas and went to sleep." visual="🐱🛟" bottom="Both replicas have now preserved the accidental deletion beautifully." />
+
+## Define the failure you must recover from
+
+**RPO** is the tolerated data-loss window; **RTO** is the tolerated recovery
+time. Different incidents require different recovery paths: machine loss,
+accidental data changes, corrupted storage, lost credentials, and failed schema
+migrations are not interchangeable. Backups require protected storage, retention,
+access controls, and a verified restore process independent of the failed system.
+
+`pg_dump` creates a logical database backup with a consistent view. A custom
+archive supports flexible pg_restore operations, but it is not a physical base
+backup or a complete cluster backup including roles and tablespaces. Schema-only
+or selected-schema dumps have even narrower scope. Restore privileges and
+external dependencies must be planned.
+
+Physical base backups plus an unbroken required WAL archive enable point-in-time
+recovery. Missing a needed WAL segment can prevent reaching the intended point.
+Recovery targets, timelines, configuration, and testing on an isolated replacement
+matter. Files copied casually from a running data directory are not automatically
+a valid physical backup. Incremental backups in newer PostgreSQL workflows have
+their own base-chain and combination requirements; verify the exact version.
+
+## Perform a bounded logical restore
+
+This exercise uses only the disposable container from the [lab](../labs.mdx).
+It stores an archive inside that container and restores to a new database:
+
+```bash
+docker exec pg-internals-lab pg_dump -U postgres -d postgres \
+  -n course_lab -Fc -f /tmp/course-lab.dump
+docker exec pg-internals-lab createdb -U postgres course_restore
+docker exec pg-internals-lab pg_restore -U postgres \
+  -d course_restore --exit-on-error /tmp/course-lab.dump
+docker exec pg-internals-lab psql -X -U postgres -d course_restore \
+  -c 'SELECT count(*) FROM course_lab.orders;'
+```
+
+Expect 20,000 seeded orders unless you intentionally changed them. The new
+database name must not already exist. Inspect constraints and a representative
+query too: one count does not prove every object restored correctly. This is a
+restore rehearsal, **not a disaster-safe backup**, because the archive and source
+share a container and storage failure domain. A production plan must store
+protected copies elsewhere and rehearse the relevant physical/PITR procedure.
+
+## Diagnose before changing configuration
+
+Imagine checkout latency rises, a report is idle in transaction, old versions
+accumulate, and a new reporting query spills. These may be related, but do not
+collapse them into one explanation without evidence. Start with a timeline and
+the failing request class. Inspect activity, wait events, blockers, transaction
+age, table maintenance, and representative plans. Separate connection-pool
+waiting from server execution.
+
+```sql
+SELECT pid, state, wait_event_type, wait_event,
+       pg_blocking_pids(pid), backend_xmin,
+       clock_timestamp() - xact_start AS transaction_age
+FROM pg_stat_activity WHERE datname = current_database();
+SELECT relname, n_dead_tup, last_autovacuum
+FROM pg_stat_user_tables WHERE schemaname = 'course_lab';
+```
+
+Use least-privilege monitoring roles in real systems; query text can contain
+sensitive information. Cancel or terminate sessions only after identifying
+ownership, transaction consequences, and recovery behavior. Do not delete WAL
+files, disable fsync, or disable autovacuum to make a graph temporarily improve.
+
+<DecisionLab title="🐾 Pick the evidence-led next step" label="Incident" choices={[
+  {label: 'Accidental DELETE replicated everywhere', result: 'Use a suitable backup and recovery target, then reconcile valid later work.', cost: 'Failing over alone reproduces the deletion; restore time and retained WAL determine options.'},
+  {label: 'Checkout waits on a known transaction', result: 'Inspect and resolve the blocker with its owner and recovery plan.', cost: 'Adding indexes or connections does not release a held lock.'},
+  {label: 'A new report spills with bad row estimates', result: 'Inspect cardinality, query shape, and scoped memory needs.', cost: 'A global memory increase can amplify concurrency-related exhaustion.'},
+]} />
+
+## Try it yourself 🧪
+
+Complete the restore and compare a product row, order count, primary key, and
+CHECK definitions between source and target. Then recreate a bounded row-lock
+wait from the locking lesson and capture the blocker evidence. Write a short
+incident note containing symptom, observed facts, hypothesis, discriminating
+check, mitigation, rollback plan, and follow-up. Name one fact you still do not
+know. A good report does not disguise uncertainty as a confident tuning command.
+
+<details>
+<summary>🤓 Prepared transactions can outlive a connection (optional)</summary>
+
+Two-phase commit can leave a prepared transaction holding resources after its
+original client disconnects. Inspect pg_prepared_xacts when the evidence points
+there. Resolve it with the external coordinator's decision; guessing COMMIT
+PREPARED or ROLLBACK PREPARED can violate distributed consistency. Two-phase
+commit is not the same as a prepared SQL statement and should not be enabled
+casually just because both names include "prepared."
+
+</details>
+
+## Recap 🐾
+
+1. Replication, logical dumps, physical backups, and PITR protect different failure modes.
+2. Recovery objectives require protected copies, complete dependencies, and measured restore rehearsals.
+3. Incidents need falsifiable hypotheses and scoped mitigation, not unverified global tuning.
+
+<Quiz question="Why is a second live replica insufficient protection against an accidental DELETE?" options={[
+  {text: 'The replica normally replays the same valid deletion.', correct: true, feedback: 'Correct. Availability copies are not a time machine; the cat needs a tested recovery path.'},
+  {text: 'Replicas never contain committed changes.', feedback: 'Their purpose is to apply committed changes, including unwanted but valid ones.'},
+  {text: 'A table count proves every possible backup is restorable.', feedback: 'Counts are one check, not proof of full object, dependency, or failure-domain coverage.'},
+]} />
+
+## References
+
+[Backup and restore](https://www.postgresql.org/docs/17/backup.html),
+[continuous archiving](https://www.postgresql.org/docs/17/continuous-archiving.html), and
+[pg_dump](https://www.postgresql.org/docs/17/app-pgdump.html).

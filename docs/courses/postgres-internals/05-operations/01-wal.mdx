@@ -1,0 +1,115 @@
+---
+sidebar_position: 1
+slug: /courses/postgres-internals/wal-checkpoints
+title: WAL, Commit Durability, and Checkpoints
+description: Distinguish WAL insertion, flush, data-page writes, checkpoints, and replay after a crash.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+COMMIT succeeds even though some changed heap pages are still in memory. That
+can be correct: durable commit relies on write-ahead logging, not flushing every
+data page for every transaction.
+
+⏱️ **Reading + practice: ~9 min** · includes five minutes of WAL inspection.
+
+<Meme top="The durability cat waited for every heap page to reach disk." visual="🐱📓" bottom="The durable journal already recorded how to reconstruct the changes." />
+
+## Log before the affected data page
+
+WAL records changes needed for recovery. The write-ahead rule requires relevant
+WAL to reach durable storage before the affected dirty data page is written.
+With ordinary durable settings, commit acknowledgement waits for the commit's
+required WAL flush. Group commit can let several transactions share a flush.
+Heap and index pages can be written later because recovery can replay WAL.
+
+An LSN is a byte position in the WAL stream, not a transaction ID or a row
+version number. Inserting a record into WAL buffers, writing it to the operating
+system, and flushing it durably are distinct steps. Hardware and storage layers
+must honor durability requests. Setting fsync off undermines crash safety and
+is not a sensible production shortcut.
+
+`synchronous_commit = off` can acknowledge commits before their WAL is durable,
+accepting a window in which recently acknowledged transactions can be lost on
+crash. It does not mean PostgreSQL abandons all internal consistency, and it is
+not equivalent to disabling fsync. Synchronous replication settings can add remote
+acknowledgement requirements; local durability alone does not imply replica replay.
+
+## Checkpoints bound recovery work
+
+A checkpoint establishes a recovery starting point and coordinates writing
+dirty buffers over time. It is not a transaction commit, and committing does
+not force an immediate checkpoint. More frequent checkpoints can reduce replay
+distance but increase write pressure and full-page-image overhead. Less frequent
+ones can increase WAL and recovery work. Tune against measured workload and
+recovery objectives, not a universal shortest interval.
+
+With full_page_writes enabled, WAL can include a full page image on the first
+relevant page modification after a checkpoint to protect against torn-page
+problems during recovery. Compression and workload affect the resulting volume.
+WAL records also support recovery of index structure changes, not just business
+column values. Unlogged tables deliberately have different crash/replication
+guarantees and are not a free durability-preserving optimization.
+
+```sql
+SHOW fsync;
+SHOW synchronous_commit;
+SHOW full_page_writes;
+SELECT pg_current_wal_insert_lsn(), pg_current_wal_lsn(),
+       pg_current_wal_flush_lsn();
+BEGIN;
+UPDATE course_lab.products SET stock = stock + 1 WHERE id = 1;
+ROLLBACK;
+SELECT pg_current_wal_insert_lsn(), pg_current_wal_flush_lsn();
+```
+
+Even an aborted update can generate WAL and physical work. Rollback does not
+rewind the WAL stream. The exact LSN difference is not stable, and other sessions
+or background activity can contribute. Do not label the entire cluster-wide
+difference as the exact byte cost of one statement.
+
+<DecisionLab title="🐾 What did the acknowledgement promise?" label="Configuration" choices={[
+  {label: 'Normal local durable commit', result: 'Required commit WAL is flushed before success is acknowledged.', cost: 'Not every heap page is already written, and no remote replica guarantee follows by itself.'},
+  {label: 'synchronous_commit off', result: 'Success can precede durable WAL flush.', cost: 'A crash can lose recently acknowledged transactions; choose this only with an explicit loss policy.'},
+  {label: 'More frequent checkpoints', result: 'Recovery can generally start from a more recent checkpoint.', cost: 'More checkpoint writes and full-page images can increase workload overhead.'},
+]} />
+
+## Try it yourself 🧪
+
+Record the settings and LSNs, run the rolled-back update, and explain why WAL
+can advance with no persistent business change. Draw the order of WAL flush,
+data-page write, commit acknowledgement, and checkpoint without putting them
+all at one instant. State which ordering is required and which events can occur
+later. Do not simulate power loss on a database containing valuable data.
+
+<details>
+<summary>🤓 Redo is not replaying your SQL text (optional)</summary>
+
+Recovery applies WAL records through resource-manager redo routines; it does
+not rerun the original SQL and its application-side logic. Source entry points
+include [`xlog.c`](https://github.com/postgres/postgres/blob/REL_17_STABLE/src/backend/access/transam/xlog.c),
+`xloginsert.c`, and `xlogrecovery.c`. Recovery also knows transaction outcomes,
+so physically replayed changes from uncommitted transactions do not become
+ordinary committed query results.
+
+</details>
+
+## Recap 🐾
+
+1. WAL-before-data ordering allows durable commits without flushing all changed heap pages immediately.
+2. Checkpoints, commit flushes, and replica acknowledgement are separate mechanisms.
+3. Durability settings and storage guarantees define which failures an acknowledgement survives.
+
+<Quiz question="Why can COMMIT succeed before all changed heap pages are on disk?" options={[
+  {text: 'Durable WAL contains the recovery information needed to redo the changes.', correct: true, feedback: 'Correct. The journal is durable; the cat need not flush the entire filing cabinet per sale.'},
+  {text: 'PostgreSQL never promises durability.', feedback: 'It does, subject to configured durability and functioning storage guarantees.'},
+  {text: 'Every COMMIT is a full checkpoint.', feedback: 'Commit and checkpoint have different scopes and schedules.'},
+]} />
+
+## References
+
+[WAL introduction](https://www.postgresql.org/docs/17/wal-intro.html),
+[WAL configuration](https://www.postgresql.org/docs/17/wal-configuration.html), and
+[asynchronous commit](https://www.postgresql.org/docs/17/wal-async-commit.html).

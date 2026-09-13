@@ -1,0 +1,141 @@
+---
+sidebar_position: 1
+slug: /courses/postgres-internals/snapshots
+title: MVCC, Snapshots, and Row Versions
+description: Explain why two sessions read different committed values and why a transaction ID is not a timestamp.
+---
+
+import PostgresSnapshotLab from '@site/src/components/PostgresSnapshotLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+Two sessions query the same primary database. One sees stock 10; the other sees
+stock 9. Neither is reading a replica. Before blaming a cache, inspect their
+transaction snapshots.
+
+⏱️ **Reading + practice: ~10 min** · includes a five-minute two-session exercise.
+
+<Meme top="The database cat found two versions of one row." visual="🐱🐘" bottom="Not duplicate inventory. One reader is still living in the previous snapshot." />
+
+## One logical row, several physical versions
+
+An ordinary PostgreSQL heap update generally creates a new tuple version and
+marks the old version as updated. It does not overwrite the old business value
+in place and force every reader to accept it. A reader chooses the version
+visible to its snapshot. This is **multiversion concurrency control**, or MVCC.
+
+The tuple header carries transaction information. `xmin` identifies the
+transaction that inserted that version. `xmax` participates in deletion, update,
+or row-lock information. It is not safe to interpret every nonzero `xmax` as
+"this row is deleted": lock-only states, aborted transactions, and MultiXacts
+also matter. A normal SELECT already applies visibility rules before returning
+these system columns.
+
+Snapshots distinguish transactions that completed before the snapshot from
+transactions still running or not yet started at that point. PostgreSQL also
+consults transaction status and tuple flags. Transaction IDs are **not commit
+timestamps**: an older transaction can commit after a newer one. Merely comparing
+`xmin` to a single number is not a complete visibility algorithm.
+
+## Choose the lifetime of the snapshot
+
+At PostgreSQL's default **Read Committed** level, each ordinary SELECT gets a
+new statement snapshot. Another session's commit between two statements can
+therefore change the second result, even inside one explicit transaction.
+
+At **Repeatable Read**, the snapshot is established by the first
+non-transaction-control statement, not by the bare `BEGIN`. Later reads retain
+that view of other transactions. Both levels can see their own transaction's
+earlier writes. Neither permits dirty reads. PostgreSQL maps a request for
+Read Uncommitted to Read Committed behavior.
+
+Move to step three below, predict the value, then switch isolation. The fixture
+models exactly one reader, one successful writer, and ordinary SELECT statements;
+it deliberately omits self-writes, aborted writers, subtransactions, and locking reads.
+
+<PostgresSnapshotLab />
+
+## Run the schedule on a real server
+
+Complete the [lab setup](../labs.mdx), then open two psql sessions. Begin with
+`stock = 10`; reset it outside any reader transaction if necessary.
+
+**Session A:**
+
+```sql
+BEGIN ISOLATION LEVEL REPEATABLE READ;
+SELECT stock, xmin::text FROM course_lab.products WHERE id = 1;
+```
+
+**Session B:**
+
+```sql
+BEGIN;
+UPDATE course_lab.products SET stock = 9 WHERE id = 1;
+```
+
+Run A's SELECT again: it returns 10 without waiting for B's uncommitted update.
+Then commit B and repeat A's SELECT: still 10. Finally end A and read again:
+
+```sql
+COMMIT;
+SELECT stock, xmin::text FROM course_lab.products WHERE id = 1;
+```
+
+Now A sees 9 and the new version's inserting transaction ID. The numeric ID
+varies by run; do not put a fixed `xmin` in a correctness assertion. The ordinary
+query does not expose both live and obsolete tuples at once. That requires
+lower-level inspection and is not needed to demonstrate visibility.
+
+## Readers still have operational consequences
+
+MVCC lets ordinary reads coexist with ordinary writes without conflicting
+row locks. It does **not** remove all blocking. SELECT takes a relation lock;
+DDL requiring AccessExclusiveLock can block it. Writers targeting the same row
+can wait for one another. Locking SELECT statements have additional behavior.
+
+Keeping the old snapshot open also keeps potentially needed versions alive.
+Vacuum cannot remove a version while it might still be visible to a relevant
+snapshot. A forgotten long-running report can therefore contribute to retained
+dead tuples even while it holds no blocking row lock. Transaction duration is
+both a correctness choice and a maintenance cost.
+
+## Try it yourself 🧪
+
+End both transactions, set stock back to 10, and repeat the schedule with
+`BEGIN ISOLATION LEVEL READ COMMITTED`. Write down A's three results: before
+B commits, after B commits, and after A ends. They should be 10, 9, and 9.
+Then try delaying A's first SELECT until after B commits under Repeatable Read.
+Explain why A now starts at 9. Finish every open transaction with COMMIT or
+ROLLBACK before moving on; an idle transaction is part of the experiment, not
+something to leave behind.
+
+<details>
+<summary>🤓 Snapshot boundaries are not time travel (optional)</summary>
+
+MVCC is an implementation mechanism, not a historical query API. Once obsolete
+versions are removable, PostgreSQL can reclaim them; you cannot later ask a
+normal table for an arbitrary yesterday snapshot. Physical `ctid` values identify
+tuple locations and can change after updates or rewrites, so they are not durable
+application keys. PostgreSQL's transaction IDs also wrap around, making freezing
+and age monitoring necessary. We will connect those facts in the vacuum lesson.
+
+</details>
+
+## Recap 🐾
+
+1. Updates create versions; snapshot visibility is more than an `xmin` comparison.
+2. Read Committed refreshes statement snapshots; Repeatable Read retains its first established snapshot.
+3. Long snapshots can retain old tuples even without blocking ordinary writers.
+
+<Quiz question="B commits after A's first Repeatable Read SELECT. What does A's next ordinary SELECT see?" options={[
+  {text: 'The original version, until A ends its transaction.', correct: true, feedback: 'The snapshot stays fixed for other transactions. The cat can stop blaming the cache.'},
+  {text: 'The newest committed version immediately.', feedback: 'That describes a later Read Committed statement, not this Repeatable Read snapshot.'},
+  {text: 'Both tuple versions as duplicate result rows.', feedback: 'PostgreSQL applies visibility rules before returning rows. Two versions do not mean two visible products.'},
+]} />
+
+## References
+
+[MVCC introduction](https://www.postgresql.org/docs/17/mvcc-intro.html),
+[transaction isolation](https://www.postgresql.org/docs/17/transaction-iso.html),
+and [system columns](https://www.postgresql.org/docs/17/ddl-system-columns.html).

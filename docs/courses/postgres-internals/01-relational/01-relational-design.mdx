@@ -1,0 +1,124 @@
+---
+sidebar_position: 1
+slug: /courses/postgres-internals/relational-design
+title: Relations, Keys, and Invariants
+description: Model one fact in one place and use constraints to protect it under concurrent writes.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+A product's current price changes. Should every historical order change too?
+The answer depends on which fact each column represents, not how efficiently
+you can run an UPDATE.
+
+⏱️ **Reading + practice: ~10 min** · includes five minutes of schema experiments.
+
+<Meme top="The schema cat copied today's price into every past receipt." visual="🐱🧾" bottom="Excellent consistency. Unfortunately, with the wrong fact." />
+
+## Start with facts and dependencies
+
+An RDBMS stores structured data and supports relational operations, constraints,
+transactions, and concurrent access. A mathematical relation is an unordered set
+of tuples over named attributes. SQL tables are a practical implementation with
+important differences: duplicates can exist without a key, NULL represents
+missing or unknown information, and query output has no guaranteed order without
+ORDER BY. A table's physical page order is not part of your application contract.
+
+A **candidate key** uniquely identifies a row with no unnecessary attributes.
+A primary key is the candidate key chosen as the main identifier. In the
+[lab schema](../labs.mdx), `products.id` identifies a product and
+`(order_id, product_id)` identifies one product's line within an order. That
+composite key deliberately disallows two separate lines for the same product
+in one order. A business that needs separate customizations would choose a
+different line identity. A key is a business decision, not just an index knob.
+
+Normalization follows dependencies. If product ID determines the current name
+and current price, repeat those attributes in every order and you create update
+anomalies: one correction needs many writes, and partial corrections disagree.
+Separate products from orders and join when needed. But `order_items.unit_price`
+means **the price agreed for that sale**, which can differ from today's catalog
+price. Keeping it is not accidental duplication of the same fact.
+
+## Put enforceable invariants in the database
+
+Inspect the setup file. `NOT NULL` rejects absence, `CHECK (stock >= 0)` rejects
+negative inventory, and foreign keys reject references to missing products.
+The database enforces these rules regardless of which application or maintenance
+script writes the data. An application-only "does this key exist?" query races
+with another writer. A unique constraint arbitrates concurrent inserts.
+
+PostgreSQL CHECK accepts true **or unknown**, so `CHECK (price >= 0)` alone does
+not reject NULL. Pair it with NOT NULL when absence is invalid. A foreign key
+column can also be nullable; in this fixture the composite primary key makes
+both reference columns non-null. The referenced key is indexed, but PostgreSQL
+does not automatically create an index on every referencing foreign-key column.
+The line-item primary key begins with `order_id`; product-oriented access may
+need a separate index after measurement.
+
+Choose a proposed guard below and identify the race or missing case before
+reading the outcome. These are schema-design scenarios, not a constraint engine.
+
+<DecisionLab title="🐾 Guard the inventory ledger" label="Protection" choices={[
+  {label: 'Check stock only in application code', result: 'Another writer can invalidate the earlier read before the write.', cost: 'Every write path must cooperate; a separate check is not atomic.'},
+  {label: 'NOT NULL plus CHECK (stock >= 0)', result: 'The stored value cannot be absent or negative.', cost: 'This does not by itself implement reservation ownership or prevent an incorrect stale overwrite.'},
+  {label: 'Unique product name', result: 'Equal names cannot coexist under the chosen uniqueness semantics.', cost: 'This is valid only if the business truly treats the name as unique; names are often mutable or reused.'},
+]} />
+
+## Test the boundary, not just the happy path
+
+Run each statement separately in psql, outside an explicit transaction:
+
+```sql
+UPDATE course_lab.products SET stock = -1 WHERE id = 1;
+UPDATE course_lab.products SET price = NULL WHERE id = 1;
+INSERT INTO course_lab.products VALUES (1, 'Other', 2.00, 3);
+SELECT id, name, price, stock FROM course_lab.products ORDER BY id;
+```
+
+The first three statements fail on CHECK, NOT NULL, and primary-key uniqueness
+respectively. The final query still returns the original valid rows. In an
+explicit transaction, the first error instead leaves the transaction aborted
+until ROLLBACK, unless you recover through a previously created savepoint.
+This distinction matters when turning a psql experiment into application code.
+
+## Try it yourself 🧪
+
+Write a tiny dependency list for customers, orders, and line items. Identify
+which address means "current customer address" and which means "shipping
+address chosen for this order." Explain whether historical address snapshots
+are intended. Then try inserting a line item for a nonexistent order and predict
+the foreign-key error. Finally decide whether the invariant "at least one
+operator is on call" fits a row CHECK. It spans rows; a CHECK that queries
+other rows is not the right concurrency-safe enforcement mechanism.
+
+<details>
+<summary>🤓 Normal forms without ritual (optional)</summary>
+
+Third normal form aims to keep non-key attributes dependent on keys without
+problematic transitive dependencies. Boyce-Codd normal form requires every
+determinant of a nontrivial functional dependency to be a superkey. Decomposition
+should preserve information through a lossless join; some decompositions make
+dependencies harder to enforce locally. Start with explicit dependencies and
+workload needs, not a universal command to split every column into a table.
+Intentional denormalization needs an owner, refresh policy, and repair strategy.
+
+</details>
+
+## Recap 🐾
+
+1. Keys and dependencies describe the identity and meaning of facts.
+2. Constraints protect all write paths, but each constraint has precise NULL and concurrency semantics.
+3. Historical snapshots and intentional denormalization need explicit meaning and maintenance rules.
+
+<Quiz question="Why keep unit_price on an order item when products already has price?" options={[
+  {text: 'The sale price and current catalog price are different facts.', correct: true, feedback: 'Correct. The receipt survives tomorrow\u0027s price change; the accounting cat keeps its job.'},
+  {text: 'Every join must be eliminated.', feedback: 'Joins are a normal relational operation. The reason here is the meaning of the data.'},
+  {text: 'Foreign keys automatically copy referenced values.', feedback: 'Foreign keys validate references; they do not copy price columns.'},
+]} />
+
+## References
+
+[Constraints](https://www.postgresql.org/docs/17/ddl-constraints.html) and
+[tables](https://www.postgresql.org/docs/17/ddl-basics.html).

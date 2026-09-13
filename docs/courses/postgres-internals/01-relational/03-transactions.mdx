@@ -1,0 +1,133 @@
+---
+sidebar_position: 3
+slug: /courses/postgres-internals/transactions
+title: Transactions and Application Boundaries
+description: Connect ACID, conditional updates, savepoints, retries, idempotency, and connection pooling.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+A client sends COMMIT, loses its connection, and retries the purchase. Was the
+first purchase committed? A database transaction cannot make a lost network
+response unambiguous.
+
+⏱️ **Reading + practice: ~10 min** · includes five minutes of transaction experiments.
+
+<Meme top="The checkout cat retried because the network said nothing." visual="🐱📦" bottom="Silence is not a rollback receipt." />
+
+## Four promises, four separate questions
+
+**Atomicity** means a transaction's database changes commit together or are
+aborted together. **Consistency** means transitions preserve the invariants
+you actually enforce, not that the database understands every business rule.
+**Isolation** governs interaction with concurrent transactions. **Durability**
+governs what a successful commit survives, subject to configuration and hardware.
+We will later connect durable commit to WAL, not to every data page already
+being on disk.
+
+PostgreSQL runs each standalone statement in an implicit transaction. BEGIN
+groups statements until COMMIT or ROLLBACK. An error inside that block normally
+leaves it aborted: subsequent work cannot simply continue as though nothing
+happened. SAVEPOINT permits deliberate partial rollback, but it is not a new
+independently committed transaction.
+
+## Make the condition part of the write
+
+Suppose two buyers read stock 1. Both calculate zero and send `SET stock = 0`.
+The nonnegative CHECK passes twice; it has not encoded "only one purchase may
+claim this unit." Express the transition atomically instead:
+
+```sql
+BEGIN;
+UPDATE course_lab.products
+SET stock = stock - 1
+WHERE id = 1 AND stock > 0
+RETURNING id, stock;
+ROLLBACK;
+```
+
+At Read Committed, competing updates to that row serialize through row-level
+write locking. After a wait, PostgreSQL rechecks the predicate against the
+updated version. An empty RETURNING result means this statement did not reserve
+stock. The application must branch on the result before creating the order.
+Subtracting from the stored value differs from overwriting it with a value
+calculated from a stale earlier SELECT.
+
+If reservation and order creation must succeed together, put them in one short
+transaction on the **same connection**. A pool does not guarantee that two
+independent query calls use the same backend. Acquire a transaction-scoped client,
+perform the work, commit or roll back, and release it in a finally path. Never
+leave a connection idle in transaction while waiting for a human or remote API.
+
+<DecisionLab title="🐾 Decide what a failed request means" label="Observed outcome" choices={[
+  {label: 'UPDATE returned zero rows', result: 'No qualifying row was reserved by this statement.', cost: 'Distinguish sold out, missing product, and authorization policy without inventing success.'},
+  {label: 'Database returned SQLSTATE 40001', result: 'The transaction failed serialization and must be rolled back and retried as a whole.', cost: 'Retry with a fresh snapshot, bounded attempts, and replay-safe application work.'},
+  {label: 'Connection lost while waiting for COMMIT', result: 'Commit outcome may be unknown to the client.', cost: 'Resolve through a durable request identity; blindly repeating can duplicate the operation.'},
+]} />
+
+## Retry a request without charging twice
+
+An idempotency key identifies one logical request across network retries. Enforce
+its uniqueness in a durable table, associate it with the request parameters and
+result, and handle a duplicate by returning or reconciling the original outcome.
+Do not silently reuse one key for a different payload. A unique index is the
+arbitrator when concurrent requests race; checking first in application memory
+does not suffice.
+
+A PostgreSQL transaction does not roll back an email already sent or a payment
+already accepted elsewhere. A transactional outbox writes the business change
+and an event record in the same transaction. A separate worker delivers events
+with retry and deduplication. This is usually at-least-once delivery, not magic
+exactly-once execution across independent systems. External payment systems need
+their own idempotency protocol and reconciliation.
+
+## Try it yourself 🧪
+
+Reset stock to 1 outside all transactions. In A, BEGIN and run the conditional
+decrement without committing. In B, run the same statement: it should wait.
+Commit A; B should then affect zero rows. Repeat with A rolling back instead:
+B can now decrement. End both sessions. Then explore partial recovery:
+
+```sql
+BEGIN;
+SAVEPOINT before_attempt;
+UPDATE course_lab.products SET stock = -1 WHERE id = 1;
+ROLLBACK TO SAVEPOINT before_attempt;
+SELECT stock FROM course_lab.products WHERE id = 1;
+ROLLBACK;
+```
+
+The failed CHECK is intentional. The savepoint restores a usable transaction;
+without it, a plain ROLLBACK would be required. Reset stock to 10 afterwards.
+
+<details>
+<summary>🤓 Session state and prepared statements (optional)</summary>
+
+Session-level SET, temporary tables, advisory locks, and prepared statements
+can interact with connection-pool mode. Transaction pooling can route the next
+transaction to another backend, so do not assume session affinity. Use SET LOCAL
+for transaction-scoped settings where appropriate and verify your pooler's
+feature support. Bind values as query parameters; identifiers require a safe
+identifier-construction API or allowlist, not interpolation of untrusted input.
+
+</details>
+
+## Recap 🐾
+
+1. ACID does not replace explicit invariants or application error handling.
+2. Conditional writes and short same-connection transactions prevent common races.
+3. Serialization retries and ambiguous commits require whole-transaction recovery and durable request identity.
+
+<Quiz question="A connection disappears while awaiting COMMIT. What is safe to assume?" options={[
+  {text: 'The outcome may be unknown; reconcile using the request identity.', correct: true, feedback: 'Correct. A lost reply is not proof of rollback. The cat needs a receipt lookup.'},
+  {text: 'The server certainly rolled back.', feedback: 'It may have committed before the response was lost.'},
+  {text: 'Repeating every external side effect is always safe.', feedback: 'Emails and payments are outside the database rollback boundary; use explicit idempotency and reconciliation.'},
+]} />
+
+## References
+
+[Transactions](https://www.postgresql.org/docs/17/tutorial-transactions.html),
+[savepoints](https://www.postgresql.org/docs/17/sql-savepoint.html), and
+[Read Committed updates](https://www.postgresql.org/docs/17/transaction-iso.html#XACT-READ-COMMITTED).

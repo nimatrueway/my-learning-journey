@@ -1,0 +1,125 @@
+---
+sidebar_position: 2
+slug: /courses/postgres-internals/index-access-methods
+title: GIN, GiST, SP-GiST, BRIN, and Hash
+description: Match operators and data distribution to an access method instead of indexing every workload with a B-tree.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+A B-tree is excellent for ordered scalar keys. Asking it to solve arbitrary
+document membership or geometric overlap without the right operator support
+is a different problem, not a missing tuning flag.
+
+⏱️ **Reading + practice: ~10 min** · includes five minutes of access-method experiments.
+
+<Meme top="The index cat brought a B-tree to every problem." visual="🐱🧰" bottom="The toolbox contains more than one alphabetized drawer." />
+
+## Start with operators
+
+An index access method supplies a structure and access protocol. An **operator
+class** connects a data type's operators to that method. An index on a column
+does not promise to accelerate every function applied to it. Check the actual
+WHERE operator, type, collation, and available operator class.
+
+| Method | Useful structure and workload | Important cost or limit |
+| --- | --- | --- |
+| B-tree | Ordered scalar equality, ranges, compatible ordering | Extra keys and writes cost space and maintenance |
+| Hash | Hash buckets for equality | No ordered/range scan or unique enforcement |
+| GIN | Keys pointing to sets of matching rows | Many extracted keys can amplify update work |
+| GiST | Extensible search-tree framework, such as ranges and geometry | Behavior and exactness depend on the operator class |
+| SP-GiST | Space-partitioned structures, such as tries or quadtrees | Supports particular data/operator combinations |
+| BRIN | Summaries of physical block ranges | Needs useful physical correlation and rechecks candidates |
+
+PostgreSQL hash indexes are WAL-logged in modern versions; "hash indexes are
+never crash safe" is outdated advice. GiST and SP-GiST are frameworks, not one
+universal geometric algorithm. Some operator classes support nearest-neighbor
+ordering, but that does not make every such index a vector-search engine.
+
+## GIN extracts membership keys
+
+PostgreSQL full-text search uses tsvector lexemes and tsquery matching. This
+connects to the inverted-index idea in the Lucene course, without claiming the
+two products have identical analysis or ranking behavior:
+
+```sql
+CREATE TEMP TABLE search_notes (id integer PRIMARY KEY, body text NOT NULL);
+INSERT INTO search_notes VALUES
+  (1, 'PostgreSQL uses heap tuple versions'),
+  (2, 'Indexes accelerate selected queries');
+CREATE INDEX ON search_notes USING gin (to_tsvector('english', body));
+SELECT id FROM search_notes
+WHERE to_tsvector('english', body) @@ plainto_tsquery('english', 'tuple version');
+```
+
+Expect ID 1. The expression and configuration match on both sides. With only
+two rows the planner may prefer a sequential scan, correctly. This fixture
+tests semantics, not performance. GIN also has operator classes for arrays and
+jsonb. jsonb_ops and jsonb_path_ops support different operator sets and size
+tradeoffs; choose based on actual predicates, not a blanket "JSON index."
+
+## BRIN rejects regions, not individual rows
+
+For a large append-correlated timestamp table, BRIN summarizes ranges of pages.
+A range whose summary cannot match can be skipped. Matching ranges still need
+heap inspection and predicate checks. Out-of-order inserts, updates, or a wide
+range can weaken exclusion without making the index incorrect.
+
+```sql
+CREATE INDEX IF NOT EXISTS orders_created_brin
+ON course_lab.orders USING brin (created_at) WITH (pages_per_range = 16);
+EXPLAIN SELECT id FROM course_lab.orders
+WHERE created_at >= timestamptz '2025-01-14 00:00:00+00';
+```
+
+The small teaching dataset need not choose BRIN. Record the actual path and
+explain why an index with low storage cost can still be a poor choice for this
+particular query. Summarization and data correlation matter more than the mere
+presence of a timestamp column.
+
+<DecisionLab title="🐾 Match the operator to the tool" label="Workload" choices={[
+  {label: 'Text lexeme membership', result: 'GIN can map lexemes to matching rows.', cost: 'Tokenization, expression matching, and write amplification still need a design.'},
+  {label: 'Append-correlated time ranges', result: 'BRIN may skip large physical regions cheaply.', cost: 'Lossy summaries require rechecks and depend on useful physical correlation.'},
+  {label: 'Overlapping reservation ranges', result: 'A GiST range operator class can support overlap search and exclusion designs.', cost: 'Confirm the precise operators and concurrency invariant; it is not an arbitrary function accelerator.'},
+]} />
+
+## Try it yourself 🧪
+
+Change the full-text query to "index" and predict its stemming behavior, then
+verify the returned ID. Compare the expression with a different text-search
+configuration and explain why index matching is no longer assured. For the
+timestamp query, widen and narrow the range and inspect the plan. Propose a
+dataset where physical timestamp correlation is weak and explain the likely
+effect on BRIN's candidate pages.
+
+<details>
+<summary>🤓 Rechecks are not an index bug (optional)</summary>
+
+Lossy structures or bitmap memory pressure can require rechecking candidate
+rows against the original predicate. EXPLAIN may show Recheck Cond and rows
+removed by index recheck. A recheck preserves correctness; it is not automatically
+evidence of stale data. Source modules live under
+[`src/backend/access`](https://github.com/postgres/postgres/tree/REL_17_STABLE/src/backend/access)
+in gin, gist, spgist, brin, hash, and nbtree.
+
+</details>
+
+## Recap 🐾
+
+1. Operator classes determine which predicates an index method can support.
+2. GIN, GiST, SP-GiST, BRIN, and Hash address different structures and workloads.
+3. Small-table plan choices and candidate rechecks do not imply a broken index.
+
+<Quiz question="Why can BRIN be tiny yet still read many heap pages?" options={[
+  {text: 'It stores block-range summaries rather than an exact location for every matching row.', correct: true, feedback: 'Correct. The cat crossed out whole regions, then still had to inspect the surviving ones.'},
+  {text: 'It stores full copies of every table row.', feedback: 'Summaries are what keep BRIN compact.'},
+  {text: 'It is always more selective than a B-tree.', feedback: 'Physical correlation and predicate range determine how much BRIN can exclude.'},
+]} />
+
+## References
+
+[Index types](https://www.postgresql.org/docs/17/indexes-types.html),
+[GIN](https://www.postgresql.org/docs/17/gin.html), and
+[BRIN](https://www.postgresql.org/docs/17/brin.html).

@@ -1,0 +1,118 @@
+---
+sidebar_position: 1
+slug: /courses/postgres-internals/system-catalogs
+title: System Catalogs and Database Evidence
+description: Read relation, attribute, constraint, dependency, and statistics metadata without treating internal identifiers as permanent APIs.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+An ORM claims a constraint exists. The production database disagrees. Which
+one decides whether the next write is accepted? Inspect the database's actual
+metadata instead of relying only on migration filenames.
+
+⏱️ **Reading + practice: ~9 min** · includes five minutes of catalog inspection.
+
+<Meme top="The catalog cat found the migration file and declared the schema correct." visual="🐱🗂️" bottom="A recipe in the repository does not prove what is in the database." />
+
+## Metadata lives in relations too
+
+The pg_catalog schema contains PostgreSQL's system catalogs. `pg_class` describes
+relations, including tables, indexes, sequences, and other relation kinds.
+`pg_namespace` identifies schemas; `pg_attribute` describes columns; `pg_type`
+describes types. `pg_constraint` stores constraint metadata, while `pg_index`
+describes index properties and validity. A relation's object identifier, or OID,
+is an internal identity within this database, not a durable business identifier
+to move between independent environments.
+
+Catalogs participate in database machinery and expose version-specific details.
+Use supported DDL to change objects, not direct UPDATE statements against system
+catalogs. Editing an internal row bypasses invariants and dependency handling.
+The information_schema offers more portable standardized views, though it does
+not expose every PostgreSQL-specific feature and visibility depends on privileges.
+
+```sql
+SELECT namespace.nspname, relation.relname, relation.relkind
+FROM pg_class AS relation
+JOIN pg_namespace AS namespace ON namespace.oid = relation.relnamespace
+WHERE namespace.nspname = 'course_lab'
+ORDER BY relation.relname;
+
+SELECT conname, contype, convalidated, pg_get_constraintdef(oid)
+FROM pg_constraint
+WHERE conrelid = 'course_lab.products'::regclass
+ORDER BY conname;
+
+SELECT attname, format_type(atttypid, atttypmod), attnotnull
+FROM pg_attribute
+WHERE attrelid = 'course_lab.products'::regclass
+  AND attnum > 0 AND NOT attisdropped
+ORDER BY attnum;
+```
+
+The regclass cast resolves a relation name to its OID. Schema qualification
+avoids accidentally selecting a same-named relation elsewhere on search_path.
+`pg_get_constraintdef` and `format_type` provide readable representations instead
+of making the learner decode every internal field. In PostgreSQL 17, inspect
+attnotnull for a column's NOT NULL property rather than assuming every such
+property is represented like a CHECK row in pg_constraint.
+
+## Definitions, measurements, and plans are different evidence
+
+Catalog definitions answer what exists. Cumulative statistics views answer what
+has been observed, subject to resets, update timing, estimates, and visibility.
+Planner statistics summarize data distributions, and an execution plan describes
+a particular chosen strategy. None is a substitute for all the others.
+
+An index can exist but be invalid or not ready after an interrupted concurrent
+build. A valid index still might not be selected for a particular query. A
+low usage count could reflect a recent reset rather than permanent uselessness.
+Dropping an index also affects constraint enforcement and write/read tradeoffs,
+so an isolated counter is not a sufficient deletion policy.
+
+<DecisionLab title="🐾 Choose the evidence source" label="Question" choices={[
+  {label: 'Does the database enforce this CHECK?', result: 'Inspect pg_constraint, its definition, and validation status.', cost: 'A migration file or application validator alone is not proof of the installed database boundary.'},
+  {label: 'Which plan did this query execute?', result: 'Use an appropriately scoped EXPLAIN ANALYZE with representative inputs.', cost: 'Catalog existence does not prove planner selection; executing the query can have real effects.'},
+  {label: 'Can I drop an apparently unused index?', result: 'Inspect constraints, workload coverage, and statistics reset history first.', cost: 'A short observation window can miss rare but critical reads or uniqueness enforcement.'},
+]} />
+
+## Try it yourself 🧪
+
+Run the queries and map the products primary key, stock CHECK, and name NOT NULL
+to their evidence sources. Inspect the restored database from the recovery
+lesson with the same queries. Compare definitions rather than OID equality.
+Write one query that selects index validity from pg_index for course_lab.orders.
+Explain why a valid result still does not predict an index-only scan.
+
+<details>
+<summary>🤓 Dependencies explain why DROP can refuse (optional)</summary>
+
+pg_depend records relationships used to maintain object dependencies. A view
+depending on a table or an extension owning objects changes what can be dropped
+independently. RESTRICT and CASCADE express consequential behavior, not merely
+syntax preferences. Start source inspection at
+[`dependency.c`](https://github.com/postgres/postgres/blob/REL_17_STABLE/src/backend/catalog/dependency.c)
+and catalog definitions in `src/include/catalog/`. Read before experimenting
+with destructive dependency changes.
+
+</details>
+
+## Recap 🐾
+
+1. System catalogs describe installed objects; supported DDL preserves their invariants.
+2. Schema-qualified regclass and readable definition functions make metadata inspection safer and clearer.
+3. Definitions, statistics, and actual execution plans answer different diagnostic questions.
+
+<Quiz question="A valid index exists. Does that prove a particular query used it?" options={[
+  {text: 'No; inspect the plan for that query and its inputs.', correct: true, feedback: 'Correct. The catalog cat proved the tool exists, not that the executor selected it.'},
+  {text: 'Yes; every valid index is used by every SELECT.', feedback: 'The planner selects paths based on applicable operators, estimates, and cost.'},
+  {text: 'Only if its OID matches the development database.', feedback: 'OIDs are local object identities, not cross-environment execution guarantees.'},
+]} />
+
+## References
+
+[System catalogs](https://www.postgresql.org/docs/17/catalogs.html),
+[information schema](https://www.postgresql.org/docs/17/information-schema.html), and
+[statistics monitoring](https://www.postgresql.org/docs/17/monitoring-stats.html).

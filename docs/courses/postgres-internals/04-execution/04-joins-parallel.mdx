@@ -1,0 +1,130 @@
+---
+sidebar_position: 4
+slug: /courses/postgres-internals/joins-parallel
+title: Join Algorithms and Parallel Execution
+description: Understand nested loops, hash joins, merge joins, worker coordination, and the cost of repeated or duplicated work.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+One team bans nested loops; another forces parallelism. Both are trying to pick
+an algorithm without accounting for input sizes, access paths, startup costs,
+or the work that cannot be parallelized.
+
+⏱️ **Reading + practice: ~10 min** · includes five minutes of plan comparisons.
+
+<Meme top="The query cat hired four workers to move one receipt." visual="🐱👷" bottom="The coordination meeting took longer than the job." />
+
+## Three join mechanisms
+
+A **nested loop** takes an outer row and obtains matching inner rows repeatedly.
+It is excellent for a small outer input with an efficient parameterized index
+lookup, and can produce early output. It becomes costly when underestimated
+outer cardinality multiplies a large inner scan. Materialize or Memoize nodes
+can change the repeated-work story; inspect the actual child plan.
+
+A **hash join** builds a hash table from one input and probes it with the other
+for supported equality conditions. The build is startup work. If the working
+set exceeds its memory budget, batching and temporary files can appear. A hash
+join is not a general solution for every non-equality predicate, nor is hashing
+automatically faster than using an already suitable index.
+
+A **merge join** advances through inputs ordered compatibly with mergeable join
+conditions. Those orders can come from indexes or explicit sorts. Duplicate
+keys require correct matching of groups rather than simply zipping rows one
+for one. Sorting both large inputs may dominate the benefit if no order already
+exists. Join order and join algorithm interact: the output size of an earlier
+join changes the cost of every later stage.
+
+## Compare a real plan with counterfactuals
+
+This intentionally pairs orders from the same customer; it is not a revenue query:
+
+```sql
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT count(*)
+FROM course_lab.orders AS first_order
+JOIN course_lab.orders AS other_order
+  ON first_order.customer_id = other_order.customer_id
+WHERE first_order.id <= 1000;
+```
+
+With the untouched seed, the result is 20,000 pairs: 1,000 outer orders each
+match 20 orders for their customer, including themselves. Verify this grain
+before discussing performance. The planner can choose different paths depending
+on indexes from earlier lessons.
+
+For a local diagnostic comparison, wrap the query in BEGIN, use SET LOCAL
+enable_hashjoin = off, inspect the alternative, and ROLLBACK. Planner switches
+are investigative tools, not proof that the alternative is universally better.
+Always compare actual rows, loops, buffers, temporary I/O, and time under a
+representative workload before preserving a setting.
+
+## Parallel plans divide only eligible work
+
+A parallel plan introduces worker participation, often through Gather or Gather
+Merge. Gather collects worker output without preserving a global sort order;
+Gather Merge merges appropriately ordered streams. A leader can participate
+in execution as well as consume results. Workers planned and workers launched
+can differ because of runtime availability and limits.
+
+Parallel-aware scans divide work rather than making every worker scan every row.
+Some plan components can still duplicate work or require serial coordination.
+Partial aggregation in workers followed by final aggregation reduces transfer
+when the aggregate supports it. Parallel Hash has a shared-hash implementation;
+not every hash join under Gather has the same memory-sharing behavior.
+
+```sql
+SHOW max_parallel_workers_per_gather;
+EXPLAIN SELECT sum(customer_id) FROM course_lab.orders;
+```
+
+The 20,000-row fixture may correctly choose a serial plan. Startup, communication,
+worker availability, function safety, and estimated savings all matter. Do not
+inflate a production table or change global thresholds simply to display Gather.
+
+<DecisionLab title="🐾 Assign work where it pays" label="Input situation" choices={[
+  {label: 'Five outer rows; indexed inner lookup', result: 'A nested loop can be an excellent low-startup choice.', cost: 'Validate outer cardinality and lookup selectivity rather than banning the node.'},
+  {label: 'Large equality join; no useful order', result: 'Hashing may avoid many repeated probes or full scans.', cost: 'Build size, batching, skew, and memory budgets matter.'},
+  {label: 'Large inputs already suitably ordered', result: 'A merge join can exploit existing order.', cost: 'If sorts are actually required, include their full cost.'},
+]} />
+
+## Try it yourself 🧪
+
+Run the pair-count query with outer ID limits 5 and 1,000. Explain any plan
+change using input cardinality and the existing customer index. Inspect loops
+on inner nodes. Then use plain EXPLAIN on the aggregate and record whether a
+parallel path was chosen. Name the evidence that would justify parallelism on
+a larger workload without assuming worker count equals speedup.
+
+<details>
+<summary>🤓 Executor source map (optional)</summary>
+
+Start with `nodeNestloop.c`, `nodeHashjoin.c`, `nodeMergejoin.c`, `nodeGather.c`,
+and `nodeGatherMerge.c` under
+[`src/backend/executor`](https://github.com/postgres/postgres/tree/REL_17_STABLE/src/backend/executor).
+Read node state transitions and calls to child nodes alongside one small EXPLAIN
+tree. This is more tractable than reading the entire executor before observing
+any query behavior.
+
+</details>
+
+## Recap 🐾
+
+1. Join algorithms trade startup, ordering, memory, and repeated work differently.
+2. Join cardinality and available access paths determine which tradeoff is useful.
+3. Parallelism requires eligible divisible work and enough savings to repay coordination costs.
+
+<Quiz question="When can a nested loop be a good choice?" options={[
+  {text: 'A small outer input drives efficient indexed inner lookups.', correct: true, feedback: 'Exactly. The query cat needs five quick lookups, not a global ban on loops.'},
+  {text: 'Only when both inputs are always scanned in full.', feedback: 'Repeated full inner scans are often the expensive case.'},
+  {text: 'Never; hash joins are always faster.', feedback: 'Hash construction has startup and memory costs, and not every predicate supports it.'},
+]} />
+
+## References
+
+[Planner/optimizer](https://www.postgresql.org/docs/17/planner-optimizer.html),
+[parallel plans](https://www.postgresql.org/docs/17/parallel-plans.html), and
+[parallel safety](https://www.postgresql.org/docs/17/parallel-safety.html).

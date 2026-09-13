@@ -1,0 +1,112 @@
+---
+sidebar_position: 3
+slug: /courses/postgres-internals/replication
+title: Physical and Logical Replication
+description: Distinguish transport, durable receipt, replay, slot retention, and failover correctness.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+The primary confirms an order, but a replica immediately reports it missing.
+Replication is enabled. What is missing is a contract for when a particular
+replica is guaranteed to serve the new value.
+
+⏱️ **Reading + practice: ~9 min** · includes five minutes of replication design practice.
+
+<Meme top="The replica cat received the journal and declared itself caught up." visual="🐱📨" bottom="Receiving the instructions is not the same as replaying them." />
+
+## Physical replication follows WAL
+
+Streaming physical replication transfers WAL for replay by a standby, normally
+within the same PostgreSQL major version and compatible physical environment.
+The standby maintains the cluster's physical state, not a selected subset of
+application tables. Base backup initialization and continuous WAL availability
+must fit together. A WAL sender on the primary and receiver/replay machinery
+on the standby have distinct positions and responsibilities.
+
+Asynchronous replication allows the primary to commit without waiting for the
+standby. Failure before missing WAL reaches a promoted standby can lose recently
+committed transactions. Synchronous replication changes the acknowledgement
+requirements for configured standbys, trading availability/latency against loss
+objectives. Remote write, remote flush, and remote apply represent different
+guarantees; receiving or flushing WAL does not necessarily make the change
+visible to a query yet.
+
+```sql
+SELECT application_name, state, sync_state,
+       sent_lsn, write_lsn, flush_lsn, replay_lsn
+FROM pg_stat_replication;
+SELECT pg_is_in_recovery();
+SELECT slot_name, slot_type, active, restart_lsn, confirmed_flush_lsn
+FROM pg_replication_slots;
+```
+
+On the standalone lab primary, the replication and slot views can correctly
+be empty and recovery false. These queries inspect configuration/work, not
+create a replica. LSN distance measures bytes, not a reliable prediction of
+time-to-catch-up. Idle systems and slow replay complicate lag interpretation.
+
+## Logical replication follows selected changes
+
+Logical decoding interprets WAL into changes that a publication/subscription
+pipeline can apply to selected tables. It can support cross-major-version moves
+and differently organized consumers, within feature and schema compatibility
+limits. It is not simply a physical standby with a table filter.
+
+Publisher and subscriber need compatible schemas and a migration plan. DDL and
+sequence state are not automatically replicated like ordinary table changes in
+the core logical replication model. UPDATE and DELETE need sufficient replica
+identity to find the target row. Conflicts, initial copy, apply lag, schema
+changes, and ownership/permissions require monitoring and operational handling.
+
+Replication slots retain WAL needed by consumers. An inactive or stalled slot
+can retain large amounts of WAL and fill storage. Limits can bound retention
+but may invalidate the consumer's ability to resume without reinitialization.
+Deleting a slot is a consequential recovery decision, not routine disk cleanup.
+
+<DecisionLab title="🐾 Choose the replication promise" label="Requirement" choices={[
+  {label: 'Read your write immediately', result: 'Read from the primary or use an explicit replica replay coordination policy.', cost: 'Asynchronous replication alone does not promise read-after-write visibility.'},
+  {label: 'Move selected tables across major versions', result: 'Logical replication may fit the migration.', cost: 'Schema, sequences, replica identity, conflicts, and cutover must be handled separately.'},
+  {label: 'Promote a standby after primary loss', result: 'Choose a promotion target using durability and replay evidence.', cost: 'Fence the old primary and control routing to avoid two independent writers.'},
+]} />
+
+## Try it yourself 🧪
+
+Run the inspection queries and explain the expected empty standalone results.
+Design a checkout read policy: primary-only, replay-position gating, or tolerated
+staleness with a visible pending state. State which failure each policy handles.
+Then write a logical-replication migration checklist that explicitly includes
+DDL and sequence synchronization, consumer catch-up, write quiescence/cutover,
+and validation. Do not claim a running subscription proves a safe cutover.
+
+<details>
+<summary>🤓 Standby queries can conflict with recovery (optional)</summary>
+
+WAL replay may need to remove versions or acquire locks that conflict with a
+standby's long query. PostgreSQL can cancel conflicting queries. Feedback can
+reduce cleanup conflicts by retaining versions on the primary, at a possible
+bloat cost. This is a retention tradeoff, not free reporting isolation. Source
+entry points include `src/backend/replication/walsender.c`, `walreceiver.c`, and
+logical replication modules under the same directory.
+
+</details>
+
+## Recap 🐾
+
+1. WAL sent, written, flushed, and replayed are distinct states with distinct guarantees.
+2. Physical and logical replication solve different scope and compatibility problems.
+3. Slots, stale reads, recovery conflicts, and promotion need explicit retention and failover policies.
+
+<Quiz question="Does asynchronous replication guarantee a just-committed row is immediately readable on a replica?" options={[
+  {text: 'No; the replica may not have replayed that commit yet.', correct: true, feedback: 'Correct. The replica cat must apply the journal before serving the new state.'},
+  {text: 'Yes, as soon as replication is configured.', feedback: 'Configuration is not a replay-position guarantee.'},
+  {text: 'Yes, because replication slots eliminate lag.', feedback: 'Slots retain required WAL; they do not force the consumer to process it immediately.'},
+]} />
+
+## References
+
+[Warm standby](https://www.postgresql.org/docs/17/warm-standby.html),
+[logical replication](https://www.postgresql.org/docs/17/logical-replication.html), and
+[logical restrictions](https://www.postgresql.org/docs/17/logical-replication-restrictions.html).

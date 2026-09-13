@@ -1,0 +1,135 @@
+---
+sidebar_position: 4
+slug: /courses/postgres-internals/heap-storage
+title: Heap Pages, TOAST, HOT, and Relation Files
+description: Follow tuple locations through page layout, overflow storage, same-page updates, and filesystem indirection.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+You update one non-key field and find a new physical tuple location. Then you
+add an index on that field and updates become more expensive. The logical row
+stayed the same; its storage work did not.
+
+⏱️ **Reading + practice: ~10 min** · includes five minutes of physical inspection.
+
+<Meme top="The storage cat used ctid as the permanent customer ID." visual="🐱📍" bottom="One update later, the customer moved without leaving a forwarding address." />
+
+## A page contains structure, not just rows
+
+PostgreSQL normally uses 8 KiB pages; `SHOW block_size` reports the actual build.
+A heap page has a header, an array of item identifiers (line pointers), free
+space, and tuple data. Line pointers provide stable slots while tuple bytes can
+move within a page during compaction. A tuple has a header containing MVCC
+metadata and then its attributes, with alignment and possible NULL bitmap costs.
+An 8-byte business value does not imply an 8-byte stored row.
+
+`ctid` identifies a tuple location as block number and item offset. UPDATE
+usually creates a successor with a different ctid. Table rewrites can relocate
+many tuples. Use primary keys for application identity; physical locations are
+inspection clues, not stable external IDs.
+
+```sql
+SHOW block_size;
+SELECT id, ctid, xmin::text, xmax::text FROM course_lab.products ORDER BY id;
+BEGIN;
+UPDATE course_lab.products SET stock = stock + 1 WHERE id = 1;
+SELECT id, ctid, xmin::text, xmax::text FROM course_lab.products WHERE id = 1;
+ROLLBACK;
+```
+
+Ordinary SELECT exposes only visible versions. An optional pageinspect extension
+can inspect raw pages, bypassing that filtered presentation; use it only with
+appropriate privileges in a disposable database. Header flags are essential to
+interpret xmin/xmax correctly.
+
+## HOT reduces some index maintenance
+
+A **heap-only tuple** update can avoid new ordinary index entries when modified
+columns are not referenced by relevant indexes and the new tuple fits on the
+same heap page. Existing index entries can reach the HOT chain. PostgreSQL 17
+has a qualification for summarizing indexes such as BRIN; do not generalize the
+rule to every access method without checking the version.
+
+Indexing a frequently updated column can remove HOT eligibility. A lower table
+fillfactor reserves space on newly filled pages, improving chances of same-page
+updates at the cost of density. It does not instantly repack existing full pages,
+guarantee HOT, or eliminate tuple creation. Page pruning can shorten obsolete
+chains when safe; vacuum has broader table/index maintenance responsibilities.
+
+## TOAST handles wide values
+
+Large variable-length attributes such as text may be compressed and/or moved
+out of line to a relation's TOAST table. The main tuple then carries a pointer
+instead of the full external value. Compression, storage strategy, value size,
+and row layout affect the decision. Not every long-looking string is external:
+repeated characters compress very well.
+
+TOAST avoids requiring every row value to fit inline, but fetching wide values
+still costs work. Selecting only needed columns can avoid unnecessary detoasting
+and transfer. Do not equate pg_column_size, text length, heap bytes, and total
+relation bytes; they measure different representations or ownership scopes.
+
+<DecisionLab title="🐾 Budget an update's storage work" label="Change" choices={[
+  {label: 'Non-indexed stock changes; same-page space exists', result: 'A HOT update may avoid new ordinary index entries.', cost: 'A new tuple version is still created and history still needs cleanup.'},
+  {label: 'An indexed value changes', result: 'Ordinary index maintenance is needed for the new version.', cost: 'Read acceleration can increase update amplification.'},
+  {label: 'A large compressible text value is inserted', result: 'TOAST may compress it enough to keep it inline or store it externally.', cost: 'Text length alone does not establish external storage or bytes read.'},
+]} />
+
+## Relations are more than one filename
+
+A table and each index are separate relations. A relation can have a main fork,
+free-space map (`_fsm`), and visibility map (`_vm`); unlogged relations also
+have initialization-fork behavior. Large relations are split into segments.
+Tablespaces place storage at configured filesystem locations, but are not
+independent databases, shards, or backup boundaries.
+
+```sql
+SELECT pg_relation_filepath('course_lab.orders'),
+       pg_size_pretty(pg_relation_size('course_lab.orders')) AS heap,
+       pg_size_pretty(pg_total_relation_size('course_lab.orders')) AS total;
+```
+
+Use catalog functions rather than deriving filenames from a table OID: logical
+object identity and physical relfilenode can differ or change after a rewrite.
+Never manipulate relation files directly to "clean up" a running database.
+
+## Try it yourself 🧪
+
+Record product 1's ctid before and during the rolled-back update. Explain why
+the key remains stable. Compare orders heap size with total size and identify
+the primary-key index contributing to the difference. Propose a HOT-friendly
+schema change and a conflicting read requirement. Which measurement would justify
+adding the index anyway? This is a workload tradeoff, not "indexes are bad."
+
+<details>
+<summary>🤓 Page and tuple source anchors (optional)</summary>
+
+Start with `src/include/storage/bufpage.h`, `src/include/access/htup_details.h`,
+and [`heapam.c`](https://github.com/postgres/postgres/blob/REL_17_STABLE/src/backend/access/heap/heapam.c).
+TOAST handling lives under `src/backend/access/common/`. If using pageinspect,
+inspect `heap_page_items` together with `heap_tuple_infomask_flags`; raw xmax
+without flags cannot distinguish every deletion, lock, and MultiXact case.
+
+</details>
+
+## Recap 🐾
+
+1. Heap pages hold tuple versions and metadata; ctid is a physical location, not application identity.
+2. HOT and TOAST reduce particular costs without removing versioning or wide-value costs entirely.
+3. Relation forks, indexes, TOAST data, and tablespaces require scoped size and storage reasoning.
+
+<Quiz question="What can prevent an otherwise same-page update from being HOT?" options={[
+  {text: 'Changing a column referenced by an ordinary index.', correct: true, feedback: 'Correct. The read-optimization cat has added write-maintenance work.'},
+  {text: 'Keeping the primary-key value unchanged.', feedback: 'That can help, but all relevant indexed columns and page space matter.'},
+  {text: 'Using MVCC.', feedback: 'HOT is an optimization within PostgreSQL heap MVCC, not an alternative to it.'},
+]} />
+
+## References
+
+[Page layout](https://www.postgresql.org/docs/17/storage-page-layout.html),
+[HOT](https://www.postgresql.org/docs/17/storage-hot.html),
+[TOAST](https://www.postgresql.org/docs/17/storage-toast.html), and
+[file layout](https://www.postgresql.org/docs/17/storage-file-layout.html).

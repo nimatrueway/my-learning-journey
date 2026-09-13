@@ -1,0 +1,122 @@
+---
+sidebar_position: 3
+slug: /courses/postgres-internals/planner-statistics
+title: Statistics, Costs, and Reading EXPLAIN
+description: Trace cardinality errors before tuning cost constants and interpret rows, loops, buffers, and timing correctly.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+The planner expects ten rows and gets ten thousand. A nested loop that looked
+cheap now performs thousands of repeated lookups. The first useful question is
+why the row estimate was wrong, not how to ban nested loops globally.
+
+⏱️ **Reading + practice: ~10 min** · includes five minutes of estimation experiments.
+
+<Meme top="The planner cat booked a table for ten rows." visual="🐱📐" bottom="Ten thousand arrived. The seating algorithm was not the first mistake." />
+
+## Costs depend on estimated cardinality
+
+ANALYZE samples table data to estimate distributions: NULL fraction, distinct
+counts, common values, histograms, and correlation. These estimates, relation
+sizes, available indexes, and cost parameters inform path choice. Costs are
+relative units, not milliseconds. `random_page_cost` and CPU costs represent
+assumptions; changing them to force one query can damage many other plans.
+
+EXPLAIN's startup and total costs distinguish work needed before producing rows
+from work to complete the node. LIMIT can favor a low-startup path. Estimated
+`rows` describe node output, not always all rows inspected. A filter may inspect
+many tuples to emit few, so examine conditions and rows removed as well.
+
+EXPLAIN ANALYZE executes the statement. For modifying SQL it performs the writes;
+ROLLBACK can undo transactional changes but not every possible external function
+effect or sequence allocation. Use a disposable environment and understand
+triggers before treating ANALYZE as harmless inspection.
+
+## Create a known correlation
+
+Run a temporary two-value fixture:
+
+```sql
+CREATE TEMP TABLE planner_probe AS
+SELECT item,
+       CASE WHEN item % 2 = 0 THEN 'west' ELSE 'east' END AS region,
+       CASE WHEN item % 2 = 0 THEN 'US' ELSE 'JP' END AS country
+FROM generate_series(1, 10000) AS series(item);
+ANALYZE planner_probe;
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT * FROM planner_probe WHERE region = 'west' AND country = 'US';
+CREATE STATISTICS planner_probe_joint (mcv, dependencies)
+ON region, country FROM planner_probe;
+ANALYZE planner_probe;
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT * FROM planner_probe WHERE region = 'west' AND country = 'US';
+```
+
+Half the rows have each value, but the two predicates are perfectly correlated:
+the conjunction matches 5,000, not the 2,500 implied by multiplying independent
+half-probabilities. Extended statistics can represent this relationship and
+improve the estimate. They do not create an access path, and they do not solve
+every expression, join, or cross-table estimation problem.
+
+## Read actual metrics without double-counting
+
+Actual rows and times on a repeated node are generally per-loop averages.
+Multiply rows by loops to understand repeated output, but do not sum parent and
+child elapsed times as independent work: parent timing includes child work.
+Parallel plans add worker-specific interpretation. Use the plan tree, not a
+spreadsheet that blindly totals every number.
+
+BUFFERS distinguishes hits, reads, dirtied/written buffers, and temporary I/O
+when present. A shared read can be served by the OS cache. Total query latency
+also includes planning, network transfer, result decoding, and application work
+that a server executor plan does not fully measure. Record representative
+parameters and comparable cache conditions when comparing plans.
+
+<DecisionLab title="🐾 Find the earliest bad estimate" label="Plan evidence" choices={[
+  {label: 'Conjunction estimate ignores correlation', result: 'Consider suitable extended statistics and ANALYZE.', cost: 'Statistics improve estimates; an index still needs a separately useful access pattern.'},
+  {label: 'Actual rows are tiny but loops are huge', result: 'Inspect the parent driving repeated execution.', cost: 'A fast inner node can be expensive when repeated many times.'},
+  {label: 'Estimated cost is 200; time is 4 ms', result: 'Those values use different units.', cost: 'Compare alternative costs within the model, not directly to wall-clock milliseconds.'},
+]} />
+
+## Try it yourself 🧪
+
+Record estimated and actual rows before and after the joint statistics. Change
+the conjunction to west and JP and predict zero rows. Inspect the result without
+expecting the planner to always estimate literal zero. Then examine customer
+42 and pending orders in the main fixture. Explain the correlation before
+deciding whether higher statistics targets, extended statistics, or a different
+schema/query is appropriate. Never start by changing every cost constant.
+
+<details>
+<summary>🤓 Custom plans, JIT, and source anchors (optional)</summary>
+
+Parameter skew can make a generic prepared plan poor for some values. JIT can
+reduce repeated expression work but adds compilation overhead, making it a
+different tradeoff from choosing an index. Inspect planning and JIT information
+when present. Cost routines live in
+[`costsize.c`](https://github.com/postgres/postgres/blob/REL_17_STABLE/src/backend/optimizer/path/costsize.c);
+selectivity code and extended statistics live in adjacent optimizer/statistics
+modules. Version-specific plan behavior is expected.
+
+</details>
+
+## Recap 🐾
+
+1. Cardinality estimates drive cost choices; inspect the earliest major error first.
+2. ANALYZE and extended statistics model distributions but do not create indexes or solve every dependency.
+3. Costs, per-loop actual metrics, buffers, and application latency measure different things.
+
+<Quiz question="Two perfectly correlated predicates each match half the table. Why might independent estimates be wrong?" options={[
+  {text: 'Multiplying their selectivities predicts a quarter even though the conjunction matches half.', correct: true, feedback: 'Correct. The planner cat needs a model of the relationship, not more confidence in multiplication.'},
+  {text: 'ANALYZE always measures every possible predicate exactly.', feedback: 'It stores sampled statistics, not answers to all future queries.'},
+  {text: 'Costs are guaranteed runtime measurements.', feedback: 'Costs are model estimates in relative units.'},
+]} />
+
+## References
+
+[Using EXPLAIN](https://www.postgresql.org/docs/17/using-explain.html),
+[planner statistics](https://www.postgresql.org/docs/17/planner-stats.html), and
+[extended statistics](https://www.postgresql.org/docs/17/planner-stats-details.html).

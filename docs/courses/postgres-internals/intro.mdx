@@ -1,0 +1,113 @@
+---
+slug: /courses/postgres-internals
+title: RDBMS, MVCC & PostgreSQL Internals
+description: Follow a query from relational constraints through snapshots, heap pages, query plans, WAL, vacuum, and recovery.
+---
+
+Your database cat approved the transaction. Two customers still bought the last
+item. 🐱🐘 Learn which promises come from constraints, which come from isolation,
+and which require your application to retry.
+
+This course follows a small order system through relational design, concurrency,
+physical storage, query execution, and production failure recovery. It targets
+developers who know basic programming and want to reason about database behavior,
+not memorize configuration knobs. SQL is introduced through runnable examples.
+
+## Start with evidence 🧪
+
+Use a **disposable PostgreSQL 17 database**. The course uses version-specific
+PostgreSQL 17 documentation, not a claim that 17 is the latest release. Other
+relational databases share many ideas but differ in isolation and storage details.
+
+The [lab setup](./labs.mdx) provides a small schema and exact two-session steps.
+Browser exercises work without a server; they are bounded teaching fixtures,
+not query planners or full MVCC implementations.
+
+## Syllabus 🐾
+
+**24 lessons · 6 modules · approximately 3 hr 57 min (237 min).** Estimates use
+roughly 200 words/minute for prose, code, captions, choices, quiz feedback, and
+optional folds, plus the stated practice allowance. External reference reading,
+first-time Docker setup, and a full replication/PITR deployment are extra. Skip
+optional folds on a first pass; revisit them when an experiment surprises you.
+
+### 1. Relational Foundations · 30 min
+
+- [Relations, Keys, and Invariants](./01-relational/01-relational-design.mdx) · 10 min
+- [SQL, Joins, NULL, and Result Shape](./01-relational/02-sql-semantics.mdx) · 10 min
+- [Transactions and Application Boundaries](./01-relational/03-transactions.mdx) · 10 min
+
+### 2. MVCC & Concurrency · 52 min
+
+- [Snapshots and Row Versions](./02-concurrency/01-snapshots.mdx) · 10 min
+- [XIDs, xmin, xmax, and the Visibility Test](./02-concurrency/02-xid-visibility.mdx) · 11 min
+- [Isolation and Serialization Failures](./02-concurrency/03-isolation.mdx) · 11 min
+- [Locks, Waits, and Deadlocks](./02-concurrency/04-locks.mdx) · 10 min
+- [PostgreSQL versus InnoDB](./02-concurrency/05-innodb.mdx) · 10 min
+
+### 3. Query & Storage Architecture · 37 min
+
+- [The Query Pipeline](./03-architecture/01-query-pipeline.mdx) · 9 min
+- [Processes and Connections](./03-architecture/02-processes.mdx) · 9 min
+- [Memory, Buffers, and Spills](./03-architecture/03-memory.mdx) · 9 min
+- [Heap Pages, TOAST, and HOT](./03-architecture/04-heap-storage.mdx) · 10 min
+
+### 4. Indexes & Query Execution · 40 min
+
+- [B-Tree and Index-Only Scans](./04-execution/01-btree.mdx) · 10 min
+- [Index Access Methods](./04-execution/02-access-methods.mdx) · 10 min
+- [Planner Estimates and Statistics](./04-execution/03-planner.mdx) · 10 min
+- [Joins and Parallel Execution](./04-execution/04-joins-parallel.mdx) · 10 min
+
+### 5. Durability & Operations · 41 min
+
+- [WAL, Commit Durability, and Checkpoints](./05-operations/01-wal.mdx) · 9 min
+- [Vacuum, Freezing, and XID Wraparound](./05-operations/02-vacuum.mdx) · 10 min
+- [Physical and Logical Replication](./05-operations/03-replication.mdx) · 9 min
+- [Backups, Recovery, and the Incident Capstone](./05-operations/04-recovery-capstone.mdx) · 13 min
+
+### 6. Catalogs & Advanced Design · 37 min
+
+- [System Catalogs and Database Evidence](./06-advanced/01-catalogs.mdx) · 9 min
+- [Roles, Search Paths, and Row Security](./06-advanced/02-security.mdx) · 9 min
+- [Partitioning and Pruning](./06-advanced/03-partitioning.mdx) · 10 min
+- [Extensions and Reading PostgreSQL Source](./06-advanced/04-extensions.mdx) · 9 min
+
+## The MVCC model, with the important corrections
+
+The [XID lesson](./02-concurrency/02-xid-visibility.mdx) directly follows three
+questions: **A)** what identifies a transaction and a tuple version, **B)** what
+makes a version visible to a snapshot, and **C)** how INSERT, UPDATE, and DELETE
+change the version chain.
+
+XIDs are not timestamps or commit order, and read-only transactions may never
+receive a normal XID. Snapshot bounds and a captured in-progress set matter,
+not a comparison with the reader's own XID. Commit/abort status, command IDs,
+lock-only xmax, MultiXacts, and wraparound prevent the simplified formula from
+being a full visibility implementation. PostgreSQL **also locks conflicting
+writers**: Read Committed wait/recheck and Repeatable Read serialization failures
+are explored in the [isolation lesson](./02-concurrency/03-isolation.mdx).
+
+## Sources and verification scope
+
+Topic coverage was inspired by
+[Iamanshuaditya's PostgreSQL Internals Course](https://github.com/Iamanshuaditya/postgresql-deep-dive).
+The explanations, examples, quizzes, and illustrations here are original; that
+repository is a syllabus inspiration, not copied lesson text. PostgreSQL 17
+documentation and version-matched source links provide the primary references.
+The course adds relational foundations, application boundaries, a qualified
+InnoDB comparison, security, and a restore/incident exercise around that core.
+
+The disposable lab was checked against **PostgreSQL 17.11**. Its automated
+two-session suite verifies visibility, write skew, serialization failure, row-lock
+timeouts, deadlock detection, aborted deletion, and constraint failures. Storage,
+planner, RLS, partition, and pageinspect examples were also executed, and an
+isolated logical dump/restore recovered the seeded 20,000 orders.
+
+The optional comparison's exact two-session schedule was separately verified on
+**MySQL 8.4.11**, including the retained snapshot, current-row update, and rollback.
+It is not part of the downloadable PostgreSQL suite or a full migration test.
+Replication and PITR lessons teach mechanisms and design checks; a multi-node
+failover or physical/PITR restore drill was **not performed**. No toy fixture
+establishes production capacity or a recovery SLA. The database cat still needs
+evidence before signing off on those promises. 🐱

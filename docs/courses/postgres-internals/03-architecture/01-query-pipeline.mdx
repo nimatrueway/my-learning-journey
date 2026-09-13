@@ -1,0 +1,116 @@
+---
+sidebar_position: 1
+slug: /courses/postgres-internals/query-pipeline
+title: From SQL Text to Executed Tuples
+description: Separate parsing, analysis, rewriting, planning, and execution with a view and prepared-query experiment.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+Your SQL parses successfully, yet names a column that does not exist. Another
+query names a view but executes against a base table. These are different stages
+of the query pipeline, not contradictory database behavior.
+
+⏱️ **Reading + practice: ~9 min** · includes five minutes of plan inspection.
+
+<Meme top="The parser cat approved the grammar." visual="🐱📝" bottom="The analyzer would still like that imaginary column to exist." />
+
+## Five stages with different jobs
+
+The **parser** recognizes tokens and SQL grammar, producing a raw syntax tree.
+It does not establish that every referenced table exists. **Analysis** resolves
+names to catalog objects, determines types, resolves operators/functions, and
+checks the semantic structure. An ambiguous column name or invalid operator
+combination belongs here rather than to cost estimation.
+
+The **rewriter** applies the rule system, including expansion of ordinary views.
+A view stores a query definition, not a cached result. A materialized view is
+different: it stores results that require refresh. Rewriting is not the same
+thing as choosing a join order, and rewrite rules are not row triggers.
+
+The **planner/optimizer** considers paths with estimated costs and selects a
+plan. The **executor** runs plan nodes, applies expressions and visibility rules,
+and returns tuples or modifies data. Many executor nodes request rows from
+children on demand. Some operations, such as a full sort or hash build, must
+consume substantial input before producing output. This distinction explains
+why LIMIT can save work in one plan but not avoid another plan's startup cost.
+
+## Watch a view disappear into its plan
+
+In the [lab](../labs.mdx), create a session-local view:
+
+```sql
+CREATE TEMP VIEW pending_orders AS
+SELECT id, customer_id, created_at
+FROM course_lab.orders WHERE status = 'pending';
+EXPLAIN (VERBOSE, COSTS OFF)
+SELECT id FROM pending_orders WHERE customer_id = 42;
+```
+
+Expect the plan to reference the underlying orders table and the relevant
+conditions rather than "read cached pending_orders rows." The exact scan can
+vary with indexes and statistics. In this fixture customer 42 has no pending
+orders: the generated customer and status values are correlated. That fact will
+be useful when studying planner estimates.
+
+Prepared queries separate a parameterized statement from repeated execution:
+
+```sql
+PREPARE recent_orders(bigint) AS
+SELECT id FROM course_lab.orders
+WHERE customer_id = $1 ORDER BY created_at DESC, id DESC LIMIT 5;
+EXPLAIN EXECUTE recent_orders(42);
+DEALLOCATE recent_orders;
+```
+
+PostgreSQL can use parameter-specific custom plans or a reusable generic plan.
+The latter saves planning effort but may be less suitable for skewed parameter
+values. Prepared statements do not freeze the physical database forever; schema
+changes and invalidation can require replanning. Query parameters bind values,
+not arbitrary table or column names.
+
+<DecisionLab title="🐾 Which stage owns the mistake?" label="Observed problem" choices={[
+  {label: 'Missing comma breaks SELECT syntax', result: 'Parsing rejects the grammar.', cost: 'No index or statistics change can repair malformed SQL.'},
+  {label: 'Column name is ambiguous across joined tables', result: 'Analysis cannot resolve the intended reference.', cost: 'Qualify the name; a faster join algorithm does not answer the semantic question.'},
+  {label: 'Valid query uses a costly join order', result: 'Investigate planning estimates and available paths.', cost: 'A correct syntax tree does not guarantee a good cost prediction.'},
+]} />
+
+## Try it yourself 🧪
+
+Run the view example and compare its EXPLAIN with an equivalent base-table query.
+Add ORDER BY and LIMIT, then inspect whether a Sort node appears. Predict which
+node can stop early and which needs its input first. Finally deliberately misspell
+a column, then separately break the SQL grammar. Record the two errors and
+classify them without treating every failure as an executor problem.
+
+<details>
+<summary>🤓 Source-reading route (optional)</summary>
+
+Use the PostgreSQL REL_17_STABLE tree: the coordinator lives in
+[`postgres.c`](https://github.com/postgres/postgres/blob/REL_17_STABLE/src/backend/tcop/postgres.c),
+grammar in `src/backend/parser/gram.y`, analysis in `parser/analyze.c`, view/rule
+rewriting in `rewrite/rewriteHandler.c`, planning in `optimizer/plan/planner.c`,
+and executor orchestration in `executor/execMain.c`. Follow one simple query
+through representations before trying to understand every node type.
+
+</details>
+
+## Recap 🐾
+
+1. Parsing, analysis, rewriting, planning, and execution solve distinct problems.
+2. Ordinary views expand queries; prepared statements can trade planning effort against parameter sensitivity.
+3. Streaming and blocking plan nodes explain startup work and LIMIT behavior.
+
+<Quiz question="An ordinary view appears as its base table in EXPLAIN. Why?" options={[
+  {text: 'The view definition was expanded and planned with the surrounding query.', correct: true, feedback: 'Correct. The cat found a query definition, not a hidden result cache.'},
+  {text: 'All views store permanent copies of their result rows.', feedback: 'That describes materialized storage, not an ordinary view.'},
+  {text: 'The parser chose a sequential scan.', feedback: 'Physical access paths belong to planning, not raw parsing.'},
+]} />
+
+## References
+
+[Query path](https://www.postgresql.org/docs/17/query-path.html),
+[rule system](https://www.postgresql.org/docs/17/rules.html), and
+[PREPARE](https://www.postgresql.org/docs/17/sql-prepare.html).

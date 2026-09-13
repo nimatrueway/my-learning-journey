@@ -1,0 +1,148 @@
+---
+sidebar_position: 5
+slug: /courses/postgres-internals/postgres-vs-innodb
+title: PostgreSQL MVCC Versus InnoDB
+description: Compare heap tuple versions with undo reconstruction and avoid transferring isolation semantics between engines.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+An application moves from MySQL to PostgreSQL and keeps the label Repeatable
+Read. That label does not promise identical writer behavior, index storage,
+or maintenance costs.
+
+⏱️ **Reading + practice: ~10 min** · includes five minutes of schedule prediction.
+
+<Meme top="The migration cat copied the isolation setting." visual="🐱🧳" bottom="Same label on the luggage. Different storage engine inside." />
+
+## Where does the old value live?
+
+PostgreSQL's ordinary heap stores multiple tuple versions. Updating a row creates
+a successor; old versions remain until no relevant snapshot needs them and
+maintenance can reclaim them. Index entries normally point to heap tuple
+locations. A PostgreSQL primary key is a unique index plus constraints, not a
+clustered table containing all row data at its leaves.
+
+InnoDB stores row data in its clustered index, normally keyed by the primary
+key. Clustered records include `DB_TRX_ID` and a rollback pointer `DB_ROLL_PTR`.
+Changes preserve undo information so a consistent read can reconstruct an
+older version. If no suitable user key exists, InnoDB chooses or generates a
+clustered key under its documented rules. Secondary index entries carry the
+clustered key, making primary-key width relevant to secondary-index size.
+
+This is not "PostgreSQL copies everything; InnoDB stores no versions." Both
+retain history, in different structures. InnoDB also treats secondary-index
+versions differently from clustered records: changed secondary entries can be
+delete-marked and later purged. PostgreSQL HOT can avoid new ordinary index
+entries for eligible same-page updates. Physical design changes write cost.
+
+## Both coordinate conflicting writers
+
+Both engines lock conflicting writers. PostgreSQL does not let two transactions
+arbitrarily overwrite the same xmax and merely hope one retries. Its Read
+Committed updater can wait, inspect the committed successor, re-evaluate the
+predicate, and update that version. Under Repeatable Read, a row changed after
+the reader's snapshot can instead cause a serialization failure.
+
+InnoDB distinguishes **consistent nonlocking reads** from locking reads and DML.
+At its default Repeatable Read, ordinary consistent reads retain the view
+established by the first such read. UPDATE, DELETE, and locking reads need not
+operate on exactly that old consistent-read view. They can encounter and affect
+more recent committed rows, subject to locking and predicate rules. Do not infer
+what an UPDATE can touch from an earlier SELECT alone.
+
+| Topic | PostgreSQL 17 | InnoDB in MySQL 8.4 |
+| --- | --- | --- |
+| Default isolation | Read Committed | Repeatable Read |
+| Ordinary old-row reads | Heap version visibility | Undo-based reconstruction |
+| Same-row writers | Lock/wait, then isolation-specific handling | Lock/wait with DML-specific read rules |
+| Range protection | SSI dependency tracking at Serializable | Next-key/gap locking for many locking range operations at Repeatable Read |
+| Reclaiming history | Vacuum/pruning and freezing | Purge and undo-history management |
+
+The range row is deliberately qualified: InnoDB exact unique-key lookups can
+avoid gap locking, while range access and isolation level affect lock coverage.
+PostgreSQL SSI predicate locks generally track dependencies without blocking;
+they are not InnoDB next-key locks with another name. Both engines can deadlock.
+
+<DecisionLab title="🐾 Translate the mechanism, not the label" label="Migration assumption" choices={[
+  {label: 'Only InnoDB locks writers', result: 'False: PostgreSQL also coordinates conflicting updates with locks.', cost: 'Ignoring waits leads to missing timeout, deadlock, and retry handling.'},
+  {label: 'Repeatable Read writes match ordinary reads in both', result: 'False: InnoDB DML and locking reads differ from its consistent nonlocking reads.', cost: 'Port a two-session schedule and verify it; names do not prove identical behavior.'},
+  {label: 'Long snapshots can retain history in both', result: 'True: needed heap versions or undo history cannot simply be discarded.', cost: 'Use engine-specific monitoring and cleanup controls rather than swapping vacuum and purge commands.'},
+]} />
+
+## Try it yourself 🧪
+
+Run PostgreSQL's [concurrent-update exercise](./03-isolation.mdx). For an optional
+comparison, use a separate **disposable MySQL 8.4** instance and this minimal table:
+
+```sql
+CREATE TABLE mvcc_probe (id bigint PRIMARY KEY, stock int NOT NULL) ENGINE=InnoDB;
+INSERT INTO mvcc_probe VALUES (1, 10);
+```
+
+In session A, establish a consistent-read snapshot:
+
+```sql
+SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+START TRANSACTION;
+SELECT stock FROM mvcc_probe WHERE id = 1;
+```
+
+Expect 10. Leave A open. In session B:
+
+```sql
+START TRANSACTION;
+UPDATE mvcc_probe SET stock = 9 WHERE id = 1;
+COMMIT;
+```
+
+Return to the same session A:
+
+```sql
+SELECT stock FROM mvcc_probe WHERE id = 1;
+UPDATE mvcc_probe SET stock = stock - 1 WHERE id = 1;
+SELECT stock FROM mvcc_probe WHERE id = 1;
+ROLLBACK;
+SELECT stock FROM mvcc_probe WHERE id = 1;
+```
+
+Expect **10, 8, 9** from those three SELECTs: the retained consistent read,
+the transaction's own update based on the current row, and the committed row
+after rollback. PostgreSQL instead raises 40001 on that Repeatable Read update.
+Record `SELECT VERSION()` with your results. This optional MySQL exercise is
+separate from the downloadable PostgreSQL verification suite.
+
+**Verified on MySQL 8.4.11:** this exact two-session schedule returned 10 initially,
+then 10, 8, and 9. This check does not validate every range-locking or migration case.
+
+<details>
+<summary>🤓 Retention is a workload property (optional)</summary>
+
+A long PostgreSQL snapshot can prevent reclaiming dead heap tuples; a long
+InnoDB read view can prevent purging required update undo. Both can turn a
+nominally read-only report into a storage-pressure contributor. Neither a single
+history counter nor table size alone proves the cause. Correlate transaction
+age, update rate, retained history, and maintenance progress before tuning.
+
+</details>
+
+## Recap 🐾
+
+1. PostgreSQL heap versions and InnoDB undo reconstruction implement related goals with different storage.
+2. Both engines lock writers, but snapshot reads and write-conflict handling differ.
+3. Migrations must test schedules, index layout, range locking, and history retention explicitly.
+
+<Quiz question="Which statement correctly compares the engines?" options={[
+  {text: 'Both lock conflicting writers; version storage and isolation details differ.', correct: true, feedback: 'Correct. Compare actual mechanisms, not a locks-versus-no-locks story.'},
+  {text: 'PostgreSQL uses no row locks because it has MVCC.', feedback: 'MVCC does not make incompatible row modifications safe without coordination.'},
+  {text: 'InnoDB ordinary SELECT always uses the newest committed row.', feedback: 'A retained Repeatable Read view can reconstruct an older version from undo.'},
+]} />
+
+## References
+
+[PostgreSQL isolation](https://www.postgresql.org/docs/17/transaction-iso.html),
+[InnoDB multi-versioning](https://dev.mysql.com/doc/refman/8.4/en/innodb-multi-versioning.html),
+[consistent reads](https://dev.mysql.com/doc/refman/8.4/en/innodb-consistent-read.html),
+and [InnoDB locking](https://dev.mysql.com/doc/refman/8.4/en/innodb-locking.html).

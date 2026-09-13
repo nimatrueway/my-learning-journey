@@ -1,0 +1,138 @@
+---
+sidebar_position: 4
+slug: /courses/postgres-internals/locks
+title: Locks, Deadlocks, and Work Queues
+description: Diagnose blocking, distinguish lock modes, and design bounded waiting and durable worker claims.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+A millisecond query waits for a minute. Adding an index does nothing: it is
+waiting for another transaction, not searching for a row.
+
+⏱️ **Reading + practice: ~10 min** · includes six minutes of lock experiments.
+
+<Meme top="The database cat optimized a blocked query." visual="🐱🔒" bottom="Now it reaches the same locked door faster." />
+
+## Visibility and mutual exclusion differ
+
+An ordinary SELECT takes an AccessShare relation lock. Data changes typically
+take RowExclusive relation locks plus row-level locks. Despite its name,
+RowExclusive is a **table-level mode** compatible with other ordinary writers'
+relation locks. Same-row writes have a separate conflict. DDL requesting
+AccessExclusive can block ordinary SELECT, even though MVCC lets normal readers
+coexist with row updates.
+
+Row lock strengths include FOR KEY SHARE, FOR SHARE, FOR NO KEY UPDATE, and
+FOR UPDATE. Their compatibility depends on the operation: protecting a referenced
+key need not forbid every non-key update. Advisory locks protect application-defined
+resources only when all participating code follows the protocol. Transaction-level
+advisory locks release at transaction end; session-level ones can outlive it and
+are dangerous to forget on pooled connections.
+
+## Reproduce and identify a wait
+
+In session A:
+
+```sql
+BEGIN;
+SELECT id FROM course_lab.products WHERE id = 1 FOR UPDATE;
+```
+
+In B:
+
+```sql
+BEGIN;
+SET LOCAL lock_timeout = '1s';
+UPDATE course_lab.products SET stock = stock + 1 WHERE id = 1;
+ROLLBACK;
+```
+
+B fails after the timeout. A is waiting on nothing, so this is blocking, not
+a deadlock. Release A with ROLLBACK. A statement timeout bounds execution more
+broadly; lock_timeout specifically bounds lock acquisition waits. Neither covers
+time waiting in the application's connection-pool queue.
+
+For inspection, repeat with a longer timeout and use a third session:
+
+```sql
+SELECT pid, state, wait_event_type, wait_event,
+       pg_blocking_pids(pid) AS blockers,
+       clock_timestamp() - xact_start AS transaction_age
+FROM pg_stat_activity
+WHERE datname = current_database()
+ORDER BY xact_start NULLS LAST;
+```
+
+Other sessions' details require appropriate monitoring privileges. Cancellation
+of a query is not the same as terminating its connection. An idle transaction
+may retain locks with no active statement to cancel. Diagnose ownership and
+impact before intervening.
+
+## A deadlock needs a cycle
+
+A locks product 1 and B locks product 2. A then requests 2 and waits; B requests
+1 and waits. PostgreSQL detects the cycle and aborts a victim with `40P01`.
+Acquire resources in a consistent order to prevent this pattern. Triggers,
+foreign keys, indexes, and other tables can introduce additional dependencies,
+so inspect the complete server deadlock report rather than just two SQL strings.
+
+<DecisionLab title="🐾 Choose the waiting contract" label="Row-claim policy" choices={[
+  {label: 'FOR UPDATE', result: 'Wait for conflicting row locks, then follow the isolation rules.', cost: 'A long blocker can hold up the request unless deadlines bound waiting.'},
+  {label: 'FOR UPDATE NOWAIT', result: 'Fail immediately when a selected row cannot be locked.', cost: 'The caller needs a conflict response; relation-lock acquisition can still wait.'},
+  {label: 'FOR UPDATE SKIP LOCKED', result: 'Skip locked rows so workers can claim other work.', cost: 'This is an inconsistent view suited to queues, not general reports; fairness is not guaranteed.'},
+]} />
+
+## Try it yourself 🧪
+
+Reproduce the two-product cycle, record the victim, then roll back both sessions.
+Repeat with both transactions locking IDs in ascending order. Next run this
+claim query in two transactions and observe different pending orders:
+
+```sql
+BEGIN;
+SELECT id FROM course_lab.orders
+WHERE status = 'pending'
+ORDER BY id LIMIT 1
+FOR UPDATE SKIP LOCKED;
+ROLLBACK;
+```
+
+A real worker must durably record its claim or complete its transition before
+releasing the transaction. Otherwise another worker can claim the same unmarked
+row. Slow external work needs a lease/state machine, retry handling, and
+idempotency rather than one long-held row lock. The fixture only demonstrates
+selection and skipping; it is not a complete job system.
+
+<details>
+<summary>🤓 Why a row lock may look like an XID wait (optional)</summary>
+
+Much row-lock information lives in tuple headers, not one pg_locks row per
+locked tuple. Waiters can appear as waiting on a transaction ID. Combine
+pg_blocking_pids, activity, and the schedule instead of assuming a missing tuple
+entry means no row lock exists. LWLocks and buffer pins protect internal shared
+structures and have different lifetimes from SQL locks. Source entry points are
+[`lock.c`](https://github.com/postgres/postgres/blob/REL_17_STABLE/src/backend/storage/lmgr/lock.c)
+and [`deadlock.c`](https://github.com/postgres/postgres/blob/REL_17_STABLE/src/backend/storage/lmgr/deadlock.c).
+
+</details>
+
+## Recap 🐾
+
+1. MVCC visibility does not eliminate writer locks, DDL conflicts, or internal waits.
+2. Deadlocks are cycles; short transactions and consistent acquisition order reduce them.
+3. Queue skipping and bounded waiting require an explicit claim, timeout, and recovery contract.
+
+<Quiz question="B waits for A, but A waits on nothing. What has happened?" options={[
+  {text: 'A blocking wait, not necessarily a deadlock.', correct: true, feedback: 'Correct. A queue is not a cycle. Find the transaction holding the door.'},
+  {text: 'Always a deadlock requiring both sessions to be killed.', feedback: 'There is no wait cycle. Inspect before choosing a disruptive action.'},
+  {text: 'MVCC has been disabled.', feedback: 'MVCC and conflicting writer locks normally coexist.'},
+]} />
+
+## References
+
+[Locking](https://www.postgresql.org/docs/17/explicit-locking.html),
+[pg_locks](https://www.postgresql.org/docs/17/view-pg-locks.html), and
+[locking clauses](https://www.postgresql.org/docs/17/sql-select.html#SQL-FOR-UPDATE-SHARE).

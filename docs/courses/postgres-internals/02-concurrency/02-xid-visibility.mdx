@@ -1,0 +1,167 @@
+---
+sidebar_position: 2
+slug: /courses/postgres-internals/xid-visibility
+title: XIDs, xmin, xmax, and the Visibility Test
+description: Replace timestamp shortcuts with snapshot boundaries, captured in-progress transactions, commit status, and tuple flags.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+Transaction 100 is still running. Transaction 101 has already committed. A
+reader starts now. Can it see both just because their IDs are smaller than its
+own? No. Allocation order is not commit order.
+
+⏱️ **Reading + practice: ~11 min** · includes five minutes of snapshot inspection.
+
+<Meme top="The transaction cat sorted XIDs and called it a timeline." visual="🐱🕰️" bottom="Transaction 100 is still working. Transaction 101 already went home." />
+
+## A. Identify transactions without inventing timestamps
+
+Every transaction has a virtual transaction identifier. PostgreSQL assigns a
+normal XID lazily when it needs one, usually on its first database write.
+A read-only transaction may never receive one. `pg_current_xact_id()` explicitly
+forces allocation; `pg_current_xact_id_if_assigned()` does not. XIDs are allocated
+from a cluster-wide counter, not separately for each table or database.
+
+The tuple-header `xmin` is the inserting transaction's XID, **not creation time**.
+For an ordinary delete or update, `xmax` identifies the deleting/updating
+transaction, **not removal time**. Additional flags determine what these fields
+mean. A nonzero `xmax` can be a lock-only marker or a MultiXact ID describing
+multiple lockers and possibly an updater. An aborted deleter does not make the
+row invisible. Never implement visibility using these two columns alone.
+
+Normal on-page XIDs are 32-bit and wrap. Full `xid8` values include an epoch;
+they are suitable for the SQL snapshot functions. Numeric examples here stay
+within one epoch. Production code uses wraparound-aware comparisons and freezing,
+not ordinary unbounded integer ordering over raw tuple XIDs.
+
+## B. Capture a snapshot, not a moving pending list
+
+Distinguish **tuple** xmin/xmax from **snapshot** xmin/xmax. The names overlap
+but the meanings do not. A snapshot records boundaries and a captured set of
+transactions in progress. The SQL representation is `xmin:xmax:xip_list`.
+
+For the teaching snapshot `100:105:100,103`:
+
+| XID | Snapshot interpretation |
+| --- | --- |
+| Below 100 | Completed before the snapshot, but might have aborted |
+| 100 or 103 | Was in progress at capture; invisible as an external creator |
+| 101, 102, 104 | Completed before capture; check whether it committed |
+| 105 or greater | Not completed by capture; invisible to this snapshot |
+
+The upper boundary is exclusive. It is not the reader's XID, nor necessarily
+"the next XID someone will allocate." A Repeatable Read reader retains the
+captured set even after transaction 100 commits. Removing 100 from a live global
+pending set must not retroactively change the old snapshot. Read Committed gets
+a new snapshot at the next statement instead.
+
+For **ordinary versions written by other top-level transactions**, ignoring
+wraparound, subtransactions, freezing, and lock-only/MultiXact states, reason as:
+
+```text
+committed_before_snapshot(xid) =
+  transaction_status(xid) is committed
+  AND xid < snapshot.xmax
+  AND xid is not in snapshot.xip
+
+visible(version) =
+  committed_before_snapshot(version.xmin)
+  AND NOT committed_before_snapshot(version.deleting_xid)
+```
+
+An absent or invalid deleting XID does not count as a committed deletion.
+This is a deliberately restricted mental model, **not PostgreSQL's complete
+visibility function**. A creator that aborted is never visible even though it
+is absent from the active set. A deleter that aborted leaves the older version
+visible when its creator is visible. A deleter still running at capture cannot
+hide that version from the retained snapshot.
+
+Own writes need a separate branch: previous statements in the same transaction
+can see its own inserts and stop seeing its own deletes. Command IDs distinguish
+changes made before a statement from those made during it. Subtransactions,
+hint bits, frozen tuples, and MultiXacts require further logic. "Exclude myself
+from pending" is not enough to reproduce all these cases.
+
+<DecisionLab title="🐾 Inspect snapshot 100:105:100,103" label="Tuple history" choices={[
+  {label: 'xmin 101 committed; no deletion', result: 'Visible: the creator committed before capture.', cost: 'An absent active-XID entry alone would not prove commit; status still matters.'},
+  {label: 'xmin 100 commits after capture', result: 'Invisible to the retained snapshot: 100 was active at capture.', cost: 'A later Read Committed snapshot may see it, but this snapshot must not change.'},
+  {label: 'xmin 101 committed; xmax 103 later commits', result: 'The old version remains visible because the deletion was not visible at capture.', cost: 'A newer snapshot can hide it; vacuum must respect readers that still need it.'},
+  {label: 'xmin 102 aborted; no deletion', result: 'Invisible even though 102 is below xmax and absent from xip.', cost: 'Snapshot membership and successful commit are different questions.'},
+  {label: 'xmin 102 committed; no deletion', result: 'Visible because 102 committed before capture.', cost: 'The same numeric snapshot and creator XID give a different answer when transaction status changes.'},
+  {label: 'xmin 101 committed; xmax 104 committed', result: 'Invisible: both the creation and deletion precede the snapshot.', cost: 'Physical removal can happen later; invisibility is not immediate space reclamation.'},
+]} />
+
+## C. Follow the version chain
+
+For a simple heap tuple inserted by XID 90, updated by 101, then deleted by 108:
+
+```text
+INSERT 90:  v1(value=10, xmin=90,  xmax=invalid)
+UPDATE 101: v1(value=10, xmin=90,  xmax=101)
+            v2(value=9,  xmin=101, xmax=invalid)
+DELETE 108: v2(value=9,  xmin=101, xmax=108)
+```
+
+UPDATE creates a new version and marks the predecessor; DELETE does not instantly
+erase bytes. The old tuple's `t_ctid` can link to the successor. Commit status
+and the reader's snapshot determine which version is visible. If 101 aborts,
+its new version stays invisible and v1 is still eligible. The engine protects
+these transitions with locks and internal synchronization; two writers do not
+blindly race to store different xmax values.
+
+## Try it yourself 🧪
+
+In a fresh psql connection, compare lazy and forced XID allocation:
+
+```sql
+BEGIN;
+SELECT pg_current_xact_id_if_assigned();
+SELECT pg_current_xact_id();
+SELECT pg_current_xact_id_if_assigned();
+SELECT pg_current_snapshot();
+ROLLBACK;
+SELECT pg_snapshot_xmin('100:105:100,103'::pg_snapshot),
+       pg_snapshot_xmax('100:105:100,103'::pg_snapshot);
+SELECT * FROM pg_snapshot_xip('100:105:100,103'::pg_snapshot);
+```
+
+Expect NULL before forcing allocation, then the same assigned XID twice. The
+synthetic snapshot exposes boundaries 100 and 105 and active entries 100 and
+103. Use the widget to classify a committed and an aborted creator with XID
+102: the numeric boundaries are identical, yet the answers differ.
+`pg_visible_in_snapshot()` tests snapshot completion membership for top-level
+XIDs; it is not a standalone proof that a heap tuple's creator committed.
+
+<details>
+<summary>🤓 Read the actual visibility path (optional)</summary>
+
+In PostgreSQL's REL_17_STABLE source, start with `HeapTupleSatisfiesMVCC` and
+the related update/dirty-snapshot functions in
+[`heapam_visibility.c`](https://github.com/postgres/postgres/blob/REL_17_STABLE/src/backend/access/heap/heapam_visibility.c).
+Compare the snapshot membership helper `XidInMVCCSnapshot` in
+[`snapmgr.c`](https://github.com/postgres/postgres/blob/REL_17_STABLE/src/backend/utils/time/snapmgr.c)
+with transaction status checks. A dirty snapshot serves different purposes from
+the ordinary MVCC SELECT snapshot; do not transfer its rules to user reads.
+
+</details>
+
+## Recap 🐾
+
+1. XIDs identify transactions, not timestamps, and normal XIDs are allocated lazily and wrap.
+2. Snapshot boundaries, captured active transactions, commit status, and tuple flags jointly control visibility.
+3. INSERT, UPDATE, and DELETE change version metadata; own commands, locks, and subtransactions add essential cases.
+
+<Quiz question="Why is xmin below the reader's XID insufficient to prove visibility?" options={[
+  {text: 'The creator may have been active at snapshot capture or may have aborted.', correct: true, feedback: 'Exactly. The cat sorted identifiers but forgot transaction status and the captured snapshot.'},
+  {text: 'XIDs are exact commit timestamps.', feedback: 'They are allocation identifiers. Earlier allocation does not guarantee earlier commit.'},
+  {text: 'Every SELECT overwrites tuple xmin.', feedback: 'xmin belongs to the tuple version creator, not its readers.'},
+]} />
+
+## References
+
+[Transaction identifiers](https://www.postgresql.org/docs/17/transaction-id.html),
+[snapshot functions](https://www.postgresql.org/docs/17/functions-info.html#FUNCTIONS-PG-SNAPSHOT),
+and [system columns](https://www.postgresql.org/docs/17/ddl-system-columns.html).

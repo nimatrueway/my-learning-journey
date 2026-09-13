@@ -1,0 +1,108 @@
+---
+sidebar_position: 2
+slug: /courses/postgres-internals/processes
+title: Backends, Background Processes, and Pools
+description: Identify the process doing the work and distinguish client sessions, background maintenance, and pool queues.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+The database has hundreds of connections and little CPU use. Increasing
+max_connections may create more waiting processes rather than more throughput.
+First identify what each process is doing and where requests queue.
+
+⏱️ **Reading + practice: ~9 min** · includes five minutes of activity inspection.
+
+<Meme top="The connection-pool cat added 500 chairs." visual="🐱🪑" bottom="The kitchen still has one saturated bottleneck." />
+
+## A session reaches a backend
+
+PostgreSQL's server supervisor accepts connections and manages child processes.
+A normal client connection uses a dedicated backend process; it is not one
+thread drawn from a universal query-worker pool. Backends share buffers and
+coordination structures, while retaining private memory and session state.
+Parallel query workers can assist eligible plans, but that does not make every
+query automatically parallel or every connection free.
+
+A connection pool limits active backends and amortizes connection setup. Session
+pooling preserves a backend for a client session; transaction pooling can change
+the backend between transactions. Temporary tables, prepared statements, session
+SET values, and session advisory locks need pooler-specific support or explicit
+avoidance. Keep a multi-statement transaction on one acquired connection.
+
+## Background work has several owners
+
+The **checkpointer** writes dirty data buffers for checkpoints. The **background
+writer** helps make reusable buffers available and smooth some write pressure.
+Backends can also write dirty buffers themselves. The **WAL writer** handles
+periodic WAL flushing, while commit paths can request required flushes directly.
+Do not assume a backend waits for the next periodic WAL-writer cycle to commit.
+
+Autovacuum has a launcher and workers that maintain tables. The optional archiver
+copies completed WAL segments for configured archiving. WAL senders transmit
+replication data; a standby can have a WAL receiver and a startup process that
+replays records. A logical replication launcher and workers have their own
+roles. Which processes exist depends on configuration and current workload.
+
+Inspect them using SQL rather than memorizing operating-system process counts:
+
+```sql
+SELECT pid, backend_type, application_name, state,
+       wait_event_type, wait_event
+FROM pg_stat_activity
+ORDER BY backend_type, pid;
+SELECT pg_backend_pid(), pg_postmaster_start_time();
+```
+
+The local lab superuser can see details that a restricted application role
+cannot. A row marked active can still be waiting: state and wait_event answer
+different questions. An idle connection has no current transaction; idle in
+transaction has an unfinished transaction and can retain locks or snapshots.
+
+<DecisionLab title="🐾 Find the queue before adding seats" label="Evidence" choices={[
+  {label: 'Most requests wait for a pooled connection', result: 'The application queue is the immediate waiting point.', cost: 'Find why connections are occupied before enlarging the pool; database capacity may already be exhausted.'},
+  {label: 'Backends show Lock waits', result: 'Inspect blockers and transaction age.', cost: 'More connections can amplify contention without increasing completed work.'},
+  {label: 'Many sessions are idle in transaction', result: 'Application transaction cleanup is suspect.', cost: 'Timeouts can limit damage but do not replace commit/rollback in all code paths.'},
+]} />
+
+## Try it yourself 🧪
+
+Open two psql sessions and compare pg_backend_pid. In A, BEGIN and SELECT a
+product, then stop issuing commands. In B, inspect A's state, transaction start,
+and backend_xmin. End A with ROLLBACK and observe the change. Record the
+background types present in your lab and name one absent type that would appear
+only with additional configuration. Do not enable replication just to make
+every possible process name appear.
+
+<details>
+<summary>🤓 Shared structures, short critical sections (optional)</summary>
+
+Shared memory includes buffer descriptors, lock tables, process arrays, and
+WAL-related buffers. Lightweight locks protect short internal operations;
+spinning or blocking on these is not the same as an application row lock.
+Process lifecycle starts in
+[`postmaster.c`](https://github.com/postgres/postgres/blob/REL_17_STABLE/src/backend/postmaster/postmaster.c).
+Inspect `src/backend/postmaster/` for background workers, then relate their work
+to observed wait events instead of concluding that all waiting means disk I/O.
+
+</details>
+
+## Recap 🐾
+
+1. Client backends, parallel workers, and maintenance processes have distinct responsibilities.
+2. Pooling controls concurrency and session affinity, not the database's underlying capacity.
+3. State, wait events, blockers, and transaction age together explain where work stalls.
+
+<Quiz question="An active backend has wait_event_type = Lock. What does active mean here?" options={[
+  {text: 'It has a running statement, which can currently be waiting.', correct: true, feedback: 'Exactly. Active is not a CPU utilization measurement; inspect the locked resource.'},
+  {text: 'It is continuously using a CPU core.', feedback: 'A statement can be active while blocked.'},
+  {text: 'It is definitely an autovacuum worker.', feedback: 'backend_type identifies the process role, not the active state.'},
+]} />
+
+## References
+
+[Architecture](https://www.postgresql.org/docs/17/tutorial-arch.html),
+[activity statistics](https://www.postgresql.org/docs/17/monitoring-stats.html), and
+[connections](https://www.postgresql.org/docs/17/runtime-config-connection.html).

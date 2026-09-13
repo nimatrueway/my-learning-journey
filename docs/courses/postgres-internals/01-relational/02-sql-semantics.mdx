@@ -1,0 +1,133 @@
+---
+sidebar_position: 2
+slug: /courses/postgres-internals/sql-semantics
+title: SQL, Joins, NULL, and Result Shape
+description: Predict duplicate rows, outer-join filtering, grouping, windows, and deterministic pagination.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+An order report doubles its revenue after someone adds a join. The query is
+syntactically valid. The database is faithfully executing a different question
+from the one the author intended.
+
+⏱️ **Reading + practice: ~10 min** · includes five minutes of result prediction.
+
+<Meme top="The reporting cat fixed duplicate revenue with DISTINCT." visual="🐱📊" bottom="The totals are still wrong, but now the evidence is harder to see." />
+
+## Track the grain of every intermediate result
+
+SQL describes a result; the optimizer chooses an execution strategy. A useful
+logical reading order is FROM and joins, WHERE filtering, GROUP BY and aggregates,
+HAVING, selected expressions, DISTINCT, ordering, and limit. It is a reasoning
+aid, not a promise that PostgreSQL physically executes clauses in that order.
+
+The **grain** is what one row represents. Start with one row per order and join
+three line items: you now have three rows for that order. Join two payments too
+and you can produce six rows. Summing the repeated order-level amount overcounts
+it. Aggregate each one-to-many side at the desired grain before joining, or
+aggregate line-level amounts rather than repeated order totals. DISTINCT removes
+identical result rows, not arbitrary business-level duplication.
+
+Use this small fixture without modifying permanent data:
+
+```sql
+WITH orders(id) AS (VALUES (1), (2)),
+items(order_id, amount) AS (VALUES (1, 5), (1, 7))
+SELECT orders.id, count(*) AS joined_rows,
+       count(items.amount) AS priced_items,
+       coalesce(sum(items.amount), 0) AS total
+FROM orders
+LEFT JOIN items ON items.order_id = orders.id
+GROUP BY orders.id
+ORDER BY orders.id;
+```
+
+Order 1 returns `2, 2, 12`; order 2 returns `1, 0, 0`. An outer join emits one
+NULL-extended row when no right-side match exists. `COUNT(*)` counts that row;
+`COUNT(expression)` counts non-null values. SUM over no non-null inputs returns
+NULL, so COALESCE explicitly chooses zero as the report's presentation policy.
+That substitution should not silently erase a meaningful unknown amount.
+
+## NULL changes predicates, not just display
+
+`NULL = NULL` is unknown, not true. WHERE retains rows only when its predicate
+is true; both false and unknown are discarded. Use IS NULL to test absence and
+IS NOT DISTINCT FROM for null-safe equality when that matches the business rule.
+`NOT IN` can surprise you when its input contains NULL: an unmatched value can
+produce unknown rather than true. A correlated NOT EXISTS is often clearer for
+an anti-join, though its exact correlation still defines the intended semantics.
+
+Putting `items.amount > 5` in WHERE after the left join discards the unmatched
+order. Putting it in ON instead filters which items match while retaining all
+left-side orders. Predict the missing order before changing the control:
+
+<DecisionLab title="🐾 Where did order two go?" label="Filter location" choices={[
+  {label: 'LEFT JOIN with amount > 5 in ON', result: 'Both orders remain. Order 1 has one matching item; order 2 is NULL-extended.', cost: 'The join now means qualifying items, not all items.'},
+  {label: 'LEFT JOIN, then amount > 5 in WHERE', result: 'Order 2 disappears because NULL > 5 is unknown.', cost: 'You no longer preserve orders without qualifying items.'},
+  {label: 'INNER JOIN on order ID', result: 'Order 1 has two rows and order 2 is absent.', cost: 'Aggregating order-level values after this join can multiply them.'},
+]} />
+
+## Grouping collapses; windows annotate
+
+An aggregate GROUP BY produces one row per group. A window function can compute
+a group total while retaining each input row. In the seeded fixture:
+
+```sql
+SELECT id, customer_id, created_at,
+       row_number() OVER (
+         PARTITION BY customer_id ORDER BY created_at DESC, id DESC
+       ) AS recency
+FROM course_lab.orders
+WHERE customer_id = 42
+ORDER BY created_at DESC, id DESC
+LIMIT 5;
+```
+
+The window's ordering defines recency; the outer ORDER BY defines returned
+order. They have separate roles. `id` breaks timestamp ties, so a fixed snapshot
+has a deterministic order. Without a unique tie-breaker, pagination can skip or
+repeat equal-timestamp rows even when the developer thinks the list is sorted.
+Keyset pagination with `(created_at, id) < (...)` avoids scanning a growing
+OFFSET, but concurrent inserts and updates still require a consistency policy.
+
+## Try it yourself 🧪
+
+Run the CTE report, then place the amount predicate in ON and WHERE separately.
+Record exactly which orders and totals survive. Next add a NULL amount and
+compare `COUNT(*)` with `COUNT(amount)`. Finally replace the window function with
+`GROUP BY customer_id` and `count(*)`: explain why the individual order IDs can no
+longer appear without another aggregation or grouping decision. Inspect the
+actual rows before trusting a dashboard built on the query.
+
+<details>
+<summary>🤓 Window frames deserve a second look (optional)</summary>
+
+An ordered aggregate window can use a frame that ends at the current row's peer
+group rather than the entire partition. SUM(amount) OVER (ORDER BY timestamp)
+can therefore be a running total, with equal timestamps treated as peers under
+the default frame. Specify ROWS or RANGE and explicit boundaries when needed.
+ROW_NUMBER is about ordered row numbering, not that aggregate-frame behavior.
+Always distinguish partition, ordering, and frame when reading unfamiliar SQL.
+
+</details>
+
+## Recap 🐾
+
+1. Track row grain through joins before aggregating money or counts.
+2. NULL and predicate placement determine whether outer-joined rows survive.
+3. Windows retain detail, and stable pagination requires an explicit total order and consistency policy.
+
+<Quiz question="Why does WHERE items.amount > 5 remove an unmatched left-joined order?" options={[
+  {text: 'The NULL comparison is unknown, and WHERE retains only true.', correct: true, feedback: 'Exactly. The cat did not delete the order; the predicate filtered its NULL-extended row.'},
+  {text: 'LEFT JOIN never retains unmatched rows.', feedback: 'It does, until a later predicate removes them.'},
+  {text: 'COUNT(*) ignores every NULL-extended row.', feedback: 'COUNT(*) counts rows, including a NULL-extended outer-join row.'},
+]} />
+
+## References
+
+[Table expressions](https://www.postgresql.org/docs/17/queries-table-expressions.html),
+[window functions](https://www.postgresql.org/docs/17/tutorial-window.html), and
+[comparison predicates](https://www.postgresql.org/docs/17/functions-comparison.html).

@@ -1,0 +1,120 @@
+---
+sidebar_position: 1
+slug: /courses/postgres-internals/btree-indexes
+title: B-Trees, Composite Keys, and Index-Only Scans
+description: Connect index ordering, heap access, visibility maps, covering columns, and write amplification.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+The query needs five recent orders for one customer. An index on customer_id
+can find the customer, but it may still leave PostgreSQL sorting that customer's
+orders. Index order should match the question.
+
+⏱️ **Reading + practice: ~10 min** · includes five minutes of index experiments.
+
+<Meme top="The index cat labeled every drawer customer_id." visual="🐱🗂️" bottom="Finding the drawer is not the same as sorting its receipts." />
+
+## From root to leaf to heap
+
+A B-tree uses ordered keys and branching pages to locate a leaf range. Internal
+pages guide descent; leaf entries point toward matching heap tuples. Sibling
+links and concurrency protocols allow scans to keep working as pages split.
+The exact implementation is a concurrent storage structure, not a static
+binary-search tree. High fanout keeps the tree shallow even with many rows.
+
+An index answers an access-path question, not automatically an MVCC visibility
+question. Ordinary index scans visit heap versions to check visibility and
+retrieve data. An index-only scan needs both returnable indexed values and a
+visibility-map indication that the relevant heap page is all-visible; otherwise
+it still performs heap fetches. Recent writes clear visibility information.
+Vacuum can restore all-visible bits when safe.
+
+## Align equality, ordering, and payload
+
+For the seeded orders, create a covering B-tree:
+
+```sql
+CREATE INDEX IF NOT EXISTS orders_customer_recent
+ON course_lab.orders (customer_id, created_at DESC, id DESC)
+INCLUDE (status);
+VACUUM (ANALYZE) course_lab.orders;
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT id, created_at, status FROM course_lab.orders
+WHERE customer_id = 42
+ORDER BY created_at DESC, id DESC LIMIT 5;
+```
+
+The leading equality narrows the range. The remaining key order can supply the
+requested ordering with a deterministic tie-breaker. INCLUDE stores payload
+without making status part of the search ordering or uniqueness key. It can
+help an index-only scan, but larger leaf entries cost storage and write work.
+Do not add every column "just in case."
+
+For PostgreSQL 17 B-trees, leading equalities and the first range condition
+most effectively bound a scan. Conditions on later columns may still be checked
+in the index without limiting how much of it must be scanned. Avoid turning
+"leftmost prefix matters" into "every other index use is impossible." Inspect
+the plan and version-specific behavior rather than transferring newer features.
+
+## Partial and expression indexes encode assumptions
+
+A partial index contains only rows satisfying its predicate. An index on pending
+orders can be small and useful for queue access, but the planner must be able
+to prove the query implies its predicate. A generic parameterized predicate
+may not supply that proof. An expression index can support an expression such
+as lower(name), but the query's operator, collation, and expression semantics
+must match. These are contracts, not universal text-search accelerators.
+
+CREATE INDEX normally blocks concurrent writes during its build. CREATE INDEX
+CONCURRENTLY reduces that blocking but takes additional work, cannot run in a
+transaction block, and can leave an invalid index after failure. It is not
+"free online DDL." Check validity and resource impact before retrying a large
+production build; the tiny lab index uses the ordinary form deliberately.
+
+<DecisionLab title="🐾 Pick the missing index ingredient" label="Observation" choices={[
+  {label: 'Customer lookup still sorts rows', result: 'A compatible composite ordering may remove the sort.', cost: 'Extra key columns increase index size and maintenance.'},
+  {label: 'Index-only plan has heap fetches', result: 'Check visibility-map coverage and recent writes.', cost: 'Covering every selected column does not guarantee zero heap access.'},
+  {label: 'A partial index is ignored', result: 'Check predicate implication and parameter planning.', cost: 'Planner eligibility and cost are separate from index existence.'},
+]} />
+
+## Try it yourself 🧪
+
+Save the plan before and after creating the index. Compare Sort nodes, heap
+fetches, buffers, and estimated versus actual rows. Update one order for customer
+42, commit, and rerun: can the index-only path still need heap visibility checks?
+Vacuum and inspect again. Do not demand an exact fetch count, since page layout
+and other maintenance affect it. Explain why status as INCLUDE is different
+from status as the leading key.
+
+<details>
+<summary>🤓 Splits, deduplication, and maintenance (optional)</summary>
+
+Inserting into full leaves can cause page splits and propagate structural work.
+B-tree deduplication can compress some duplicate-key entries, but eligibility
+depends on index properties and operator semantics. Deletion and cleanup
+strategies also control obsolete entry accumulation. Start with the B-tree
+[`README`](https://github.com/postgres/postgres/blob/REL_17_STABLE/src/backend/access/nbtree/README)
+before reading individual split routines.
+
+</details>
+
+## Recap 🐾
+
+1. B-tree order can support lookup and output order, while heap access still supplies visibility when needed.
+2. INCLUDE, partial predicates, and expressions optimize specific query contracts at a write/storage cost.
+3. Index-only eligibility and zero heap fetches are different claims; verify plans and visibility state.
+
+<Quiz question="Why can a covering index-only scan still fetch heap pages?" options={[
+  {text: 'The visibility map may not prove the relevant heap pages all-visible.', correct: true, feedback: 'Yes. The index cat has the values, but still needs visibility evidence.'},
+  {text: 'INCLUDE columns are never stored in the index.', feedback: 'They are stored as payload; visibility is the missing guarantee.'},
+  {text: 'B-trees cannot support ORDER BY.', feedback: 'A matching key order can provide ordered output.'},
+]} />
+
+## References
+
+[Multicolumn indexes](https://www.postgresql.org/docs/17/indexes-multicolumn.html),
+[index-only scans](https://www.postgresql.org/docs/17/indexes-index-only-scans.html), and
+[concurrent builds](https://www.postgresql.org/docs/17/sql-createindex.html).
