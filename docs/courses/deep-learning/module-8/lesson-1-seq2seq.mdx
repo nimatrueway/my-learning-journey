@@ -1,0 +1,119 @@
+---
+title: "8.1 — Seq2seq: one vector for the whole sentence"
+description: "Why translation needs two networks, how the encoder-decoder was born, and the bottleneck that nearly ruined it."
+---
+
+import Seq2SeqViz from '@site/src/components/Seq2SeqViz';
+import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
+
+# 8.1 — Seq2seq: one vector for the whole sentence ⏱️ ~10 min · folds are optional extra
+
+## The hook
+
+Translate this into French: *"the cat knocked the glass off the table."*
+
+Notice what you could **not** do. You could not start translating at word one and stream forward, because French reorders the verb (*a fait tomber*) and the number of output words is not the number of input words. You had to read the whole thing, hold it, and only then write.
+
+Every model you have built so far outputs one thing per input thing: one label per image, one next token per context. Translation needs a model that reads $n$ things and writes $m$ things, where $m$ is **not known in advance** and the alphabet may not even be the same. That is a different shape of network, and it got its own name: **sequence-to-sequence**.
+
+<Meme top="me: read the whole shopping list once, then walk to the store" visual="🐱📝➡️🧠➡️🛒" bottom="me at the store: it was… something with fish? there were nine things?" />
+
+## Two jobs, two networks
+
+Split the work in half:
+
+- The **encoder** reads the source sequence and turns it into numbers that represent *meaning*. It never produces words. It has no idea what French is.
+- The **decoder** is a language model with a condition attached. Instead of "predict the next token given previous tokens", it predicts "next token given previous tokens **and** whatever the encoder handed over".
+
+The decoder also solves the length problem by itself: it keeps generating until it emits a special end-of-sequence token. `<bos>` starts it, `<eos>` stops it, and nobody has to know $m$ ahead of time. Output length becomes a prediction, not a hyperparameter.
+
+That framing is more general than translation. Any "text in, different text out" task fits: summarization, transcription (audio in, text out), grammar correction, code from docstrings, SQL from questions. Swap what the encoder reads; keep the decoder.
+
+## The 2014 version: squeeze everything into one vector 🎮
+
+The original design was brutally simple. Run an RNN over the source; take its **final hidden state**; call that the context vector; use it to start the decoder's RNN. One fixed-size vector had to carry an entire sentence.
+
+Play with what that costs. Slide the decoding step to watch the output appear word by word, and slide the vector size to change how much the single context vector can hold:
+
+<Seq2SeqViz initialMode="bottleneck" />
+
+**Things to try:**
+
+1. Set the vector to 64 dimensions and step through the whole output. The tail of the sentence survives; the beginning dissolves into `▒▒▒`.
+2. Grow the vector to 1024. More words survive — but you paid with parameters on **every** sentence, including the three-word ones.
+3. Notice *which* words break first: the ones the decoder needs early are exactly the ones the encoder read earliest.
+
+This is the **information bottleneck**. A 20-word sentence and a 3-word sentence get identical storage, and the encoder's last step is nearest the end of the source, so recent words dominate. Translation quality in the 2014 papers held up on short sentences and fell off a cliff on long ones — the curve was the bug report.
+
+One famous hack makes the problem visible: Sutskever and colleagues found that **reversing the source word order** before encoding improved their translation scores. Nothing about meaning changed. Only the distance between the first source word and the first output word changed. When reversing your input helps, your architecture is telling you it has a memory problem, not a language problem.
+
+## Tiny example: an encoder and a decoder that actually run
+
+```python
+import torch
+import torch.nn as nn
+
+SOURCE_VOCAB, TARGET_VOCAB, HIDDEN = 500, 600, 256
+
+encoder_embed = nn.Embedding(SOURCE_VOCAB, HIDDEN)
+encoder = nn.GRU(HIDDEN, HIDDEN, batch_first=True)
+
+decoder_embed = nn.Embedding(TARGET_VOCAB, HIDDEN)
+decoder = nn.GRU(HIDDEN, HIDDEN, batch_first=True)
+project = nn.Linear(HIDDEN, TARGET_VOCAB)
+
+source = torch.randint(0, SOURCE_VOCAB, (1, 8))     # 8 English tokens
+target_in = torch.randint(0, TARGET_VOCAB, (1, 10))  # 10 French tokens, shifted right
+
+states, context = encoder(encoder_embed(source))
+print(states.shape, context.shape)   # [1, 8, 256] ... and [1, 1, 256]
+
+outputs, _ = decoder(decoder_embed(target_in), context)
+logits = project(outputs)
+print(logits.shape)                  # [1, 10, 600] — one distribution per output position
+```
+
+Look hard at the two shapes the encoder returned. `states` holds **all eight** per-word states. `context` is the last one — a single 256-d vector. The 2014 architecture throws the first tensor away and keeps the second. Lesson 8.2 is, essentially, the story of somebody asking *"…why are we deleting that?"*
+
+## Teacher forcing: how it trains
+
+During training, the decoder does not consume its own guesses. It consumes the **correct** previous target token and is scored on predicting the next one — that is the `target_in` above, the true French sentence shifted right by one. Cross-entropy is averaged over all output positions, and the whole thing (both networks) is trained by one `loss.backward()`.
+
+This is **teacher forcing**, and it is a bargain with a catch. Training is stable and every position gets a gradient, but at inference nobody feeds the model correct tokens — it eats its own output. One early mistake shifts the model into a context it never saw during training, and errors compound. The name for that mismatch is **exposure bias**, and it is why a model with excellent validation loss can still ramble on step 40.
+
+<details>
+<summary>🤓 The actual math (optional)</summary>
+
+The decoder models the probability of the whole target sequence, factorized one token at a time:
+
+$$P(y_1 \dots y_m \mid x) = \prod_{t=1}^{m} P(y_t \mid y_{<t},\, c)$$
+
+- $x$ is the source sequence, $c$ is the encoder's context (one vector in this lesson, a whole set of states in the next)
+- $y_{<t}$ is everything already written; during training those are the *true* tokens, during inference the model's own
+- Training minimizes $-\frac{1}{m}\sum_t \log P(y_t \mid y_{<t}, c)$ — the same cross-entropy from Module 2, just summed over positions
+
+A fixed-size $c$ means the mutual information between source and context is capped no matter how long $x$ grows. Doubling the sentence does not double the budget; it halves the share per word.
+
+</details>
+
+## Try it yourself
+
+Take any sentence with a long-range dependency — "*the router that the cat knocked off the shelf last Tuesday still works*" — and mark the earliest source word that the **first** output word depends on in your target language. Then count how many words the encoder must read after it before decoding starts. That number is what a single context vector is being asked to protect. Do it for a 5-word sentence and a 40-word one, and you have re-derived the 2014 bug report without writing code.
+
+## Recap 📌
+
+- Seq2seq splits the work: an encoder builds a meaning representation, a decoder writes a new sequence and emits `<eos>` when it decides it is done
+- The 2014 design compressed the entire source into one fixed-size context vector, so quality collapsed as sentences got longer
+- Teacher forcing makes training stable by feeding true previous tokens, at the cost of exposure bias at inference time
+
+## Quiz
+
+<Quiz
+  question="Why can't you just use a classifier with a big softmax for translation?"
+  options={[
+    {text: 'The vocabulary is too large for a softmax layer', feedback: "Large vocabularies are annoying but entirely routine — the decoder in this lesson has a softmax over the whole target vocabulary. The blocker is structural, not size. Try again."},
+    {text: 'The output is a sequence of unknown length whose tokens depend on each other, so it must be generated step by step', correct: true, feedback: "Exactly. One classification gives you one label. Translation needs m decisions where m is itself a prediction, and where word 4 depends on words 1–3. That is why the decoder is autoregressive and gets an <eos> button."},
+    {text: 'Classifiers cannot be trained with cross-entropy on text', feedback: "They can — the decoder is literally trained with cross-entropy per position. What a single classifier cannot do is choose how many outputs to produce, or condition each one on the previous. Try again."},
+  ]}
+/>

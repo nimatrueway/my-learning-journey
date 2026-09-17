@@ -918,3 +918,79 @@ circle.growthProjection {
   background: var(--ifm-background-color);
   color: var(--ifm-font-color-base);
 }
+
+/* Attention mask matrix (encoder-decoder) */
+.maskScroll {
+  overflow-x: auto;
+  margin: 0.75rem 0;
+}
+
+.maskTable {
+  border-collapse: separate;
+  border-spacing: 3px;
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.maskTable th {
+  padding: 0.15rem 0.4rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.maskTable th[scope='row'] {
+  text-align: right;
+}
+
+.maskCell,
+.maskCellBlocked {
+  min-width: 2.4rem;
+  height: 1.9rem;
+  text-align: center;
+  border-radius: 4px;
+}
+
+.maskCell {
+  background: rgba(37, 194, 160, 0.35);
+}
+
+.maskCellBlocked {
+  background: var(--ifm-color-emphasis-200);
+  color: var(--ifm-color-emphasis-600);
+}
+
+/* Probability rows (decoding) */
+.probList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 1rem 0 0;
+}
+
+.probRow,
+.probRowActive {
+  display: grid;
+  grid-template-columns: minmax(7rem, 12rem) 1fr minmax(4.5rem, auto);
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.15rem 0.3rem;
+  border-radius: 4px;
+}
+
+.probRowActive {
+  background: var(--ifm-color-emphasis-200);
+}
+
+.probLabel {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.probValue {
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.8rem;
+  text-align: right;
+  color: var(--ifm-color-emphasis-700);
+}
+

@@ -5,7 +5,7 @@ title: Syllabus
 
 # Syllabus 📋
 
-Seven modules, 31 lessons and 7 projects, mostly 10–15 minutes. Every module ends with a mini-project you run on your own machine.
+Eight modules, 35 lessons and 8 projects, mostly 10–15 minutes. Every module ends with a mini-project you run on your own machine.
 
 > **Status:** the full course is built. ✅ Start at [Module 1](/courses/deep-learning/module-1/) and go in order — every lesson builds on the last.
 
@@ -95,3 +95,15 @@ Seven modules, 31 lessons and 7 projects, mostly 10–15 minutes. Every module e
 | 7.1 | [Audio models: from waveforms to words](/courses/deep-learning/module-7/lesson-1-audio-models) | ~6 min |
 | 7.2 | [Video models: teaching an image model about time](/courses/deep-learning/module-7/lesson-2-video-models) | ~6 min |
 | 🛠 | [**Mini-project:** run pretrained audio and video models](/courses/deep-learning/module-7/mini-project) | ~30 min |
+
+## Module 8 — [Encoder–Decoder Architectures](/courses/deep-learning/module-8/) 🔁
+
+*Reading and writing as two jobs — cross-attention, model shapes, and how probabilities become sentences.*
+
+| # | Lesson | Time |
+|---|--------|------|
+| 8.1 | [Seq2seq: one vector for the whole sentence](/courses/deep-learning/module-8/lesson-1-seq2seq) | ~10 min |
+| 8.2 | [Cross-attention: the decoder asks, the encoder answers](/courses/deep-learning/module-8/lesson-2-cross-attention) | ~10 min |
+| 8.3 | [Encoder-only, decoder-only, encoder–decoder](/courses/deep-learning/module-8/lesson-3-architecture-shapes) | ~10 min |
+| 8.4 | [Decoding: greedy, beam, and the temperature dial](/courses/deep-learning/module-8/lesson-4-decoding) | ~10 min |
+| 🛠 | [**Mini-project:** train a tiny translator and read its cross-attention](/courses/deep-learning/module-8/mini-project) | ~40 min |

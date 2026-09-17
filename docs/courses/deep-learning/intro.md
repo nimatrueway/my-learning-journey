@@ -30,5 +30,5 @@ You write software for a living. You've heard "neural networks" a thousand times
 - 🚀 [Module 1, Lesson 1](/courses/deep-learning/module-1/lesson-1-neuron) — jump straight in
 
 :::tip The full course is live
-All 7 modules, 31 lessons and 7 projects. Start at [Module 1](/courses/deep-learning/module-1/) and go in order — every lesson builds on the last.
+All 8 modules, 35 lessons and 8 projects. Start at [Module 1](/courses/deep-learning/module-1/) and go in order — every lesson builds on the last.
 :::
