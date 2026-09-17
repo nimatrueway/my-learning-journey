@@ -27,6 +27,11 @@ The way out is not to manufacture perfect confidence before speaking. It is to
 redirect attention, change your relationship to anxious thoughts, collect
 better evidence, and practice direct participation without protective rituals.
 
+If speaking is followed by immediate message regret or a long replay of whether
+people like you, continue with
+[Feeling Disliked at Work](/courses/performance-foundations/part-16-feeling-disliked-at-work).
+That companion distinguishes ambiguous social cues from actual exclusion.
+
 ## Play: Rehearse the First Five Minutes
 
 <MeetingRehearsal />

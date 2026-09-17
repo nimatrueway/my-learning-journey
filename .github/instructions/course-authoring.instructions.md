@@ -14,6 +14,10 @@ their dedicated skill and the reference-page exceptions below.
 
 - Build Docusaurus courses with Markdown or MDX and React interactions.
 - Optimize for a technically capable learner with short attention bandwidth.
+- Before adding a proposed topic, search existing course titles and lesson
+  content for exact duplicates and meaningful overlap. Tell the user which
+  material already covers it and what gap remains. Extend or cross-link that
+  material rather than silently creating another version of the same lesson.
 - Teach intuition first, then examples, then optional depth.
 - Make teaching lessons self-sufficient. Videos, papers, books, and podcasts may
   be optional primary sources, but the learner should not need to consume them
@@ -227,11 +231,14 @@ navigate or evaluate its information.
 
 - Preserve a clear distinction between evidence, inference, heuristic, and
   personal advice. Do not overstate neuroscience or causal certainty.
-- For health or supplement content, state that information is educational and
-  not individualized medical advice. Surface interaction and contraindication
-  cautions where relevant.
+- Do not add generic "educational only" or "not medical advice" disclaimers,
+  or boilerplate sections telling the reader to see a professional. Keep
+  lessons focused on the topic and useful practice. Explain evidence limits
+  and directly relevant risks within the substantive discussion instead.
+- For health or supplement content, explain relevant interactions and
+  contraindications where they affect the topic.
 - Never present a supplement ranking as a required stack. Prefer baseline-first,
-  one-variable-at-a-time evaluation and professional medication review.
+  one-variable-at-a-time evaluation and attention to medication interactions.
 - Keep optional evidence in folds when it is not required for the main lesson.
 
 ## Verification
@@ -268,3 +275,6 @@ After course changes:
   meaningful playful flavor, unique callouts, explanatory quiz feedback, and
   exactly three recap points. Report any intentional tone exceptions and any
   unverified browser checks. Do not report build success as visual verification.
+11. Show the user a local rendered preview before publishing changes. Wait for
+  explicit user approval before pushing or merging to `main`; that branch
+  triggers the GitHub Pages deployment.

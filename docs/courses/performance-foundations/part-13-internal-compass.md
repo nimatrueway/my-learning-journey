@@ -181,6 +181,10 @@ pleasant fantasy alone.
 
 ## Remedies That Make the Compass Stronger
 
+For the specific loop of reading workplace silence as rejection and replaying
+messages afterward, see
+[Feeling Disliked at Work](/courses/performance-foundations/part-16-feeling-disliked-at-work).
+
 - **Write chosen values as verbs.** “Tell the truth,” “finish useful things,”
   and “repair quickly” can govern action. “Be admired” remains in other
   people's hands.

@@ -170,6 +170,16 @@
   font-weight: 700;
 }
 
+.socialInterpretationResult {
+  min-height: 26rem;
+}
+
+@media (max-width: 600px) {
+  .socialInterpretationResult {
+    min-height: 34rem;
+  }
+}
+
 .bmiResultGrid {
   display: grid;
   grid-template-columns: minmax(8rem, 0.7fr) minmax(14rem, 1.3fr);
@@ -993,4 +1003,3 @@ circle.growthProjection {
   text-align: right;
   color: var(--ifm-color-emphasis-700);
 }
-

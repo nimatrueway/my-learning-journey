@@ -16,7 +16,7 @@ directing attention, building confidence, handling difficult emotions, and
 relating to other people without abandoning your own boundaries. Ambitious
 work matters here, but so do relationships, recovery, and life outside work.
 
-It begins with fifteen practical lessons and an optional supplement reference:
+It begins with sixteen practical lessons and an optional supplement reference:
 
 1. Strengthening focus and staying with effortful work.
 2. Acting despite fear of failure or embarrassment.
@@ -38,7 +38,9 @@ It begins with fifteen practical lessons and an optional supplement reference:
     then training bounded experiments and recovery confidence.
 15. Handling online hate and annoying replies without surrendering your
     attention, ignoring useful feedback, or minimizing harassment.
-16. Evaluating supplements cautiously as optional support, not as substitutes
+16. Handling the fear of being disliked at work, message regret, and post-meeting
+    replay without overlooking genuine exclusion or attacking yourself.
+17. Evaluating supplements cautiously as optional support, not as substitutes
     for sleep, nutrition, exercise, or appropriate medical care.
 
 The aim is not constant intensity. It is to build repeatable ways to direct
@@ -75,6 +77,7 @@ early — it is the canonical home of the moves every lesson leans on (~5 min).
 13. [Build an Internal Compass](/courses/performance-foundations/part-13-internal-compass) — ~10 min
 14. [Uncertainty and First Tries](/courses/performance-foundations/part-14-uncertainty-and-first-tries) — ~12 min
 15. [Online Hate and Annoying Replies](/courses/performance-foundations/part-15-online-hate-and-annoying-replies) — ~11 min, including practice
+16. [Feeling Disliked at Work](/courses/performance-foundations/part-16-feeling-disliked-at-work) — ~11 min, including practice
 
 Optional: [Supplement Reference](/courses/performance-foundations/supplement-reference) — ~8 min, skimmable
 
