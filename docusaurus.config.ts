@@ -26,7 +26,10 @@ const config: Config = {
   trailingSlash: false,
   onBrokenLinks: 'throw',
 
-  clientModules: [require.resolve('./src/client/shortcuts.ts')],
+  clientModules: [
+    require.resolve('./src/client/shortcuts.ts'),
+    require.resolve('./src/client/pwaUpdate.ts'),
+  ],
 
   i18n: {
     defaultLocale: 'en',
