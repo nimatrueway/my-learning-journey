@@ -1,6 +1,86 @@
 import React, {useState} from 'react';
 import styles from './widgets.module.css';
 
+const COMMENT_SCENARIOS = {
+  criticism: {
+    label: 'Rude but specific criticism',
+    example: 'A reply mocks your work but points to a reproducible error in your example.',
+    action: 'clarify',
+    reason: 'Verify the error separately from the insult. A brief correction can help readers; you do not owe the commenter a debate.',
+  },
+  bait: {
+    label: 'An insult with no useful claim',
+    example: 'A stranger posts a dismissive one-liner with nothing specific you can check.',
+    action: 'disengage',
+    reason: 'There is no actionable claim here. Mute or block and return to your task. Silence is a boundary, not agreement.',
+  },
+  repeated: {
+    label: 'Repeated unwanted replies',
+    example: 'After you stop responding, an account keeps following you into unrelated threads.',
+    action: 'protect',
+    reason: 'Treat the pattern as a boundary problem. Preserve relevant evidence if safe, restrict access, and report harassment or ask a moderator for help.',
+  },
+  safety: {
+    label: 'Threats or exposed private information',
+    example: 'An account posts private identifying information or threatens to approach you offline.',
+    action: 'protect',
+    reason: 'Prioritize safety, not a comeback. If danger may be immediate, contact local emergency services and someone trusted. Document only if safe; report and seek safety support.',
+  },
+};
+
+export function CommentResponseLab(): React.ReactElement {
+  const [scenario, setScenario] = useState<keyof typeof COMMENT_SCENARIOS>('criticism');
+  const [action, setAction] = useState('disengage');
+  const [activated, setActivated] = useState(false);
+  const current = COMMENT_SCENARIOS[scenario];
+  const feedback = action === current.action
+    ? current.reason
+    : action === 'disengage' && scenario === 'criticism'
+      ? 'Not replying is allowed. Still check a concrete error privately so a rude delivery does not hide useful evidence.'
+      : current.action === 'protect'
+        ? current.reason
+        : scenario === 'bait'
+          ? 'A reply may extend the exchange without adding useful information. Blocking is reasonable; reporting depends on the behavior and platform rules.'
+          : 'An unpleasant tone alone does not establish harassment. Verify the claim, then decide whether a correction serves your purpose.';
+
+  return (
+    <div className={styles.widget}>
+      <h3>Choose what deserves your attention</h3>
+      <div className={styles.practiceGrid}>
+        <label className={styles.control}>
+          Comment pattern
+          <select value={scenario} onChange={(event) => setScenario(event.target.value as keyof typeof COMMENT_SCENARIOS)}>
+            {Object.entries(COMMENT_SCENARIOS).map(([key, value]) => (
+              <option key={key} value={key}>{value.label}</option>
+            ))}
+          </select>
+        </label>
+        <label className={styles.control}>
+          Your next move
+          <select value={action} onChange={(event) => setAction(event.target.value)}>
+            <option value="clarify">Check the claim; consider one reply</option>
+            <option value="disengage">Disengage; mute or block</option>
+            <option value="protect">Document safely; restrict and seek help</option>
+          </select>
+        </label>
+      </div>
+      <label className={styles.inlineCheck}>
+        <input type="checkbox" checked={activated} onChange={(event) => setActivated(event.target.checked)} />
+        I feel too activated to write carefully
+      </label>
+      <div className={styles.practiceResult} style={{minHeight: '19rem'}} aria-live="polite" aria-atomic="true">
+        <p><strong>Situation:</strong> {current.example}</p>
+        <p><strong>Tradeoff:</strong> {feedback}</p>
+        <p><strong>Timing:</strong> {current.action === 'protect'
+          ? 'Do not postpone urgent safety action to finish a calming exercise. A trusted person can help with reporting or evidence.'
+          : activated
+            ? 'Save any draft privately and step away. Reconsider a reply when you can choose its purpose and stopping point.'
+            : 'Choose a purpose before posting. If one factual reply would help, decide in advance where the exchange ends.'}</p>
+      </div>
+    </div>
+  );
+}
+
 export function FocusSprint(): React.ReactElement {
   const [outcome, setOutcome] = useState('Finish one visible piece');
   const [minutes, setMinutes] = useState(15);
