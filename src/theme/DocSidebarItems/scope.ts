@@ -11,17 +11,17 @@ function containsActive(item: SidebarItem, activePath: string): boolean {
     || (item.type === 'category' && item.items.some(child => containsActive(child, activePath)));
 }
 
-function findScope(items: Props['items'], activePath: string): SidebarItem | undefined {
+function findScope(items: Props['items'], activePath: string, scopePaths: readonly string[]): SidebarItem | undefined {
   for (const item of items) {
     if (!containsActive(item, activePath)) continue;
-    if (matches(item, activePath) || item.type !== 'category') return item;
-    return findScope(item.items.filter(child => child.type === 'category'), activePath) ?? item;
+    if (matches(item, activePath) || scopePaths.some(scopePath => matches(item, scopePath))) return item;
+    if (item.type === 'category') return findScope(item.items, activePath, scopePaths);
   }
   return undefined;
 }
 
-export function scopeSidebar(items: Props['items'], activePath: string): Props['items'] {
-  const scope = findScope(items, activePath);
+export function scopeSidebar(items: Props['items'], activePath: string, scopePaths: readonly string[]): Props['items'] {
+  const scope = findScope(items, activePath, scopePaths);
   if (!scope || scope === items[0]) return items;
   const returnLink = items[0];
   return returnLink && returnLink !== scope && returnLink.type === 'link'

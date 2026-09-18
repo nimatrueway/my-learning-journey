@@ -46,11 +46,17 @@ sidebar code change. Shared interactive React components belong in
 
 ### Sidebar scope
 
-The main Contents menu exposes the category tree through nested dropdowns.
-Opening a category shows only that category and its descendants in the left
-sidebar. A lesson uses its nearest parent category, so sibling categories stay
-hidden. The same hierarchy-based rule applies to every content type on desktop
-and mobile, with an All contents return link and no content-specific metadata.
+The main Contents menu shows level-1 categories and their level-2 items in
+dropdowns. Selecting a level-2 item shows that item and all its level-3-and-below
+descendants in the left sidebar. This boundary stays fixed while opening deeper
+pages. The menu's level-2 links define the sidebar scopes for every content type
+on desktop and mobile, with an All contents return link and no special metadata.
+
+Courses, Books, and Calculator each retain a landing page. The Courses overview at
+`/courses` describes each course in `docs/courses/intro.md`; update it when adding
+a course. In the home sidebar, root
+titles open these pages and their arrows expand the level-2 links; the Contents
+dropdown includes each landing link inside its expandable root group.
 
 ## GitHub Pages
 

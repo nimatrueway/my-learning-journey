@@ -39,7 +39,7 @@ function categories(directory: string) {
 
 export const collections: Collection[] = [
   ...categories('courses'),
-  ...categories('').filter(({metadata}) => metadata.link?.type === 'doc'),
+  ...categories('').filter(({directory, metadata}) => directory !== 'courses' && metadata.link?.type === 'doc'),
 ].map(({directory, metadata}) => {
   if (metadata.link.type !== 'doc') {
     throw new Error(`Navigation collection ${directory} requires a doc landing page`);
@@ -66,7 +66,7 @@ const calculator = collection('calculator');
 const courses = collections.filter(entry => entry.directory.startsWith('courses/'));
 const courseGroup = JSON.parse(readFileSync(
   path.join(__dirname, 'docs/courses/_category_.json'), 'utf8',
-)) as {label: string; collapsed?: boolean};
+)) as CategoryMetadata;
 const allContents: NavigationLink = {label: 'All contents', to: '/'};
 export const navigation = [
   {label: courseGroup.label, collections: courses},
@@ -93,6 +93,7 @@ export const navigationSidebars: SidebarsConfig = {
         type: 'category',
         label: group.label,
         collapsed: courseGroup.collapsed ?? false,
+        link: courseGroup.link,
         items: group.collections.map((entry): SidebarItemConfig => ({type: 'link', label: entry.label, href: entry.to})),
       }]),
   ],
@@ -126,9 +127,13 @@ export function categoryNavigationPlugin(): Plugin {
       }
       const tree = navigation.flatMap(group => {
         const items = group.collections.flatMap(entry => categoryItems(version.sidebars[entry.directory]));
-        return group.to ? items : [{label: group.label, items}];
+        const root = categoryItems(version.sidebars.journeySidebar).find(item => item.label === group.label);
+        return group.to ? items : [{label: group.label, href: root?.href, items}];
       });
-      actions.setGlobalData(tree);
+      actions.setGlobalData(tree.map(root => ({
+        ...root,
+        items: root.items.map(item => ({...item, items: []})),
+      })));
     },
   };
 }
