@@ -1,0 +1,11 @@
+{
+  "label": "🐱🐘 RDBMS & PostgreSQL Internals",
+  "position": 7,
+  "link": {
+    "type": "doc",
+    "id": "intro"
+  },
+  "customProps": {
+    "route": "/courses/postgres-internals"
+  }
+}

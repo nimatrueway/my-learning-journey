@@ -1,6 +1,6 @@
 ---
 description: "Use when creating, expanding, or revising courses, modules, lessons, MDX widgets, quizzes, syllabi, course navigation, or catalog entries. Requires this learning site's visual theme, playful cat-and-emoji teaching style, and rendered style checks."
-applyTo: "docs/courses/**,docs/index.mdx,src/components/**,src/css/custom.css,src/theme/**,docusaurus.config.ts,sidebars.ts,navigation.ts"
+applyTo: "docs/courses/**,docs/books/**,docs/calculator/**,docs/index.mdx,src/components/**,src/css/custom.css,src/theme/**,docusaurus.config.ts,sidebars.ts,navigation.ts"
 ---
 
 # Course Authoring Conventions
@@ -157,6 +157,10 @@ navigate or evaluate its information.
   nested navbar group, not as siblings of Courses, Books, or Calculator. Preserve
   the Books group for books. Keep catalog, navbar, footer, and course identity
   consistent; inspect the current configuration instead of copying stale markup.
+- Match that hierarchy on disk: `docs/index.mdx` is Contents, `docs/courses/`
+  contains teaching courses, and `docs/books/` and `docs/calculator/` are siblings.
+  Preserve existing `/courses/books/...` and `/courses/calculator/...` public
+  slugs independently of their source paths.
 - Use a course-level `_category_.json` doc link when the course intro should act
   as the course landing page.
 - Do not link a module category directly to its first teaching document when

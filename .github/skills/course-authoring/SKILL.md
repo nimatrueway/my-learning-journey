@@ -17,7 +17,7 @@ A technically correct but dry course is not a finished course here.
    of `src/css/custom.css`, and `src/components/widgets.module.css`. Inspect
    `src/components/Meme.tsx` and the widget being reused before changing props.
 3. For an established playful technical-course example, inspect
-   `docs/courses/lucene-search/04-text-retrieval/02-ngrams-autocomplete.mdx`.
+   `docs/courses/04-apache-lucene-and-search/04-text-retrieval/02-ngrams-autocomplete.mdx`.
    Use its level of technical specificity and tone, not its prose or joke verbatim.
 4. Check the worktree and preserve existing changes. Read the current catalog and
    navigation before integrating a course; do not assume those files are unchanged.

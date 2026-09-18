@@ -1,0 +1,12 @@
+{
+  "label": "🚀 Startup School",
+  "position": 3,
+  "collapsed": false,
+  "link": {
+    "type": "doc",
+    "id": "intro"
+  },
+  "customProps": {
+    "route": "/courses/startup-school"
+  }
+}

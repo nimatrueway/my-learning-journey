@@ -1,0 +1,12 @@
+{
+  "label": "🧠 Psychology",
+  "position": 2,
+  "collapsed": false,
+  "link": {
+    "type": "doc",
+    "id": "intro"
+  },
+  "customProps": {
+    "route": "/courses/performance-foundations"
+  }
+}

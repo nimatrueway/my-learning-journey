@@ -8,6 +8,7 @@ interface CategoryMetadata {
   label: string;
   position?: number;
   collapsed?: boolean;
+  customProps?: {route?: string};
   link: {type: 'doc'; id: string} | {type: 'generated-index'; slug?: string};
 }
 
@@ -26,7 +27,7 @@ function categories(directory: string) {
   return readdirSync(path.join(__dirname, 'docs', directory), {withFileTypes: true})
     .filter(entry => entry.isDirectory())
     .map(entry => ({
-      directory: `${directory}/${entry.name}`,
+      directory: path.posix.join(directory, entry.name),
       metadata: JSON.parse(readFileSync(
         path.join(__dirname, 'docs', directory, entry.name, '_category_.json'), 'utf8',
       )) as CategoryMetadata,
@@ -35,16 +36,20 @@ function categories(directory: string) {
       || left.directory.localeCompare(right.directory));
 }
 
-export const collections: Collection[] = categories('courses').map(({directory, metadata}) => {
+export const collections: Collection[] = [
+  ...categories('courses'),
+  ...categories('').filter(({metadata}) => metadata.link?.type === 'doc'),
+].map(({directory, metadata}) => {
   if (metadata.link.type !== 'doc') {
     throw new Error(`Navigation collection ${directory} requires a doc landing page`);
   }
+  const docDirectory = directory.split('/').map(segment => segment.replace(/^\d+[-_]/, '')).join('/');
   return {
     directory,
     label: metadata.label,
-    to: `/${directory}`,
-    docId: metadata.link.id.startsWith(`${directory}/`)
-      ? metadata.link.id : `${directory}/${metadata.link.id}`,
+    to: metadata.customProps?.route ?? `/courses/${path.posix.basename(directory)}`,
+    docId: metadata.link.id.startsWith(`${docDirectory}/`)
+      ? metadata.link.id : `${docDirectory}/${metadata.link.id}`,
     collapsed: metadata.collapsed ?? true,
   };
 });
@@ -55,9 +60,9 @@ function collection(directory: string): Collection {
   return result;
 }
 
-const books = collection('courses/books');
-const calculator = collection('courses/calculator');
-const courses = collections.filter(entry => entry !== books && entry !== calculator);
+const books = collection('books');
+const calculator = collection('calculator');
+const courses = collections.filter(entry => entry.directory.startsWith('courses/'));
 const courseGroup = JSON.parse(readFileSync(
   path.join(__dirname, 'docs/courses/_category_.json'), 'utf8',
 )) as {label: string; collapsed?: boolean};

@@ -1,0 +1,71 @@
+---
+slug: /courses/deep-learning/module-7/mini-project
+title: "🛠 Mini-project: run pretrained audio and video models"
+description: "Inspect real audiovisual tensor shapes, run pretrained inference, and stress-test the preprocessing assumptions."
+---
+
+import Meme from '@site/src/components/Meme';
+
+# 🛠 Mini-project: run pretrained audio and video models ⏱️ ~30 min
+
+<Meme quote="What I cannot create, I do not understand." author="Richard Feynman — inference counts as the first date, not the marriage" />
+
+## The mission
+
+Run one pretrained speech recognizer and one pretrained action classifier. Then deliberately change the input conditions and inspect what fails. You are not training giant media models on a laptop; you are learning their contracts.
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install torch torchvision transformers librosa soundfile av
+```
+
+## Part 1: transcribe three recordings
+
+Use the Whisper pipeline from lesson 7.1 with three WAV files containing the same sentence:
+
+1. Clean, close-microphone speech
+2. Speech from across the room
+3. Speech with background sound
+
+Record the transcript and count substitutions, insertions, and missing words. Keep the sentence fixed so recording conditions are the changed variable.
+
+## Part 2: inspect a video model's contract
+
+```python
+import torch
+from torchvision.models.video import R3D_18_Weights, r3d_18
+
+weights = R3D_18_Weights.DEFAULT
+model = r3d_18(weights=weights).eval()
+print(weights.transforms())
+print(weights.meta["categories"][:5])
+
+clip = torch.rand(3, 16, 128, 171)  # C, T, H, W
+batch = weights.transforms()(clip).unsqueeze(0)
+
+with torch.inference_mode():
+    scores = model(batch).softmax(dim=1)[0]
+
+for probability, index in zip(*scores.topk(5)):
+    print(f"{weights.meta['categories'][index]}: {probability:.1%}")
+```
+
+Random pixels produce meaningless labels, but the exercise proves the input path and exposes the expected shape and transforms. Replace `clip` with 16 decoded frames from a short video, stacked as `[C, T, H, W]`. Keep values in `[0, 1]`; the weights transform handles resizing, cropping, and normalization.
+
+## Break it on purpose
+
+- Reverse the frame order. Does the ranking change for a directional action?
+- Repeat one frame 16 times. Which appearance-based guesses remain?
+- Sample a fast action sparsely. At what point does the motion disappear?
+- Feed your clean recording through added noise. Which words fail first?
+
+## Success criteria
+
+- [ ] You transcribed the same sentence under three recording conditions
+- [ ] You explained at least one error as a distribution shift, not just “the model is bad”
+- [ ] You printed the video model's expected transforms and top-five labels
+- [ ] You changed temporal evidence while holding visual content as constant as possible
+- [ ] You can state the tensor path for both models from raw media to output
+
+The useful result is not a flattering demo. It is a short failure report: what changed, what the model observed, and why the output moved.

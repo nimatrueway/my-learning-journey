@@ -1,0 +1,12 @@
+{
+  "label": "😼 Deep Learning, No Snoozing",
+  "position": 1,
+  "collapsed": false,
+  "link": {
+    "type": "doc",
+    "id": "intro"
+  },
+  "customProps": {
+    "route": "/courses/deep-learning"
+  }
+}

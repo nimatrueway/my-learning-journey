@@ -15,7 +15,7 @@ WPM=200
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)"
 CHAPTERS_DIR="$SCRIPT_DIR/chapters"
-OUTPUT_DIR="$REPO_ROOT/docs/courses/books/$MODULE_DIR"
+OUTPUT_DIR="$REPO_ROOT/docs/books/$MODULE_DIR"
 OUTPUT_FILE="$OUTPUT_DIR/$BOOK_SLUG.md"
 
 if ! compgen -G "$CHAPTERS_DIR/*.md" > /dev/null; then

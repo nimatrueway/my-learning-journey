@@ -1,0 +1,198 @@
+---
+slug: /courses/deep-learning/module-8/mini-project
+title: "🛠 Mini-project: train a tiny translator and read its cross-attention"
+description: "Build, train, and decode a real encoder-decoder transformer on a toy task small enough to finish on a laptop — then look at what it attended to."
+---
+
+import Meme from '@site/src/components/Meme';
+
+# 🛠 Mini-project: train a tiny translator and read its cross-attention ⏱️ ~40 min
+
+<Meme quote="In theory there is no difference between theory and practice. In practice there is." author="attributed to Yogi Berra and Jan L. A. van de Snepscheut — your padding mask will prove it" />
+
+## The mission
+
+Train an encoder–decoder transformer to normalize messy dates into ISO format, then extract the cross-attention weights and check whether the model looks where you would look.
+
+```text
+"3rd of march, 2019"   →   "2019-03-03"
+"march 3 2019"         →   "2019-03-03"
+"03/03/19"             →   "2019-03-03"
+```
+
+This is the classic small seq2seq task: the mapping is real (it reorders, translates words to numbers, and changes length), but the vocabulary is tiny and the dataset is free. It trains on CPU in a couple of minutes.
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install torch
+```
+
+## Part 1: generate data and vocabularies
+
+```python
+import random, torch, torch.nn as nn
+
+MONTHS = ["january", "february", "march", "april", "may", "june",
+          "july", "august", "september", "october", "november", "december"]
+
+def example(rng):
+    year, month, day = rng.randint(1990, 2025), rng.randint(1, 12), rng.randint(1, 28)
+    name = MONTHS[month - 1]
+    source = rng.choice([
+        f"{name} {day} {year}",
+        f"{day} {name} {year}",
+        f"{day}/{month}/{year}",
+        f"{day}{['st','nd','rd'][day % 10 - 1] if day % 10 in (1,2,3) and day not in (11,12,13) else 'th'} of {name}, {year}",
+    ])
+    return source, f"{year:04d}-{month:02d}-{day:02d}"
+
+rng = random.Random(0)
+data = [example(rng) for _ in range(20000)]
+
+PAD, BOS, EOS = 0, 1, 2
+src_chars = sorted({c for s, _ in data for c in s})
+src_index = {c: i + 1 for i, c in enumerate(src_chars)}            # 0 = <pad>
+tgt_chars = sorted({c for _, t in data for c in t})
+tgt_index = {c: i + 3 for i, c in enumerate(tgt_chars)}            # 0,1,2 reserved
+tgt_token = {i: c for c, i in tgt_index.items()}
+print(len(src_index) + 1, len(tgt_index) + 3)   # source and target vocab sizes
+```
+
+Hold on to the split vocabularies. Source and target do **not** share an alphabet here, which is precisely the situation the encoder–decoder shape exists for.
+
+## Part 2: batching, with the mask that everyone forgets
+
+```python
+SRC_LEN, TGT_LEN = 24, 11   # "2019-03-03" is 10 chars + <eos>
+
+def encode_batch(pairs):
+    src = torch.zeros(len(pairs), SRC_LEN, dtype=torch.long)
+    tgt = torch.zeros(len(pairs), TGT_LEN + 1, dtype=torch.long)
+    for row, (source, target) in enumerate(pairs):
+        ids = [src_index[c] for c in source][:SRC_LEN]
+        src[row, :len(ids)] = torch.tensor(ids)
+        out = [BOS] + [tgt_index[c] for c in target] + [EOS]
+        tgt[row, :len(out)] = torch.tensor(out)
+    return src, tgt[:, :-1], tgt[:, 1:], src == PAD   # source, decoder input, labels, pad mask
+```
+
+`tgt[:, :-1]` is the teacher-forced decoder input and `tgt[:, 1:]` is what it must predict — the "shift right" from lesson 8.1, in one slice each.
+
+## Part 3: the model
+
+```python
+class TinySeq2Seq(nn.Module):
+    def __init__(self, src_vocab, tgt_vocab, d_model=64, nhead=4, layers=2):
+        super().__init__()
+        self.src_embed = nn.Embedding(src_vocab, d_model, padding_idx=PAD)
+        self.tgt_embed = nn.Embedding(tgt_vocab, d_model, padding_idx=PAD)
+        self.positions = nn.Parameter(torch.zeros(1, max(SRC_LEN, TGT_LEN + 1), d_model))
+        self.transformer = nn.Transformer(
+            d_model=d_model, nhead=nhead,
+            num_encoder_layers=layers, num_decoder_layers=layers,
+            dim_feedforward=4 * d_model, dropout=0.1, batch_first=True,
+        )
+        self.project = nn.Linear(d_model, tgt_vocab)
+
+    def forward(self, src, tgt_in, src_pad):
+        source = self.src_embed(src) + self.positions[:, :src.size(1)]
+        target = self.tgt_embed(tgt_in) + self.positions[:, :tgt_in.size(1)]
+        causal = nn.Transformer.generate_square_subsequent_mask(tgt_in.size(1), device=src.device)
+        hidden = self.transformer(
+            source, target,
+            tgt_mask=causal,                 # decoder self-attention: no peeking ahead
+            src_key_padding_mask=src_pad,    # encoder self-attention: ignore <pad>
+            memory_key_padding_mask=src_pad, # cross-attention: ignore <pad>
+        )
+        return self.project(hidden)
+```
+
+Three masks, three jobs — exactly the three rows of the table in lesson 8.2. Delete any one of them and the model still trains; it just learns something slightly wrong.
+
+## Part 4: train
+
+```python
+device = "mps" if torch.backends.mps.is_available() else "cpu"
+model = TinySeq2Seq(len(src_index) + 1, len(tgt_index) + 3).to(device)
+optimizer = torch.optim.AdamW(model.parameters(), lr=3e-4)
+loss_fn = nn.CrossEntropyLoss(ignore_index=PAD)
+
+train, valid = data[:18000], data[18000:]
+for step in range(3000):
+    batch = rng.sample(train, 64)
+    src, tgt_in, labels, src_pad = (t.to(device) for t in encode_batch(batch))
+    logits = model(src, tgt_in, src_pad)
+    loss = loss_fn(logits.reshape(-1, logits.size(-1)), labels.reshape(-1))
+    optimizer.zero_grad(); loss.backward(); optimizer.step()
+    if step % 250 == 0:
+        print(step, round(loss.item(), 4))
+```
+
+Before the full run, do the ritual from lesson 3.5: train on **one batch of 8** for 300 steps and confirm the loss approaches zero. If a model cannot memorize eight dates, the bug is in your masks or your shift, not in your learning rate.
+
+## Part 5: decode greedily and score it
+
+```python
+@torch.no_grad()
+def translate(source):
+    src, _, _, src_pad = (t.to(device) for t in encode_batch([(source, "1990-01-01")]))
+    tokens = torch.tensor([[BOS]], device=device)
+    for _ in range(TGT_LEN):
+        logits = model(src, tokens, src_pad)
+        nxt = logits[:, -1].argmax(-1, keepdim=True)
+        if nxt.item() == EOS: break
+        tokens = torch.cat([tokens, nxt], dim=1)
+    return "".join(tgt_token[i] for i in tokens[0, 1:].tolist())
+
+model.eval()
+correct = sum(translate(s) == t for s, t in valid[:300])
+print(f"exact match: {correct / 300:.1%}")
+print(translate("7th of august, 2004"))
+```
+
+Exact match is the only honest metric here: a date that is one character wrong is entirely wrong. Expect well above 95% after 3000 steps; if you are stuck near 60%, look at *which* format fails — usually the numeric `d/m/Y` one, where the model must infer the convention from position alone.
+
+## Part 6: look at the cross-attention
+
+`nn.Transformer` skips computing attention weights for speed, so ask the last decoder layer to recompute them:
+
+```python
+captured = {}
+
+def capture(module, args, kwargs, output):
+    query, key, value = args[0], args[1], args[2]
+    with torch.no_grad():
+        _, weights = module(query, key, value, need_weights=True,
+                            key_padding_mask=kwargs.get("key_padding_mask"))
+    captured["weights"] = weights          # [batch, target_len, source_len]
+
+model.transformer.decoder.layers[-1].multihead_attn.register_forward_hook(capture, with_kwargs=True)
+
+source = "3rd of march, 2019"
+prediction = translate(source)
+weights = captured["weights"][0]
+for position, character in enumerate(prediction):
+    looked_at = weights[position].argmax().item()
+    print(f"output '{character}'  ←  source '{source[looked_at] if looked_at < len(source) else '<pad>'}'")
+```
+
+Read the output as a question, not a verdict: when the model writes the month digits `0` and `3`, is it looking at the word **march**? When it writes the year, does it find `2019`? Lesson 8.2's caveat applies — attention shows what was read, not what was decisive — but a model that emits a correct month while staring at a comma is telling you something worth chasing.
+
+## Break it on purpose
+
+- Remove `memory_key_padding_mask` and retrain. Does accuracy drop, and do the alignments start pointing at padding?
+- Remove `tgt_mask` (the causal mask). Training loss will fall much faster — explain why that number is now a lie, and check what greedy decoding does.
+- Add a format the model never saw, such as `"2019.03.03"`. What does it produce, and where does it look?
+- Shrink `d_model` to 16. Which format breaks first?
+- Swap greedy decoding for beam search with width 3 and measure exact match. On a task with one right answer, does it help?
+
+## Success criteria
+
+- [ ] Your model exceeds 95% exact match on held-out dates
+- [ ] You overfit a single batch before the full training run
+- [ ] You can name what each of the three masks protects against
+- [ ] You printed a cross-attention alignment and judged whether it is plausible
+- [ ] You broke at least two things on purpose and explained the resulting behavior
+
+You now have a complete encoder–decoder in under 60 lines of model code: an encoder that reads, a decoder that writes, cross-attention connecting them, and a decoding loop on top. Whisper and NLLB are this, with more layers, more data, and a much larger electricity bill.

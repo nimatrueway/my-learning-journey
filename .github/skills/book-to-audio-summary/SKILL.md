@@ -1,12 +1,12 @@
 ---
 name: book-to-audio-summary
-description: 'Turn an epub, PDF, or text book into a detailed chapter-by-chapter, TTS-friendly summary published in this repository’s Docusaurus Books course. Use when asked to summarize a book or add a book summary to docs/courses/books.'
+description: 'Turn an epub, PDF, or text book into a detailed chapter-by-chapter, TTS-friendly summary published in this repository’s Docusaurus Books course. Use when asked to summarize a book or add a book summary to docs/books.'
 ---
 
 # Book to Audio Summary
 
 Create a self-contained book reference page that matches the existing summaries in
-`docs/courses/books/`. The published result is one Markdown document per book,
+`docs/books/`. The published result is one Markdown document per book,
 not a directory of chapter pages.
 
 ## Repository contract
@@ -15,7 +15,7 @@ not a directory of chapter pages.
    for the site's visual theme, navigation, and verification requirements. Apply
    their book/reference-page exceptions: preserve TTS-friendly prose, without
    importing the technical courses' cat memes, emoji signposts, or quiz template.
-- Publish books at `docs/courses/books/NN-subject/<book-slug>.md`.
+- Publish books at `docs/books/NN-subject/<book-slug>.md`.
 - Group books by author or a coherent subject. Reuse an existing module when it
    fits; otherwise create the next numbered module and its `_category_.json`.
 - A module category uses a generated index so every book remains visible:
@@ -78,7 +78,7 @@ not a directory of chapter pages.
    altered module numbers, sidebar positions, catalog counts, or totals.
 
 2. **Verify the source and destination first.** Confirm the exact book path,
-    inspect `docs/courses/books/intro.md`, and inspect the likely module's
+   inspect `docs/books/intro.md`, and inspect the likely module's
     `_category_.json` and summaries. Do not assume a path, module, route, or
     sidebar position.
 
@@ -135,7 +135,7 @@ not a directory of chapter pages.
 
 8. **Assemble one Docusaurus document.** Copy and configure
     [merge_chapters.sh](./scripts/merge_chapters.sh) in the book's cache folder,
-    then run it to write the final page into `docs/courses/books/NN-subject/`.
+   then run it to write the final page into `docs/books/NN-subject/`.
     Review the assembled result for narrative continuity. Do not publish the
     temporary chapter files or merge script.
 
@@ -149,7 +149,7 @@ not a directory of chapter pages.
 
 10. **Update repository navigation and totals.**
     - Add or update the module `_category_.json` when needed.
-    - Add the book under its module in `docs/courses/books/intro.md`.
+   - Add the book under its module in `docs/books/intro.md`.
     - After the prose is complete, calculate its descriptive reading time at
        approximately 200 wpm, then recalculate its module total and the Books
        course total from the same word counts. Reading time reports length; it

@@ -29,6 +29,11 @@ deployed.
 
 ## Add a course
 
+The source folders mirror the Contents navigation: `docs/courses/`, `docs/books/`,
+and `docs/calculator/` are siblings, with `docs/index.mdx` as the Contents page.
+Books and Calculator retain their existing `/courses/books/...` and
+`/courses/calculator/...` public URLs through explicit slugs.
+
 1. Create `docs/courses/<course-slug>/intro.md`.
 2. Add `_category_.json` in that directory with its label, position, and intro
    document ID.
