@@ -5,60 +5,153 @@ description: "Inspect real audiovisual tensor shapes, run pretrained inference, 
 ---
 
 import Meme from '@site/src/components/Meme';
+import Quiz from '@site/src/components/Quiz';
 
-# 🛠 Mini-project: run pretrained audio and video models ⏱️ ~30 min
+# 🛠 Mini-project: run pretrained audio and video models
 
-<Meme quote="What I cannot create, I do not understand." author="Richard Feynman — inference counts as the first date, not the marriage" />
+Your model prints a confident label. Did it use the voice, the motion, or just a familiar-looking background? Today you are the tester, not the model's publicist.
+
+⏱️ **Reading + lab: ~31 min** · includes 25 minutes of recording and experiments; installation, model downloads, and optional depth are extra.
+
+<Meme top="The cat froze all sixteen frames to save on acting." visual="🐱📽️" bottom="The classifier still guessed an action. Time to inspect the evidence." />
 
 ## The mission
 
-Run one pretrained speech recognizer and one pretrained action classifier. Then deliberately change the input conditions and inspect what fails. You are not training giant media models on a laptop; you are learning their contracts.
+Run a speech recognizer on your own short recording and an action classifier on your own short video. Change one input condition at a time, predict what should happen, then compare. An unchanged result is evidence too; this is not a contest to make every perturbation break the model.
+
+Use a supported Python version such as 3.11 or 3.12 in a fresh environment. These examples run on CPU, including on a Mac; they do not require CUDA or MPS. Allow internet access and disk space for packages and pretrained weights. Inference can take longer on a laptop.
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install torch torchvision transformers librosa soundfile av
+python -m pip install torch torchvision torchaudio transformers librosa soundfile av
 ```
 
-## Part 1: transcribe three recordings
+## Part 1: keep the words fixed
 
-Use the Whisper pipeline from lesson 7.1 with three WAV files containing the same sentence:
+Make three genuine WAV files in your working directory, each about five seconds long. Say **“Please put the blue cup beside the window.”** in each. Export as WAV from your recorder; renaming an M4A file does not convert it.
 
-1. Clean, close-microphone speech
-2. Speech from across the room
-3. Speech with background sound
+1. `clean.wav`: close to the microphone, quiet room.
+2. `far.wav`: across the room, otherwise similar conditions.
+3. `noise.wav`: close again, with quiet background sound.
 
-Record the transcript and count substitutions, insertions, and missing words. Keep the sentence fixed so recording conditions are the changed variable.
+Use your own voice, with no private conversations in the background. These separate takes are a small exploratory comparison, not a controlled benchmark: delivery can change as well as microphone conditions. Keep the sentence and speaking pace consistent.
 
-## Part 2: inspect a video model's contract
+Run this as `transcribe.py`:
 
 ```python
+import soundfile as sf
+from transformers import pipeline
+
+transcribe = pipeline(
+    "automatic-speech-recognition",
+    model="openai/whisper-tiny.en",
+    device=-1,
+)
+
+for filename in ["clean.wav", "far.wav", "noise.wav"]:
+    samples, sample_rate = sf.read(filename, dtype="float32")
+    if samples.ndim == 2:
+        samples = samples.mean(axis=1)
+    if samples.size == 0:
+        raise ValueError(f"Empty recording: {filename}")
+    result = transcribe({"raw": samples, "sampling_rate": sample_rate})
+    print(filename, repr(result["text"]))
+```
+
+The dictionary carries the actual sample rate with the samples. The pipeline uses `torchaudio` to resample when necessary. Do not manually relabel a 48 kHz recording as 16 kHz.
+
+Compare each transcript with the eight-word reference, ignoring capitalization and punctuation consistently. Count substituted, deleted, and inserted words; divide their total by eight for word error rate. This tiny score describes these takes only. Write the actual error alongside it: losing “blue” matters differently from adding a polite filler.
+
+## Part 2: show the model a real action
+
+Record a **landscape clip at least two seconds long**, ideally at 30 fps, with the action underway from the beginning. Use an ordinary action such as clapping or waving; put it in `action.mp4`. Keep the person large enough to survive the center crop. R3D predicts one of 400 Kinetics action classes, not an arbitrary description of everything in your video.
+
+Run this as `classify_video.py`. The loader chooses sixteen frames near timestamps spaced 1/15 second apart, using frame timestamps rather than assuming the camera's nominal rate. This short, approximately 15 fps input follows the [pretrained recipe](https://docs.pytorch.org/vision/stable/models/generated/torchvision.models.video.r3d_18.html) more closely than taking sixteen arbitrary consecutive frames from any camera. It is a single-clip experiment, not the original multi-clip benchmark protocol.
+
+```python
+import av
 import torch
 from torchvision.models.video import R3D_18_Weights, r3d_18
+
+def load_clip(filename):
+    frames = []
+    timestamps = []
+    start_time = None
+    with av.open(filename) as container:
+        for frame in container.decode(video=0):
+            if frame.time is None:
+                raise ValueError("Video has no usable frame timestamps")
+            if start_time is None:
+                start_time = frame.time
+            elapsed = frame.time - start_time
+            frames.append(torch.from_numpy(frame.to_ndarray(format="rgb24")))
+            timestamps.append(elapsed)
+            if elapsed >= 1.1:
+                break
+    if not timestamps or timestamps[-1] < 1.0:
+        raise ValueError("Need at least one second of decoded video")
+    targets = torch.arange(16, dtype=torch.float64) / 15
+    times = torch.tensor(timestamps, dtype=torch.float64)
+    nearest = (times[:, None] - targets[None, :]).abs().argmin(dim=0)
+    if nearest.unique().numel() != 16:
+        raise ValueError("Too few distinct frames; record at 30 fps")
+    selected = torch.stack([frames[index] for index in nearest.tolist()])
+    return selected.permute(0, 3, 1, 2)
 
 weights = R3D_18_Weights.DEFAULT
 model = r3d_18(weights=weights).eval()
 print(weights.transforms())
-print(weights.meta["categories"][:5])
+frames = load_clip("action.mp4")
+assert frames.shape[:2] == (16, 3)
+assert frames.dtype == torch.uint8
 
-clip = torch.rand(3, 16, 128, 171)  # C, T, H, W
-batch = weights.transforms()(clip).unsqueeze(0)
-
-with torch.inference_mode():
-    scores = model(batch).softmax(dim=1)[0]
-
-for probability, index in zip(*scores.topk(5)):
-    print(f"{weights.meta['categories'][index]}: {probability:.1%}")
+variants = {
+    "normal": frames,
+    "reversed": frames.flip(0),
+    "frozen": frames[8:9].repeat(16, 1, 1, 1),
+}
+for name, selected in variants.items():
+    batch = weights.transforms()(selected).unsqueeze(0)
+    assert batch.shape == (1, 3, 16, 112, 112)
+    with torch.inference_mode():
+        scores = model(batch).softmax(dim=1)[0]
+    probabilities, indices = scores.topk(5)
+    print(f"\n{name}: {tuple(selected.shape)} -> {tuple(batch.shape)}")
+    for probability, class_index in zip(probabilities.tolist(), indices.tolist()):
+        print(f"{weights.meta['categories'][class_index]}: {probability:.1%}")
 ```
 
-Random pixels produce meaningless labels, but the exercise proves the input path and exposes the expected shape and transforms. Replace `clip` with 16 decoded frames from a short video, stacked as `[C, T, H, W]`. Keep values in `[0, 1]`; the weights transform handles resizing, cropping, and normalization.
+The important boundary is **decoded `[T,H,W,C]` → transform input `[T,C,H,W]` → model input `[B,C,T,H,W]`**. Decoded RGB frames are `uint8` values from 0 to 255; the weights transform scales these to floating point, resizes, center-crops, normalizes, and reorders the axes. If you instead supply floating-point frames, use values from 0 to 1 before normalization.
 
-## Break it on purpose
+## 🧪 Predict, then perturb
 
-- Reverse the frame order. Does the ranking change for a directional action?
-- Repeat one frame 16 times. Which appearance-based guesses remain?
-- Sample a fast action sparsely. At what point does the motion disappear?
-- Feed your clean recording through added noise. Which words fail first?
+The script prints three rankings for the **same selected frames**:
+
+| Input | What you removed or changed | What to inspect |
+|---|---|---|
+| Normal | Nothing | Is the action among the top five? |
+| Reversed | Temporal direction | Do labels or scores change? |
+| Frozen | Motion and most frame variation | Does an appearance-based guess survive? |
+
+Before reading the results, predict which comparison should matter for your clip. Reversing clapping or another repeated action may preserve its class. Opening and closing are directional, but this classifier might not have your desired pair of labels. Inspect its available categories before interpreting an absent label as a failure.
+
+A high softmax score is relative to these 400 classes, not a calibrated guarantee of truth. If all three rankings match, the action may be order-insensitive, the background may dominate, or this model may not use the distinguishing movement. **One unchanged clip cannot tell those explanations apart.** Try a second clip that separates them.
+
+<details>
+<summary>🤓 When the input contract fails (optional)</summary>
+
+- Missing file: run the script from the directory containing your recordings.
+- Too few distinct frames: use a longer, higher-rate clip rather than silently duplicating frames.
+- Unexpected channel or time dimension: print the shape before the transform; it expects `[T,C,H,W]`, not `[C,T,H,W]`.
+- Implausible labels: check the class list, crop, timing, and lighting before blaming model size.
+- Audio imports fail: use a clean environment with compatible current PyTorch and Transformers packages; keep torch, torchvision, and torchaudio matched.
+
+</details>
+
+## Your four-line failure report
+
+Write: **input condition**, **prediction before testing**, **observed output**, and **next test that distinguishes two explanations**. For example: “Frozen frames still ranked clapping first; perhaps appearance dominates, or the selected pose is diagnostic. Next I will compare a similar pose without a clapping action.” This is an illustrative report, not a promised model result.
 
 ## Success criteria
 
@@ -68,4 +161,14 @@ Random pixels produce meaningless labels, but the exercise proves the input path
 - [ ] You changed temporal evidence while holding visual content as constant as possible
 - [ ] You can state the tensor path for both models from raw media to output
 
-The useful result is not a flattering demo. It is a short failure report: what changed, what the model observed, and why the output moved.
+## 🐾 Three things to keep
+
+- Preserve input meaning: waveform sample rates and video axis order are part of the model contract.
+- Change one kind of evidence at a time and keep both your prediction and observed result.
+- A changed score shows sensitivity; an unchanged score needs follow-up, not an invented explanation.
+
+<Quiz question="The frozen clip keeps the same top label as the normal clip. What can you conclude?" options={[
+    {text: 'The model definitely ignores motion in every video.', feedback: 'One clip cannot establish that. Its action may be recognizable from appearance or insensitive to temporal order.'},
+    {text: 'The top label survived this perturbation; I need another test to learn why.', correct: true, feedback: 'Exactly. Compare scores and a second, discriminating clip. The cat has one observation, not a universal theory of cinema.'},
+    {text: 'The frozen clip proves preprocessing is correct.', feedback: 'A plausible label can survive broken preprocessing. Check shapes, value ranges, crop, and timestamps independently.'},
+]} />

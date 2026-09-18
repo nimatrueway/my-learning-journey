@@ -7,14 +7,22 @@ import Meme from '@site/src/components/Meme';
 
 # Module 7 — Audio & Video Models 🎧🎬
 
-<Meme quote="The medium is the message." author="Marshall McLuhan — the tensor shape is part of the message too" />
+You already know how networks learn from images and sequences. Now give one a recording of “feed the cat” and a video of a door opening. What survives the trip from a media file to a tensor? What gets lost before the model even runs?
 
-Text is only one kind of sequence. In this module, sound becomes a picture of frequency over time, video becomes image patches moving through time, and familiar encoders and transformers do the learning.
+<Meme top="The cat applied for both sound engineer and film editor." visual="🐱🎧🎬" bottom="First assignment: stop treating every input as a JPEG." />
+
+The through-line is **evidence → representation → prediction → test**. Audio needs a correct clock and useful frequency features. Video needs useful moments in the right order. Neither a fluent transcript nor a confident label proves that the pipeline is correct.
+
+⏱️ **~52 min total** · reading, interactive practice, and lab; optional folds, installation, and model downloads are extra.
 
 ## Lessons
 
-1. [Audio models: from waveforms to words](/courses/deep-learning/module-7/lesson-1-audio-models) — ~6 min
-2. [Video models: teaching an image model about time](/courses/deep-learning/module-7/lesson-2-video-models) — ~6 min
-3. [🛠 Mini-project: run pretrained audio and video models](/courses/deep-learning/module-7/mini-project) — ~30 min
+1. [Audio models: from waveforms to words](/courses/deep-learning/module-7/lesson-1-audio-models) — ~10 min. Trace a waveform into features, distinguish patches from words, and count a transcription error.
+2. [Video models: teaching an image model about time](/courses/deep-learning/module-7/lesson-2-video-models) — ~11 min. Reverse a door-opening sequence, budget tokens, and identify what sparse sampling hides.
+3. [🛠 Mini-project: run pretrained audio and video models](/courses/deep-learning/module-7/mini-project) — ~31 min. Load your own media and compare normal, reversed, and frozen clips without overclaiming what a score proves.
+
+## Bring what you already know
+
+You need the [image and convolution intuition from Module 4](/courses/deep-learning/module-4/) and the [attention intuition from Module 5](/courses/deep-learning/module-5/). No signal-processing background is assumed. The lessons' widgets and paper exercises need only a browser; the project needs Python and short recordings you can use with permission.
 
 Whisper appears here as a transcription tool; [Module 8](/courses/deep-learning/module-8/) opens it up and explains the encoder–decoder shape that makes it work.

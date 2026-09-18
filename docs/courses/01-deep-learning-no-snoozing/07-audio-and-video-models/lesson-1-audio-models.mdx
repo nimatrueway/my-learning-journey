@@ -8,66 +8,86 @@ import MediaTokenViz from '@site/src/components/MediaTokenViz';
 import Meme from '@site/src/components/Meme';
 import Quiz from '@site/src/components/Quiz';
 
-# 7.1 — Audio models: from waveforms to words ⏱️ ~6 min
+# 7.1 — Audio models: from waveforms to words
 
-<Meme quote="If you wish to understand the universe, think of energy, frequency and vibration." author="Often attributed to Nikola Tesla — audio engineers mostly think about tensor shapes" />
+You say “feed the cat.” A cupboard slams halfway through. Your recording contains one mixed signal, not neat tracks labelled `words`, `cat`, and `cupboard`.
 
-## The hook
+⏱️ **Reading + practice: ~10 min** · includes 4 minutes for the widget, exercise, and quiz; optional depth is extra.
 
-A microphone records one number after another: air pressure, sampled perhaps 16,000 times every second. Four seconds of speech is therefore 64,000 values. Where are the words? The speaker? The slammed door in the background?
+<Meme top="The cat heard feed in a recording of feedback." visual="🐱🎤" bottom="Excellent appetite. Terrible word boundaries." />
 
-They are not separate fields. They are overlapping patterns at different frequencies and times. An audio model's first job is to turn that long, twitchy waveform into a representation where those patterns are easier to learn.
+How does a speech model find words in that mixture? Follow three steps: **measure the vibration, summarize short moments, predict text**. None of those steps discovers a ready-made word hidden in the file.
 
-## Turn sound into patches 🎮
+## 1. A waveform is a pressure diary
 
-Most modern speech models convert a waveform into a **spectrogram**: horizontal position is time, vertical position is frequency, and brightness is energy. It behaves enough like an image that we can divide it into patches, project each patch into an embedding, and send the resulting sequence through a transformer.
+A microphone turns changes in air pressure into a changing electrical signal. A recorder samples that signal: at **16 kHz**, it stores 16,000 amplitude measurements per second, per channel. Four seconds of mono audio contain 64,000 numbers.
+
+One sample is not a letter or a pitch. Pitch emerges from a repeating pattern across samples; speech emerges from patterns changing over time. Louder sound usually means larger amplitude, not more samples. A stereo recording has two channels, not twice the duration.
+
+**Sample rate is the clock attached to those numbers.** Treating 48,000 samples as 16 kHz makes one second play for three seconds, at a lower pitch. Resampling computes a new sequence on a new clock; merely changing the label corrupts the input.
+
+## 2. Ask which frequencies are present right now
+
+A **spectrogram** summarizes many short, overlapping waveform windows. Horizontal position is time, vertical position is frequency, and brightness indicates energy. It is a measurement, not a photograph of sound.
+
+Imagine a steady whistle followed by a clap. The whistle makes a roughly horizontal bright band: similar frequency, sustained over time. The clap makes a brief vertical burst: many frequencies at one moment. Speech combines moving bands and short bursts. The cupboard slam overlaps them; converting to a spectrogram does not remove it.
+
+A **log-Mel spectrogram** groups frequencies into perceptually motivated bands and compresses the energy range. Now the model sees a manageable table of features. There are still no words, only evidence from which words might be inferred.
+
+## 🧪 Give the audio engineer a token budget
+
+Some audio transformers divide spectrograms into rectangular **patches** and turn each patch into an embedding vector, just as a vision transformer does with images. A patch can cover several moments and frequency bands; it is not a text token.
+
+The calculator below models that design with 80 frequency bands and 100 time steps per second. It is a **toy patch budget, not Whisper's architecture**. Its colored cells are schematic, not a measured recording.
 
 <MediaTokenViz initialMode="audio" />
 
-**Things to try:**
+Start at **4 seconds, 16×16 patches**. Predict before moving anything:
 
-1. Double the clip length. Token count doubles, but full-attention comparisons grow by roughly four times because attention costs $O(n^2)$.
-2. Increase patch size. The sequence gets cheaper, but each token smears more time and frequency together.
-3. Switch to video for a preview of the next lesson. A few seconds can explode into tens of thousands of tokens.
+1. There are 400 time steps and 80 bands: $25 \times 5 = 125$ patches, not 64,000 waveform tokens.
+2. Move to **8 seconds**. There are 250 patches and 62,500 token pairs instead of 15,625: twice the sequence, four times the full-attention comparisons.
+3. Return to **4 seconds** and choose **8×8 patches**. There are 500 patches and 250,000 pairs. Halving both patch dimensions gives four times as many tokens and sixteen times as many pairs.
 
-That tradeoff is real. Fine time resolution helps distinguish quick sounds such as `t` and `k`; fine frequency resolution helps separate tones. Smaller patches preserve detail but demand more memory and compute.
+Those are pair counts per attention head per layer, not seconds of runtime or total model memory. Larger patches give the encoder a coarser grouping of evidence; they do not literally blur the input, and more tokens do not guarantee more accurate transcripts. The question is whether the representation preserves the distinctions your task needs.
 
 ## Three useful families
 
 Audio models differ mostly in what they consume and what they must emit.
 
-**Audio classifiers** map a clip to one or more labels: dog bark, siren, music genre, speaker identity. An encoder compresses the sequence, then a classification head reads a pooled representation. This is the same pattern as the cat classifier in Module 4, with spectrogram patches instead of pixels.
+**Classification asks “what happened?”** A sound-event classifier might label the same recording as speech plus an impact. An encoder builds features; a classification head reads a summary and predicts labels. This resembles the image classifier in Module 4, but with audio features as its input. An event label is not a transcript.
 
-**Speech recognizers** map a long audio sequence to a shorter text sequence. Encoder-only systems often use **CTC loss**, which learns alignments without requiring every transcript character to be timestamped. Encoder-decoder systems such as Whisper encode audio patches, then autoregressively decode text tokens. Cross-attention lets each generated word look back at the relevant moments in the recording.
+**Transcription asks “what was said?”** Whisper takes log-Mel features through two convolutional layers, which mix nearby information and reduce the time-axis length, then a transformer encoder. A text decoder generates subword tokens, using the encoded audio as context. It does **not** use the rectangular patch grid above. Module 8 explains [how the decoder consults the encoder](/courses/deep-learning/module-8/lesson-2-cross-attention).
 
-**Audio generators** predict waveforms, spectrograms, or compressed audio tokens. Neural codecs first turn sound into discrete codes, much as a text tokenizer turns prose into token IDs. A transformer predicts those codes; a decoder turns them back into sound. Text-to-speech, music generation, and voice conversion use variations of this recipe.
-
-<Meme top="raw audio: 64,000 mysterious numbers" visual="〰️🎤〰️" bottom="spectrogram: ah, the mystery has rows and columns now" />
+**Generation asks “what should it sound like?”** Some systems predict compressed audio codes produced by a neural codec; its decoder turns those codes into a waveform. These codes represent sound, not spelling. Other generators predict spectrograms or use diffusion. “Transformer” alone does not tell you the input representation or output task.
 
 ## Tiny example: speech recognition
 
-The high-level API hides preprocessing, model inference, and text decoding, but the conceptual pipeline is exactly the one above:
+Use a short English recording you made yourself. The [mini-project](/courses/deep-learning/module-7/mini-project) provides installation and file preparation. Passing samples together with their actual rate avoids relying on an external command-line audio decoder:
 
 ```python
 from transformers import pipeline
+import soundfile as sf
 
 transcribe = pipeline(
     task="automatic-speech-recognition",
     model="openai/whisper-tiny.en",
 )
 
-result = transcribe("meeting.wav")
+samples, sample_rate = sf.read("clean.wav", dtype="float32")
+if samples.ndim == 2:
+  samples = samples.mean(axis=1)
+result = transcribe({"raw": samples, "sampling_rate": sample_rate})
 print(result["text"])
 ```
 
 Underneath that call:
 
 ```text
-waveform → log-Mel spectrogram → patch embeddings → transformer encoder
+waveform + sample rate → log-Mel spectrogram → convolutions → transformer encoder
          → text-token decoder → transcript
 ```
 
-The model does not literally hear words. It learns statistical links between sound patterns and token sequences from paired audio and transcripts.
+The pipeline can resample when needed; the rate you supply must describe the samples you actually loaded. `tiny.en` is English-only. The first run downloads model weights. The result is a prediction, not evidence that those exact words were spoken: recognizers can invent plausible text on silence or noise.
 
 ## What breaks in practice
 
@@ -86,15 +106,26 @@ The result is not a perfect account of sound, and phase information is usually d
 
 </details>
 
-## Try it yourself
+## 🧪 Try it yourself: audit one missing snack
 
-Record the same sentence three times: close to the microphone, across the room, and with music playing. Run the tiny Whisper example on each. Write down substitutions, deletions, and insertions rather than judging the transcript as vaguely “good” or “bad.” You are performing a tiny distribution-shift evaluation.
+Reference: `please feed the cat now`. Prediction: `please feed a cat`.
 
-## Recap 📌
+Before opening the answer, count substitutions, deletions, and insertions. Which error would matter most if this were a voice command? That second question needs task context, not just a score.
 
-- Audio models usually transform waveforms into time-frequency features or learned audio tokens
-- Classification uses an encoder and head; transcription often uses CTC or an encoder-decoder transformer
-- Longer, finer-grained audio preserves detail but increases token count, compute, and evaluation burden
+<details>
+<summary>Check your error count</summary>
+
+`the` became `a`: one substitution. `now` disappeared: one deletion. Nothing was inserted. Word error rate is $(1 + 1 + 0) / 5 = 40\%$. Normalize capitalization and punctuation consistently before comparing real transcripts. One tiny sentence is a debugging example, not a reliable benchmark.
+
+</details>
+
+Then sketch the three stages from recording to text without using the phrase “the AI hears it.” If you can explain where the sample rate belongs, you have the crucial input contract.
+
+## 🐾 Three things to keep
+
+- A waveform needs its correct sample rate; a spectrogram describes frequency energy over time, not words.
+- Match the representation to the model: patch-based audio encoders and Whisper's convolutional frontend are different designs.
+- Judge outputs against a reference and recording conditions; fluent text can still be wrong.
 
 ## Quiz
 
@@ -102,7 +133,7 @@ Record the same sentence three times: close to the microphone, across the room, 
   question="Why not feed every 16 kHz waveform sample directly into a standard full-attention transformer?"
   options={[
     {text: 'Waveforms contain no learnable patterns', feedback: "They contain all the patterns — arguably too many tiny steps. The problem is sequence length and representation, not missing information. Try again."},
-    {text: 'The sequence is extremely long, so full attention becomes expensive; time-frequency features or learned compression shorten it', correct: true, feedback: "Exactly. Representation is computational leverage: preserve useful structure while giving attention far fewer positions to compare."},
+    {text: 'The sequence is extremely long, so full attention becomes expensive; time-frequency features or learned compression shorten it', correct: true, feedback: "Exactly: fewer positions make attention cheaper while preserving useful evidence. The cat needs a transcript, not a meeting with all 64,000 samples."},
     {text: 'Transformers accept text only', feedback: "Transformers accept vectors. Text, image patches, spectrogram patches, and audio codes all become vectors before attention sees them. Try again."},
   ]}
 />

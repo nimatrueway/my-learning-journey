@@ -8,25 +8,47 @@ import MediaTokenViz from '@site/src/components/MediaTokenViz';
 import Meme from '@site/src/components/Meme';
 import Quiz from '@site/src/components/Quiz';
 
-# 7.2 — Video models: teaching an image model about time ⏱️ ~6 min
-
-## The hook
+# 7.2 — Video models: teaching an image model about time
 
 Freeze a video of someone opening a door. One frame may show a hand near a handle. Is the person opening it, closing it, knocking, or merely walking past?
 
+⏱️ **Reading + practice: ~11 min** · includes 4 minutes for the widget, exercise, and quiz; optional depth is extra.
+
+<Meme top="The cat submitted one photo as proof it cleaned the desk." visual="🐱🎬" bottom="The video shows it pushing everything onto the floor." />
+
 An image model sees **what is present**. A video model must also learn **what changed, in which order, and how quickly**. Time is not metadata sprinkled on top; for many actions, time is the label.
 
-## The token avalanche 🎮
+## Same pictures, opposite story
+
+Imagine three frames labelled by door angle:
+
+| Ordered frames | Evidence |
+|---|---|
+| Closed → half-open → open | Opening |
+| Open → half-open → closed | Closing |
+| Half-open → half-open → half-open | A repeated view; no visible movement |
+
+The first two clips contain the **same set of images**. If you independently classify each frame and average the scores, reversing them gives exactly the same average. You discarded the clue that distinguishes the actions. A temporal model can preserve order, but it still needs suitable training to use it.
+
+This also explains a trap: a classifier can recognize “swimming” from a pool without understanding the stroke. Good action accuracy does not, by itself, prove good motion understanding.
+
+## 🧪 The token avalanche
 
 A vision transformer turns one image into patch tokens. Video repeats those spatial patches across sampled frames, then adds temporal position information so “before” and “after” are distinguishable.
 
+Here the assumed frames are 224×224 pixels and each frame is patched independently. This is an attention-budget calculator, not a simulation of an action recognizer; the project uses a 3D CNN instead.
+
 <MediaTokenViz initialMode="video" />
 
-**Things to try:**
+Set **2 seconds, 8 fps, 16×16 patches**. Sixteen frames each contain $14 \times 14 = 196$ patches: **3,136 tokens**. Full attention has **9,834,496 token pairs per head per layer**.
 
-1. Raise frames per second. Fast motion becomes easier to resolve, while token count rises linearly.
-2. Shrink patch size. Small objects survive, but every frame contains many more tokens.
-3. Increase clip length. You gain context, then watch the full-attention pair count become rude.
+Before changing the controls, predict the result:
+
+1. Raise the sampling rate to **16 fps**. Tokens double; pair count quadruples. You keep more moments, not sharper images.
+2. Restore **8 fps**, then choose **8×8 patches**. Tokens quadruple; pair count grows sixteenfold. You keep finer spatial detail, not more moments.
+3. Restore **16×16 patches**, then extend to **4 seconds**. Tokens double again, but now you see a longer event instead of sampling the same event more densely.
+
+These are different ways of spending a budget. For a small hand gesture, spatial detail may matter; for a fast gesture, temporal sampling may matter. Ask which evidence is missing before buying more compute. The calculator counts pairs, not measured GPU memory or latency.
 
 Real systems respond with sparse or factorized attention, temporal pooling, compressed latent tokens, or separate spatial and temporal stages. The goal is not to process every pixel at every instant equally. It is to keep enough evidence for the task.
 
@@ -40,18 +62,21 @@ Real systems respond with sparse or factorized attention, temporal pooling, comp
 
 None is universally best. A short gesture classifier, hour-long video search system, and live robot camera have different latency, context, and memory constraints.
 
-<Meme top="image model: there is a ball" visual="⚽ → 🥅" bottom="video model: and somebody just scored" />
-
 ## Tiny example: the extra dimension
 
-PyTorch video models conventionally receive batches shaped `[batch, channels, frames, height, width]`:
+Torchvision's R3D model receives `[batch, channels, frames, height, width]`, abbreviated `[B, C, T, H, W]`. Its **preprocessing transform** takes a different order: `[T, C, H, W]` for one clip. It resizes, crops, normalizes, and moves channels before time. Print the shapes at the boundary; both orders are four-dimensional, so counting axes is not enough.
+
+This is a shape check, not a meaningful prediction. The project replaces these random frames with decoded video:
 
 ```python
 import torch
-from torchvision.models.video import r3d_18
+from torchvision.models.video import R3D_18_Weights, r3d_18
 
-model = r3d_18(weights="DEFAULT").eval()
-clip = torch.randn(1, 3, 16, 112, 112)
+weights = R3D_18_Weights.DEFAULT
+model = r3d_18(weights=weights).eval()
+frames = torch.rand(16, 3, 128, 171)
+clip = weights.transforms()(frames).unsqueeze(0)
+assert clip.shape == (1, 3, 16, 112, 112)
 
 with torch.inference_mode():
     class_scores = model(clip)
@@ -59,7 +84,7 @@ with torch.inference_mode():
 print(class_scores.shape)  # [1, 400] for Kinetics-400 actions
 ```
 
-Compare this with an image batch: `[batch, channels, height, width]`. That frame axis is the architectural difference in one line. In real inference you must use the resize, crop, normalization, frame count, and frame rate expected by the pretrained weights. A tensor with the right shape but wrong preprocessing can run perfectly and predict nonsense.
+Compare this with an image batch: `[B, C, H, W]`. Here `T=16` means sixteen selected frames, **not sixteen seconds**. The spatial transform cannot know their timestamps and does not choose the sampling rate. That is the loader's job.
 
 ## Sampling is part of the model
 
@@ -70,9 +95,13 @@ Suppose a camera records 30 frames per second but your network consumes 8. Which
 - **Multiple clips** test different moments, then average or pool predictions
 - **Keyframe selection** spends compute where the scene changes
 
-This decision changes what evidence can reach the network. Sampling one frame per second makes a blink effectively invisible; sampling only the first two seconds misses the punchline at the end. Data loading is therefore not neutral plumbing. It defines the model's observable world.
+Suppose a brief event lasts from 0.20 to 0.30 seconds. Sampling at 0, 0.5, and 1.0 seconds misses it completely. At 0.25 seconds you catch it, but one glimpse may still be insufficient to infer direction. More frames help only if they cover the relevant event. Sampling only the first two seconds still misses an action at second nine.
+
+The loader defines what the model can observe. A more powerful network cannot reconstruct evidence your sampling discarded with certainty. The same sixteen frames spread across one second or ten seconds also imply different speeds, even though their tensor shapes match.
 
 ## Beyond action labels
+
+Keep the core path in mind: **decode → sample moments → preprocess → model → task output**. You can change the output task without changing this need to preserve useful temporal evidence.
 
 Video understanding includes action recognition, object tracking, temporal localization (“when did the goal happen?”), captioning, retrieval, and question answering. Systems often combine modalities: visual frames, audio, subtitles, and text queries each become token sequences. Cross-attention or shared embeddings connect them.
 
@@ -81,17 +110,26 @@ Video generation adds another challenge: predict plausible future visual content
 <details>
 <summary>🤓 A rough attention budget (optional)</summary>
 
-For a 224×224 frame with 16×16 patches, each frame yields $14 \times 14 = 196$ tokens. Sixteen frames yield $3,136$ tokens. Full self-attention forms roughly $3,136^2 \approx 9.8$ million token-pair scores in every layer and head group before considering batch size.
+For a 224×224 frame with 16×16 patches, each frame yields $14 \times 14 = 196$ tokens. Sixteen frames yield $3,136$ tokens. Full self-attention forms $3,136^2 = 9,834,496$ token-pair scores per attention head per layer, before multiplying by batch size. Efficient implementations need not materialize that entire matrix, and attention is only part of total model cost.
 
 Halving patch width to 8 creates four times as many spatial tokens, not twice as many. That is why resolution, clip length, and frame rate are product constraints as much as model settings.
 
 </details>
 
-## Try it yourself
+## 🧪 Try it yourself: the missing quarter-second
 
-Choose an action that reverses meaning when played backward: opening versus closing, sitting versus standing, pouring versus un-pouring. Sketch the minimum frame sample that distinguishes the two directions. Then ask what a single-frame classifier would predict. This separates appearance evidence from motion evidence before you touch code.
+A door is closed at 0.00 seconds, half-open at 0.25, open at 0.50, half-open at 0.75, and closed again at 1.00. Sketch the evidence at **1 fps** and **4 fps**, starting at zero. Can both samples support “opened, then closed”?
 
-## Recap 📌
+<details>
+<summary>Check the sampled story</summary>
+
+At 1 fps you keep the two closed endpoints. That is compatible with no movement at all. At 4 fps you retain all five states and both directions. Reversing only the three opening frames produces closing. Reversing the whole symmetric five-frame sequence does not change it: choose your test clip carefully.
+
+</details>
+
+In the project you will compare normal, reversed, and repeated-frame clips. A changed ranking shows sensitivity to that perturbation, not proof that the network understood the action correctly.
+
+## 🐾 Three things to keep
 
 - Video models add time to image representations, using frame encoders, 3D convolutions, or space-time attention
 - Frame rate, patch size, and clip length determine both visible evidence and computational cost
@@ -103,7 +141,7 @@ Choose an action that reverses meaning when played backward: opening versus clos
   question="A model recognizes objects in each frame but confuses opening a door with closing it. What is most directly missing?"
   options={[
     {text: 'More image classes', feedback: "The objects are already recognized. More nouns will not reveal the direction of the verb. Try again."},
-    {text: 'A temporal representation that preserves frame order and motion', correct: true, feedback: "Right. The same objects appear in both actions; their ordering and movement carry the label."},
+    {text: 'A temporal representation that preserves frame order and motion', correct: true, feedback: "Right: the same objects appear in both actions, but their order differs. Keeping that evidence makes learning direction possible. The cat cannot establish innocence with a shuffled slideshow."},
     {text: 'A larger text tokenizer', feedback: "No text is entering this pipeline. The missing tokens are temporal visual evidence, not subwords. Try again."},
   ]}
 />

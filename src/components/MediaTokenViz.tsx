@@ -62,7 +62,7 @@ export default function MediaTokenViz({initialMode = 'audio'}: MediaTokenVizProp
         {mode === 'audio'
           ? `${duration}s spectrogram (80 × ${audioTimeBins}) → ${tokens.toLocaleString()} patch tokens`
           : `${videoFrames} sampled frames × ${patchesPerFrame} patches → ${tokens.toLocaleString()} patch tokens`}
-        {' · '}full attention compares about {attentionPairs.toLocaleString()} token pairs per layer.
+        {' · '}full attention compares about {attentionPairs.toLocaleString()} token pairs per head per layer.
       </p>
     </div>
   );

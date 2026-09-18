@@ -89,13 +89,13 @@ Eight modules, 35 lessons and 8 projects, mostly 10–15 minutes. Every module e
 
 ## Module 7 — [Audio & Video Models](/courses/deep-learning/module-7/) 🎧🎬
 
-*How sound and motion become tokens, and how models learn patterns across time.*
+*What survives from recording to tensor? Trace sound features, preserve frame order, and test whether a prediction uses the evidence you intended. ~52 min including the lab; setup and optional depth are extra.*
 
 | # | Lesson | Time |
 |---|--------|------|
-| 7.1 | [Audio models: from waveforms to words](/courses/deep-learning/module-7/lesson-1-audio-models) | ~6 min |
-| 7.2 | [Video models: teaching an image model about time](/courses/deep-learning/module-7/lesson-2-video-models) | ~6 min |
-| 🛠 | [**Mini-project:** run pretrained audio and video models](/courses/deep-learning/module-7/mini-project) | ~30 min |
+| 7.1 | [Audio models: from waveforms to words](/courses/deep-learning/module-7/lesson-1-audio-models) | ~10 min |
+| 7.2 | [Video models: teaching an image model about time](/courses/deep-learning/module-7/lesson-2-video-models) | ~11 min |
+| 🛠 | [**Mini-project:** run pretrained audio and video models](/courses/deep-learning/module-7/mini-project) | ~31 min |
 
 ## Module 8 — [Encoder–Decoder Architectures](/courses/deep-learning/module-8/) 🔁
 
