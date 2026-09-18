@@ -4,7 +4,7 @@ import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
-import {collections, footerItems, navbarItems} from './navigation';
+import {categoryNavigationPlugin, collections, footerItems} from './navigation';
 
 const gitCommit = execSync('git rev-parse --short HEAD').toString().trim();
 const gitDate = execSync('git log -1 --format=%cs HEAD').toString().trim();
@@ -60,6 +60,7 @@ const config: Config = {
   ],
 
   plugins: [
+    categoryNavigationPlugin,
     process.env.NODE_ENV === 'production' && [
       '@docusaurus/plugin-pwa',
       {
@@ -108,7 +109,10 @@ const config: Config = {
           type: 'dropdown',
           label: '☰ Contents',
           position: 'left',
-          items: navbarItems(baseUrl),
+          items: [
+            {label: 'All contents', to: '/'},
+            {type: 'custom-categoryTree'},
+          ],
         },
         {
           href: 'https://github.com/nimatrueway/my-learning-journey',
