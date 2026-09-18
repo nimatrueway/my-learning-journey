@@ -26,7 +26,8 @@ It begins with sixteen practical lessons and an optional supplement reference:
 6. Letting success count instead of downplaying it.
 7. Dismantling the imposter narrative with evidence.
 8. Keeping anger from reaching the people who did not cause it.
-9. Converting knowledge obsession into real-world doing.
+9. Converting knowledge obsession into real-world doing and finding smaller
+    useful solutions with the 90/10 heuristic.
 10. Building durable hope and preserving energy when the odds look bad.
 11. Recognizing stress and anxiety signals early, matching tools to the state,
     and knowing when to seek professional or urgent support.
@@ -70,7 +71,7 @@ early — it is the canonical home of the moves every lesson leans on (~5 min).
 6. [Letting Success Count](/courses/performance-foundations/part-6-letting-success-count) — ~8 min
 7. [Dismantling Imposter Syndrome](/courses/performance-foundations/part-7-imposter-syndrome) — ~8 min
 8. [Anger Without Casualties](/courses/performance-foundations/part-8-anger-without-casualties) — ~9 min
-9. [From Learning to Doing](/courses/performance-foundations/part-9-from-learning-to-doing) — ~8 min
+9. [From Learning to Doing](/courses/performance-foundations/part-9-from-learning-to-doing) — ~14 min, including 90/10 scope practice; building time is extra
 10. [Durable Hope Under Bad Odds](/courses/performance-foundations/part-10-durable-hope) — ~8 min
 11. [Signals, Spirals, and the Right Tool](/courses/performance-foundations/part-11-signals-and-tools) — ~9 min
 12. [Supporting an Anxious Partner](/courses/performance-foundations/part-12-supporting-an-anxious-partner) — ~10 min

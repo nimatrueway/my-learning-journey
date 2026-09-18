@@ -188,6 +188,12 @@ Preparation that changes one of these fields may be useful. Preparation that
 only postpones contact with reality is likely avoidance. Part IX's rule still
 applies: [learn inside the build](/courses/performance-foundations/part-9-from-learning-to-doing).
 
+When the problem is already clear but the proposed solution feels too large,
+use Part IX's [90/10 solution](/courses/performance-foundations/part-9-from-learning-to-doing#4-the-9010-solution-shrink-the-work-keep-the-value):
+look for a simpler way to deliver most of the useful outcome without dropping
+essential standards. A small probe answers a question; a small useful solution
+addresses the problem. Be clear which one you need.
+
 ### 5. Write the recovery plan before the prediction wins
 
 Complete this sentence:
