@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import Link from '@docusaurus/Link';
+import {useDocsVersion} from '@docusaurus/plugin-content-docs/client';
 import type {PropSidebarItem, PropSidebarItemCategory} from '@docusaurus/plugin-content-docs';
 
 const STORAGE_KEY = 'recent-modules';
@@ -17,11 +18,16 @@ type RecentModule = {
 
 const normalize = (path: string): string => path.replace(/\/+$/, '') || '/';
 
-function currentGroupKey(
-  course: PropSidebarItemCategory,
+function currentGroup(
+  chain: PropSidebarItemCategory[] | null,
   target: string,
-): string {
-  return normalize(course.href ?? target);
+): Pick<RecentModule, 'key' | 'module'> | null {
+  const course = chain?.[0];
+  if (!course) return null;
+  const group = normalize(course.href ?? '').endsWith('/courses/books')
+    ? chain?.[1] ?? course
+    : course;
+  return {key: normalize(group.href ?? target), module: group.label};
 }
 
 function categoryChain(items: PropSidebarItem[], target: string): PropSidebarItemCategory[] | null {
@@ -50,14 +56,6 @@ function currentPageLabel(items: PropSidebarItem[], target: string): string | nu
   return null;
 }
 
-function detectedGroupKey(items: PropSidebarItem[], path: string): string | null {
-  const target = normalize(path);
-  const chain = categoryChain(items, target);
-  const course = chain?.[0];
-  if (!course) return null;
-  return currentGroupKey(course, target);
-}
-
 function readRecentModules(items?: PropSidebarItem[]): RecentModule[] {
   try {
     const parsed: unknown = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]');
@@ -78,8 +76,9 @@ function readRecentModules(items?: PropSidebarItem[]): RecentModule[] {
 
     const newestByGroup = new Map<string, RecentModule>();
     for (const item of validModules) {
-      const key = items ? detectedGroupKey(items, item.href) ?? item.key : item.key;
-      if (!newestByGroup.has(key)) newestByGroup.set(key, {...item, key});
+      const group = items ? currentGroup(categoryChain(items, normalize(item.href)), item.href) : null;
+      const recent = group ? {...item, ...group} : item;
+      if (!newestByGroup.has(recent.key)) newestByGroup.set(recent.key, recent);
     }
     return Array.from(newestByGroup.values()).slice(0, MAX_RECENT_MODULES);
   } catch {
@@ -105,14 +104,13 @@ export function recordRecentModule(items: PropSidebarItem[], pathname: string): 
   const target = normalize(pathname);
   const chain = categoryChain(items, target);
   const course = chain?.[0];
+  const group = currentGroup(chain, target);
   const page = currentPageLabel(items, target);
-  if (!course || !page || target === normalize(course.href ?? '')) return;
+  if (!course || !group || !page || target === normalize(course.href ?? '')) return;
 
-  const moduleCategory = chain && chain.length > 1 ? chain[1] : null;
   const recent: RecentModule = {
-    key: currentGroupKey(course, target),
+    ...group,
     course: course.label,
-    module: course.label,
     page,
     href: target,
     accessedAt: Date.now(),
@@ -131,11 +129,13 @@ export function recordRecentModule(items: PropSidebarItem[], pathname: string): 
 }
 
 export default function RecentModules(): React.ReactElement {
+  const {docsSidebars} = useDocsVersion();
   const [modules, setModules] = useState<RecentModule[]>([]);
   const [now, setNow] = useState(0);
 
   useEffect(() => {
-    const update = () => setModules(readRecentModules());
+    const items = Object.values(docsSidebars).flat();
+    const update = () => setModules(readRecentModules(items));
     update();
     setNow(Date.now());
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
@@ -146,7 +146,7 @@ export default function RecentModules(): React.ReactElement {
       window.removeEventListener(UPDATE_EVENT, update);
       window.removeEventListener('storage', update);
     };
-  }, []);
+  }, [docsSidebars]);
 
   if (modules.length === 0) {
     return <p className="recentModulesEmpty">Modules you open will appear here.</p>;
