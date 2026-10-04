@@ -1,0 +1,6 @@
+{
+  "label": "🌍 Linguistics & World Grammar",
+  "position": 6,
+  "link": {"type": "doc", "id": "intro"},
+  "customProps": {"route": "/courses/linguistics-and-grammar"}
+}

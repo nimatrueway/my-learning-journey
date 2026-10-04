@@ -1,0 +1,127 @@
+---
+sidebar_position: 1
+slug: /courses/linguistics-and-grammar/word-order-and-constituents
+title: Word Order Is Not the Whole Syntax
+description: Compare six clause orders, head-dependent patterns, constituency, and information structure.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+"The cat saw the dog with binoculars" has one word order and at least two
+ordinary interpretations. Either the cat used binoculars, or the dog had
+them. A sentence is more than a left-to-right list.
+
+⏱️ **Reading + practice: ~9 min** · includes 5 minutes of practice; folds are optional extra.
+
+<Meme top="The cat memorized SVO and declared syntax finished." visual="🐱🔭" bottom="The binoculars are attached to the wrong constituent. Investigation reopened." />
+
+## Constituents organize the sequence
+
+A **constituent** is a unit in a structural analysis. A **head** determines
+central properties of a phrase; **dependents** include complements and
+modifiers. In an introductory analysis, *the dog* is a noun phrase, and *with
+binoculars* is a prepositional phrase. The latter can attach to the verb phrase
+or modify the noun phrase, producing different interpretations.
+
+```text
+[The cat] [saw [the dog] [with binoculars]]
+  The cat used the binoculars.
+
+[The cat] [saw [the dog [with binoculars]]]
+  The dog had the binoculars.
+```
+
+These brackets are simplified **constructed English illustrations**, not a
+claim that every theory uses the same phrase labels. **Substitution**, **movement**,
+and **coordination** can provide constituency evidence. Replacing *the dog with
+binoculars* with *it* supports treating that sequence as a unit under the
+noun-modifying reading. Use converging tests; one failed movement can reflect
+other constraints rather than absence of a constituent.
+
+## Six orders, a carefully defined comparison
+
+For a canonical transitive clause, introductory typology often uses `S` for
+subject, `O` for object, and `V` for verb. All six permutations occur in the
+world. WALS chapter 81 compares declarative clauses with full nominal arguments,
+using agent-like and patient-like roles to operationalize the comparison.
+
+| Order | One comparison case in WALS 81 |
+| --- | --- |
+| SOV | Japanese |
+| SVO | Mandarin |
+| VSO | Irish |
+| VOS | Nias |
+| OVS | Hixkaryana |
+| OSV | Nadëb |
+
+The Japanese example in that chapter is *John ga tegami o yon-da*, "John read
+the letter." `ga` and `o` mark the two argument phrases in the example, and
+`yon-da` is "read-PST." The full phrases are `[John ga]` and `[tegami o]`;
+do not count each particle as another subject or object.
+
+These are scoped labels, not sentence generators. Questions, subordinate
+clauses, omitted arguments, auxiliaries, or discourse contexts can change
+the observed sequence. German's verb-second main clauses and verb-final
+subordinate patterns show why a single three-letter label can conceal important rules.
+
+## Heads and dependents add more dimensions
+
+Compare **prepositions** (before their noun phrase) with **postpositions**
+(after it), adjective–noun versus noun–adjective order, possessors, and relative
+clauses. Verb–object order correlates with some other orders across samples,
+but correlations are not exceptionless laws. A language need not have every
+head on the same side of every dependent.
+
+**Topic** is what the discourse is about; **focus** highlights a contribution
+against relevant alternatives. Neither is synonymous with subject. Flexible
+word order can organize these meanings while case or agreement helps identify
+arguments. Calling it "free" order should not imply that every permutation is
+equally natural in every context.
+
+## Rehearse structure versus sequence
+
+<DecisionLab title="🐾 Where do the binoculars belong?" label="Analysis of the example" choices={[
+  {label: 'Attach with binoculars to the verb phrase', result: 'The instrument reading: the seeing was done using binoculars.', cost: 'The surface order alone does not select this reading.'},
+  {label: 'Attach with binoculars inside the dog noun phrase', result: 'The modifier reading: the dog is characterized as having binoculars.', cost: 'You need context or structural evidence to prefer this attachment.'},
+  {label: 'Record only the label SVO', result: 'You record the broad argument–verb sequence but leave attachment unresolved.', cost: 'A word-order label cannot replace a constituent analysis.'},
+]} />
+
+## Try it yourself 🧪
+
+Spend five minutes drawing brackets for the two binocular readings and writing
+a context for each. Then label the Japanese example's full argument phrases,
+verb, and overall order. Finally, list two things an SOV label cannot tell
+you: whether questions move a phrase, whether arguments can be omitted, or
+where adjectives occur are good candidates.
+
+<details>
+<summary>🤓 Phrase structure and dependency approaches (optional)</summary>
+
+Constituency models group words into nested phrases. Dependency models connect
+heads to dependents. They emphasize different representations and can describe
+many of the same observations. Cross-linguistic categories require diagnostics:
+English nouns and adjectives do not determine the inventory of another language.
+Similarly, identifying a subject can be more complicated than finding the first noun.
+
+</details>
+
+## Recap 🐾
+
+1. Constituency and attachment can distinguish meanings without changing word order.
+2. SOV and similar labels summarize a specified clause comparison, not a whole grammar.
+3. Head-dependent order and discourse organization add dimensions beyond S, O, and V.
+
+<Quiz question="Two interpretations share the same SVO sequence. What can explain the difference?" options={[
+  {text: 'Different constituent attachment.', correct: true, feedback: 'Yes. The field cat follows the brackets instead of trusting the three-letter badge.'},
+  {text: 'SVO languages cannot have ambiguity.', feedback: 'Word order leaves many structural and lexical choices unresolved.'},
+  {text: 'One interpretation must be a different language family.', feedback: 'A local ambiguity is not evidence for a second family tree.'},
+]} />
+
+## Sources
+
+Original English illustrations. Language-order cases and the short Japanese
+example are attributed to [Dryer, WALS chapter 81](https://wals.info/chapter/81),
+which cites Kuno (1973: 10) for Japanese. For tests, see
+[Essentials, constituency](https://ecampusontario.pressbooks.pub/essentialsoflinguistics2/chapter/identifying-phrases-constituency-tests/).

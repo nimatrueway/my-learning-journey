@@ -1,0 +1,122 @@
+---
+sidebar_position: 1
+slug: /courses/linguistics-and-grammar/grammar-as-science
+title: Grammar Is a Testable Hypothesis
+description: Distinguish descriptive grammar from editing rules and test a miniature analysis against data.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+Someone says a sentence is "bad grammar." Do they mean it violates a publishing
+style guide, differs from their dialect, or cannot occur in the variety being
+studied? Those are three different claims. Linguistics starts by separating them.
+
+⏱️ **Reading + practice: ~9 min** · includes 5 minutes of practice; folds are optional extra.
+
+<Meme top="The field-linguist cat brought a red pen to a recording session." visual="🐱📝" bottom="The speakers brought counterexamples. The pen has requested reassignment." />
+
+## Describe the system before judging the style
+
+**Descriptive grammar** models patterns in a language variety: which forms
+occur, how they combine, and how people interpret them. **Prescriptive rules**
+recommend forms for a particular institution, genre, or standard. Both can be
+useful, but an editing convention is not evidence that other varieties lack
+structure. A standard variety is socially privileged, not inherently more logical.
+
+In several English varieties, "I didn't see nobody" has a single-negation
+interpretation: no person was seen. This is **negative concord**. In formal
+Standard English, "I didn't see anybody" is normally preferred for that meaning.
+The scientific question asks which pattern a speaker's variety permits, in
+which contexts. It does not deduce the meaning by treating each negative word
+as a minus sign in arithmetic.
+
+**Grammaticality** concerns conformity to a system; **acceptability** concerns
+how a particular utterance is judged in a context. Memory load, familiarity,
+register, and meaning can affect acceptability. Neither a teacher's dislike
+nor one hesitant judgment settles a whole language's grammar.
+
+## A tiny dataset, not an entire language
+
+The following is **invented teaching data**, not a newly discovered language.
+Hyphens show a proposed segmentation. Assume the supplied translations are
+reliable observations in this exercise.
+
+| Form | Translation |
+| --- | --- |
+| `dap` | one cat |
+| `dap-na` | cats, more than one |
+| `nim` | one dog |
+| `nim-na` | dogs, more than one |
+
+A compact hypothesis is that `-na` marks plural and `dap` and `nim` are noun
+roots. It explains a repeated **form–meaning correspondence**. But four forms
+do not establish that every noun pluralizes this way, that number is obligatory,
+or that these forms can be used unchanged in sentences.
+
+## Rehearse a falsifiable prediction
+
+Suppose a fifth observation is `kip`, "one bird." Predict what evidence would
+test the plural hypothesis. Choose the next observation below. The outcomes
+are conditional exercises, not claims about a real language.
+
+<DecisionLab title="🐾 The notebook meets new data" label="Next observation" choices={[
+  {label: 'kip-na means birds', result: 'This supports extending the plural pattern to a third root.', cost: 'Support is not proof. Other noun classes or contexts may behave differently.'},
+  {label: 'kip-na means one bird', result: 'This contradicts the simple claim that every -na form is plural.', cost: 'Check translation and segmentation, then consider homophony or a restricted noun class. Do not erase the exception.'},
+  {label: 'No bird plural was recorded', result: 'The proposed extension remains untested.', cost: 'Absence from a small recording is not evidence that a form is impossible.'},
+]} />
+
+## What counts as evidence?
+
+Use recordings of natural interaction, elicited examples, speaker judgments,
+corpora, and experiments for different questions. Natural speech reveals use
+in context; elicitation targets contrasts that may be rare in recordings.
+Judgments can test proposed contrasts, but should include context and more
+than one item or speaker where feasible. A corpus records what happened to
+occur; it does not list every grammatical possibility.
+
+An asterisk before a linguistic example often marks ungrammaticality in the
+variety under discussion. It should report evidence or a stated analysis, not
+the author's irritation. Ask whose variety, what interpretation, and which
+method supports that mark. For an unfamiliar language, collaborate with its
+speakers rather than translating your intuition from English.
+
+## Try it yourself 🧪
+
+Spend five minutes writing two hypotheses for the miniature dataset. For each,
+write a prediction and an observation that would make you revise it. Then add
+one missing contextual question: can a plural form refer to exactly two
+animals, must it occur after a numeral, or can it be used for a generic kind?
+Separate what the four rows demonstrate from what you only suspect.
+
+<details>
+<summary>🤓 Competing explanations and scientific models (optional)</summary>
+
+Several models can fit a finite dataset. A suffix rule and a memorized list of
+four forms both fit these rows, but they predict differently for a new root.
+Productivity tests help distinguish them. A useful analysis balances explanatory
+scope, explicit predictions, and complexity; "shortest explanation" alone is
+not a guarantee of truth. Linguistic theories disagree about representations
+and mechanisms while sharing the need to confront evidence.
+
+</details>
+
+## Recap 🐾
+
+1. Descriptive grammar models a variety; prescriptive rules serve particular social contexts.
+2. A grammatical analysis must make predictions that new evidence could contradict.
+3. Missing corpus examples, judgments, and translations require context before generalization.
+
+<Quiz question="You did not find kip-na in a four-form recording. What follows?" options={[
+  {text: 'It is definitely ungrammatical.', feedback: 'A tiny sample cannot establish impossibility. The notebook is not the whole language.'},
+  {text: 'Its status is untested; seek targeted evidence.', correct: true, feedback: 'Exactly. Record a suitable context or elicit the contrast. The field cat keeps the hypothesis pencilled in.'},
+  {text: 'Every language uses -na for plural.', feedback: 'An invented local pattern says nothing about a universal suffix. That pawprint does not cover the planet.'},
+]} />
+
+## Sources and next questions
+
+Original teaching dataset and synthesis. For descriptive grammar, judgments,
+and language variation, see
+[Essentials of Linguistics, 2nd edition](https://ecampusontario.pressbooks.pub/essentialsoflinguistics2/).
+Next, keep shared ancestry separate from shared grammatical features.

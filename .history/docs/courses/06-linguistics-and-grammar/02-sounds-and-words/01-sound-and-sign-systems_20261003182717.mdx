@@ -1,0 +1,124 @@
+---
+sidebar_position: 1
+slug: /courses/linguistics-and-grammar/sound-and-sign-systems
+title: What Differences Count? Sounds and Signs
+description: Learn phonetic description, phonemic contrasts, allophones, tone, phonotactics, and signed-language parameters.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+Two pronunciations can sound different yet count as the same word. One tiny
+pitch change can also create a different word. A language does not use every
+physically possible distinction: it organizes contrasts into a system.
+
+⏱️ **Reading + practice: ~9 min** · includes 5 minutes of practice; folds are optional extra.
+
+<Meme top="The cat classified every pitch change as a question." visual="🐱🎵" bottom="Mandarin has requested a lexical appeal." />
+
+## Phonetics describes; phonology organizes
+
+**Phonetics** studies the production and perception of linguistic signals.
+For speech, describe consonants by **place** of articulation, **manner**, and
+**phonation**, including voicing. For example, `[p]` is a voiceless bilabial
+stop: both lips close, airflow is blocked, then released, without vocal-fold
+vibration during the closure in the canonical description.
+
+Vowels can be described by tongue height, frontness/backness, and lip rounding.
+The **International Phonetic Alphabet (IPA)** supplies symbols for sounds,
+not a universal spelling reform. The same letter can represent different
+sounds across orthographies, and several letters can represent one sound.
+Compare English `sh` with the IPA symbol `[ʃ]`.
+
+**Phonology** studies language-specific contrasts and patterning. A **phoneme**
+is a contrastive category in an analysis; an **allophone** is a realization
+of that category. A **minimal pair** differs in one relevant sound in the
+same environment and has different meanings. English *pat* and *bat* support
+a `/p/` versus `/b/` contrast. The claim concerns a variety, not every accent
+or every historical stage of English.
+
+## Contrast versus predictable realization
+
+In many English varieties, the `/p/` of *pin* is aspirated `[pʰ]`, while that
+of *spin* lacks that aspiration. The raised `ʰ` means a following puff of air.
+The distribution is predictable from context; aspiration does not normally
+distinguish these English words from otherwise identical words.
+
+In languages such as Hindi, aspiration can instead be contrastive. Do not
+carry English's phoneme inventory into another language. **Complementary
+distribution** (different sounds in different environments) supports an
+allophone analysis when the sounds are phonetically related, but is not alone
+sufficient proof: accidental gaps can also create nonoverlapping distributions.
+
+## A world tour of phonological dimensions
+
+| Dimension | Comparison worth investigating |
+| --- | --- |
+| Lexical tone | Mandarin, Yoruba, and Navajo use pitch contrasts despite different genealogies |
+| Vowel or consonant length | Japanese distinguishes lengths that English spelling does not reliably represent |
+| Click consonants | Found in several southern African families and also in languages such as Zulu through contact |
+| Phonotactics | Languages differ in which consonant clusters and syllable patterns they permit |
+| Signed parameters | Handshape, location, movement, and orientation can distinguish lexical signs |
+
+**Tone** distinguishes words or grammatical forms; **intonation** contributes
+utterance-level organization, such as prominence and some question patterns.
+They can coexist. Mandarin citation forms `mā` "mother" and `mǎ` "horse"
+illustrate a tonal contrast, but connected speech can change tone realization.
+The diacritics are tone marks in pinyin, not English stress marks.
+
+Signed languages have phonological organization without requiring sound.
+Manual and nonmanual components, including facial actions, contribute to
+linguistic structure. They are not merely emotional decoration. An English
+gloss cannot show all those parameters, and one signed language's analysis
+should not automatically be imposed on another.
+
+## Rehearse the right inference
+
+These scenarios are **constructed evidence summaries**, not recordings.
+
+<DecisionLab title="🐾 Contrast detective" label="Observed distribution" choices={[
+  {label: 'Same environment; sound change changes meaning', result: 'A minimal-pair contrast supports distinct phonemes.', cost: 'Confirm comparable contexts, speaker variety, and reliable interpretations.'},
+  {label: 'Related sounds in predictable different environments', result: 'An allophone analysis is a plausible hypothesis.', cost: 'Seek broader distributional evidence; missing overlap may reflect limited data.'},
+  {label: 'Same segments; pitch change changes lexical meaning', result: 'The evidence supports a lexical tone distinction.', cost: 'Do not confuse tone with an intonational question or assume the same tone rules in connected speech.'},
+]} />
+
+## Try it yourself 🧪
+
+Spend five minutes contrasting *pat/bat* and *pin/spin*. Write what changes,
+what is held constant, and why the second pair is not itself a minimal pair
+for aspiration: it also differs by `/s/`. Then explain what kind of controlled
+comparison would establish a handshape contrast in a signed language without
+using its English gloss as the evidence.
+
+<details>
+<summary>🤓 Categories are not waveform slices (optional)</summary>
+
+Actual signals vary continuously across speakers and contexts. Coarticulation
+means neighboring articulations overlap, so phones are analytical units, not
+always cleanly separated acoustic chunks. Syllable, stress, tone, and timing
+can require representations beyond a flat segment list. Signed languages may
+organize simultaneous parameters differently from spoken languages; the exact
+units and representations are questions for evidence and theory.
+
+</details>
+
+## Recap 🐾
+
+1. Phonetics describes signals; phonology models a language's contrasts and distributions.
+2. Minimal pairs and contextual alternations distinguish contrast from predictable realization.
+3. Tone, length, phonotactics, and signed parameters are independent comparison dimensions.
+
+<Quiz question="Why does English pin versus spin not establish two aspiration phonemes?" options={[
+  {text: 'Aspiration can never be phonemic in any language.', feedback: 'It can be contrastive elsewhere. English is not the planet\'s sound policy.'},
+  {text: 'The contexts differ, and aspiration is predictable in these English examples.', correct: true, feedback: 'Yes. You controlled the environment before promoting a puff of air to a phoneme.'},
+  {text: 'Spelling determines the phoneme inventory.', feedback: 'Letters are not phonemes. An alphabet is a writing tool, not a phonological experiment.'},
+]} />
+
+## Sources
+
+Original synthesis and illustrative comparisons. See
+[Essentials, phonemes and allophones](https://ecampusontario.pressbooks.pub/essentialsoflinguistics2/chapter/4-1-phonemes-and-allophones/),
+[signed articulation](https://ecampusontario.pressbooks.pub/essentialsoflinguistics2/chapter/3-7-signed-language-articulators/),
+and [Maddieson, WALS chapter 13](https://wals.info/chapter/13) for the distribution
+and coding caveats of tone. The widget is a qualitative reasoning exercise, not audio training.

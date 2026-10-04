@@ -1,0 +1,127 @@
+---
+sidebar_position: 2
+slug: /courses/linguistics-and-grammar/arguments-and-alignment
+title: Who Did What? Case, Agreement, and Alignment
+description: Distinguish semantic roles, grammatical relations, nominative–accusative and ergative–absolutive alignment, and split systems.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+In "The window was broken by the child," the window is the subject but not
+the intentional doer. If "subject" means "who did it," the analysis fails
+before you even leave English.
+
+⏱️ **Reading + practice: ~11 min** · includes 5 minutes of practice; folds are optional extra.
+
+<Meme top="The cat blamed the first noun." visual="🐱⚖️" bottom="The passive window has an alibi. Grammatical relation is not guilt." />
+
+## Separate meaning roles from grammatical relations
+
+An **argument** is a participant selected by a predicate in an analysis.
+An **adjunct** adds information such as time or location without the same
+selection relationship. **Agent** describes a prototypical initiator;
+**patient** describes a prototypically affected participant. Experiencers,
+recipients, and other roles show that not every predicate is a physical action.
+**Subject** and **object** are grammatical relations diagnosed through a
+language's patterns, not direct synonyms for agent and patient.
+
+To compare basic alignment, use three role labels:
+
+- **S:** the sole core argument of a canonical intransitive predicate, as in "the child slept."
+- **A:** the more agent-like argument of a canonical transitive predicate, as in "the child broke the window."
+- **P:** the more patient-like argument of that transitive predicate, the window. Some books use **O** instead.
+
+These labels are comparison tools. They let us ask which arguments receive
+the same treatment without first assuming English's subject behavior everywhere.
+
+## Two familiar grouping patterns
+
+**Nominative–accusative alignment** groups S with A and treats P differently.
+English pronouns illustrate it: *she slept*, *she saw him*, *he saw her*.
+*She* can be S or A, whereas *her* is the object form here. English full noun
+phrases do not show the same overt case contrast: *the child* keeps its form.
+
+**Ergative–absolutive alignment** groups S with P and treats A differently.
+Basque and many Caucasian and Australian languages provide important cases.
+The **ergative** case marks A in the relevant construction; the **absolutive**
+marks S/P. Ergative does not mean "past tense," "aggressive," or "the subject
+of every verb." Its distribution is an empirical question.
+
+The following is a **constructed case-marking system**, not Basque or Warlpiri:
+
+```text
+dara       sleep
+child.ABS  sleep
+'The child sleeps.'
+
+dara-ka    pano        see
+child-ERG  bird.ABS    see
+'The child sees the bird.'
+```
+
+The child as S has the same unmarked form as the bird as P. Only A receives
+`-ka`. `.ABS` labels a case analysis of the unsegmented form; it does not
+introduce an overt suffix. The English translation does not determine the case system.
+
+## Rehearse the grouping, not the name
+
+<DecisionLab title="🐾 File the argument evidence" label="Observed marking pattern" choices={[
+  {label: 'S and A alike; P different', result: 'This is nominative–accusative alignment for the marking being compared.', cost: 'Check pronouns and full nouns separately; their patterns can differ.'},
+  {label: 'S and P alike; A different', result: 'This is ergative–absolutive alignment for the marking being compared.', cost: 'Case alignment does not automatically establish the same alignment in agreement or syntax.'},
+  {label: 'Pattern changes between aspect constructions', result: 'Investigate split alignment conditioned by the construction.', cost: 'Do not collapse the split into an unconditional language-wide label.'},
+]} />
+
+## A language can align differently in different places
+
+Compare **case marking on noun phrases**, **person indexing on verbs**, and
+**syntactic behavior**, such as which arguments can be omitted across coordinated
+clauses. A language can be ergative in case without having identical syntactic
+alignment. **Split alignment** can depend on tense/aspect, person, animacy,
+or clause type. Hindi's perfective constructions illustrate why aspect and
+object-marking conditions matter; a single blanket label misses their interaction.
+
+**Differential object marking** means objects are marked differently depending
+on factors such as animacy, definiteness, or specificity. Spanish's personal
+`a` and Persian `rā` are useful comparison cases, but their distributions
+are not identical. **Agreement** or **indexing** can express participant
+features on a predicate. Case, indexing, and word order can cooperate rather
+than competing to be a language's only way to identify participants.
+
+## Try it yourself 🧪
+
+Spend five minutes labeling S, A, and P in the two constructed clauses. Predict
+the case forms for "The bird sleeps" and "The bird sees the child." Keeping
+the same roots, the predictions are `pano sleep` and `pano-ka dara see`.
+Then explain why the passive window example prevents equating subject with agent.
+
+<details>
+<summary>🤓 Other alignments and measurement scope (optional)</summary>
+
+Tripartite systems distinguish S, A, and P. Active–inactive systems can group
+different intransitive arguments differently, often reflecting semantic properties
+of the predicate. Neutral marking does not distinguish the three by the feature
+being measured. WALS chapters 98–100 separate full noun case, pronoun case,
+and verbal person marking. A map value can prioritize a construction under
+explicit coding rules; read those rules before treating it as an exceptionless description.
+
+</details>
+
+## Recap 🐾
+
+1. Semantic roles and grammatical relations must be distinguished before comparing arguments.
+2. Accusative groups S/A; ergative groups S/P, for a specified marking or behavior.
+3. Pronouns, nouns, agreement, and clause types can reveal different or split alignments.
+
+<Quiz question="A language uses one case for S and P, and a different case for A. What is the scoped analysis?" options={[
+  {text: 'Ergative–absolutive case alignment.', correct: true, feedback: 'Exactly. You compared the grouping; the field cat has stopped blaming whichever noun came first.'},
+  {text: 'Nominative–accusative case alignment.', feedback: 'That pattern groups S with A, not P. Recheck the two clause types.'},
+  {text: 'Proof that the language has no subjects.', feedback: 'Case grouping alone does not settle every syntactic relation or theory of subjects.'},
+]} />
+
+## Sources
+
+Original constructed dataset. Definitions and scope follow
+[Comrie, WALS chapter 98](https://wals.info/chapter/98); compare
+[chapter 100](https://wals.info/chapter/100) for verbal person marking.

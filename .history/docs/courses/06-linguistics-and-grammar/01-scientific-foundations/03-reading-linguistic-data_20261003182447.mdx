@@ -1,0 +1,130 @@
+---
+sidebar_position: 3
+slug: /courses/linguistics-and-grammar/reading-linguistic-data
+title: Read the Example, Not Just the Translation
+description: Read interlinear glosses, segmentation, grammatical abbreviations, and the difference between evidence and analysis.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+An English translation says "of the islands." The original language uses one
+word. If you inspect only the translation, you will miss the grammar you came
+to study. An interlinear gloss opens the word without pretending it is English.
+
+⏱️ **Reading + practice: ~8 min** · includes 5 minutes of practice; folds are optional extra.
+
+<Meme top="The cat counted English words in the translation." visual="🐱🔬" bottom="Latin filed an objection: one ending, two grammatical jobs." />
+
+## Three lines, different responsibilities
+
+A linguistic example commonly has an original or segmented line, a
+**morpheme-by-morpheme gloss**, and an idiomatic translation. A **morpheme**
+is a minimal unit of grammatical or lexical meaning in an analysis. It need
+not be a whole word, and its meaning need not correspond to a separate English word.
+
+The following Latin example appears in the Leipzig Glossing Rules. Segmentation
+and the explanation here are for teaching:
+
+```text
+insul-arum
+island-GEN.PL
+'of the islands'
+```
+
+`insul-` is the stem. `-arum` jointly expresses **genitive** (here, an "of"
+relationship) and **plural**. `GEN.PL` uses a dot because multiple gloss
+labels correspond to one segment, not because Latin has a hidden word for "of"
+between two invisible suffixes. The free translation is idiomatic English, not
+a second source-language transcript.
+
+## Boundaries carry analytical commitments
+
+| Notation | What it normally communicates |
+| --- | --- |
+| `root-affix` / `ROOT-LABEL` | A proposed segmentable morpheme boundary; hyphens correspond across lines |
+| `word=clitic` | A clitic boundary; equals signs correspond across lines |
+| `GEN.PL` | Several labels for one source element |
+| `1SG`, `2PL`, `3SG` | First-person singular, second-person plural, third-person singular |
+| `PST`, `PRS`, `NEG`, `Q` | Past, present, negation, question marker |
+| `NOM`, `ACC`, `ERG`, `ABS` | Case labels, explained in the alignment lesson |
+
+A **clitic** depends phonologically on a host but often behaves syntactically
+more like a word than an ordinary affix. The distinction requires evidence,
+not just spelling. A space in an orthography does not settle wordhood. Keep
+the author's abbreviation key nearby: `S` may mean an intransitive argument,
+not "singular," and category definitions vary between languages and theories.
+
+## Rehearse what a gloss permits
+
+Change the analysis and compare the conclusion it licenses. These miniature
+forms are **constructed notation exercises**, not additional Latin data.
+
+<DecisionLab title="🐾 The boundary audit" label="Annotation" choices={[
+  {label: 'lum-ta / bird-PL', result: 'The analysis identifies one suffix expressing plural.', cost: 'You still need a paradigm to establish its distribution and possible alternative forms.'},
+  {label: 'lum-ta / bird-GEN.PL', result: 'One segmented ending receives both genitive and plural labels.', cost: 'A dot does not posit two separable endings. Segmentation must be justified independently.'},
+  {label: 'lum=ta / bird=Q', result: 'The analysis treats the question marker as a clitic.', cost: 'An equals sign reports the analysis; it cannot prove the clitic behaves that way.'},
+]} />
+
+## From rows to a paradigm
+
+A **paradigm** organizes comparable forms by grammatical contrasts. Here is
+a second **invented dataset**, with no claim to represent a real language:
+
+| Form | Supplied meaning |
+| --- | --- |
+| `lum` | bird |
+| `lum-ta` | birds |
+| `lum-ki` | of a bird |
+| `lum-ta-ki` | of birds |
+
+The repeated contrasts support `-ta` as plural and `-ki` as genitive, with
+plural before genitive in these forms. They do not show whether `lum-ki-ta`
+is permitted, whether singular has a zero marker, or whether every noun follows
+this pattern. A **zero** analysis posits a grammatical contribution without
+overt material; it needs motivation from the broader system.
+
+The key habit is to separate **form**, **contextual interpretation**, and
+**analysis**. Glosses are part of an analysis, not neutral raw data. Two
+researchers might agree on a recording yet disagree about its segmentation or
+category labels. Preserve the original line and provenance so that disagreement
+can be evaluated rather than hidden behind a tidy table.
+
+## Try it yourself 🧪
+
+Spend five minutes glossing `lum-ta-ki` and translating it idiomatically.
+Then compare it with Latin `insul-arum`: both can express a genitive plural,
+but where do the two categories live? Write one new noun contrast you would
+request to test each segmentation. Expected constructed gloss: `bird-PL-GEN`.
+
+<details>
+<summary>🤓 What a transcription leaves out (optional)</summary>
+
+Orthography, phonemic transcription, and narrow phonetic transcription serve
+different purposes. Slash brackets such as `/p/` conventionally identify a
+phonemic representation; square brackets such as `[pʰ]` represent phonetic
+detail. Signed-language glosses such as `BOOK` are labels, not English words
+being spoken by the signer. They omit handshape, movement, location, timing,
+and nonmanual components unless those are separately annotated. A translation
+cannot replace the original recording in either modality.
+
+</details>
+
+## Recap 🐾
+
+1. Original forms, interlinear glosses, and free translations answer different questions.
+2. Hyphens, equals signs, dots, and category labels express specific analytical choices.
+3. Compare paradigms and preserve context before treating a gloss as a proven grammar.
+
+<Quiz question="Why does insul-arum have the gloss island-GEN.PL rather than island-GEN-PL?" options={[
+  {text: 'The genitive and plural labels describe one segmented ending.', correct: true, feedback: 'Right. One ending can do two jobs; the cat must not invent an extra boundary.'},
+  {text: 'Latin uses a separate word for each English word.', feedback: 'The free translation contains separate English words, but the Latin example is one word.'},
+  {text: 'Dots and hyphens are interchangeable decoration.', feedback: 'They distinguish one-to-many labeling from segmentation. Punctuation is evidence packaging here.'},
+]} />
+
+## Sources
+
+Latin form and gloss from the [Leipzig Glossing Rules, rule 4](https://www.eva.mpg.de/lingua/resources/glossing-rules.php).
+Other datasets are original constructed teaching examples. For signed-language
+notation, see [Essentials of Linguistics, section 3.7](https://ecampusontario.pressbooks.pub/essentialsoflinguistics2/chapter/3-7-signed-language-articulators/).

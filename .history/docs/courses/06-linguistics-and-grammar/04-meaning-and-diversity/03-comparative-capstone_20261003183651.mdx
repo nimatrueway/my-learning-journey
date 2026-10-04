@@ -1,0 +1,137 @@
+---
+sidebar_position: 3
+slug: /courses/linguistics-and-grammar/comparative-capstone
+title: Build a Language Profile and Test a Universal
+description: Combine the course's tools into an evidence-backed grammar profile and investigate sampling bias in typological claims.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+You notice four languages with objects after verbs. Three also have prepositions.
+Have you discovered a universal? Perhaps you have mostly rediscovered three
+close relatives. The final stop is learning how to keep a comparison honest.
+
+⏱️ **Reading + practice: ~18 min** · includes 12 minutes of practice; folds are optional extra.
+
+<Meme top="The cat sampled three cousins and announced a planetary law." visual="🐱📋" bottom="The fourth language brought a counterexample and a very small sample warning." />
+
+## A profile is a bundle of scoped claims
+
+Choose a language or variety from the [world-language atlas](../world-language-atlas.md).
+Do not try to fit it into one box. Make a profile with separate fields for
+ancestry, community and period, phonology, morphology, clause structure,
+grammatical categories, and interpretation.
+
+For each field, record a **claim**, an **example or source location**, a
+**scope**, and a **confidence level**. "SOV in the cited neutral declaratives"
+is more defensible than "always SOV." "No overt case contrast in these nouns"
+is different from "no way to identify participants." Keep "not documented"
+separate from "demonstrated absent."
+
+| Profile field | A useful evidence question |
+| --- | --- |
+| Genealogy and contact | Which family proposal and version? Which borrowing history? |
+| Phonology | Which minimal pair or distribution supports a contrast? |
+| Morphology | Which paradigm supports segmentation and category packaging? |
+| Syntax and alignment | Which clause type, argument type, and marking behavior? |
+| Categories | What is obligatory, optional, or supplied by context? |
+| Meaning | Which expressions compose regularly, and which need conventional meanings? |
+
+For the non-compositional field, include the expression, literal rendering,
+conventional sense, register, and a substitution or inflection test. A dictionary
+can establish an attested sense without telling you every syntactic constraint.
+
+## Test a deliberately small claim
+
+The following is **invented comparative data**, not a survey of actual languages.
+`VO` means verb before object; `OV` means object before verb for the construction
+sampled. "Prepositions" means the specified dominant adposition strategy under
+the exercise's coding. Family and area labels are also fictional.
+
+| Language | Family | Area | Order | Prepositions |
+| --- | --- | --- | --- | --- |
+| A | F1 | North | VO | Yes |
+| B | F1 | North | VO | Yes |
+| C | F1 | North | VO | Yes |
+| D | F2 | South | OV | No |
+| E | F3 | East | VO | No |
+| F | F4 | West | OV | No |
+| G | F5 | North | VO | Unknown |
+
+The exceptionless hypothesis "Every VO language has prepositions" is
+contradicted by E under these definitions. G is missing evidence, not another
+counterexample and not another confirming case. A statistical tendency is
+a different claim: in the six rows with known values, three of four VO
+languages have prepositions, compared with zero of two OV languages.
+
+But A, B, and C are closely related and colocated. Their matching features
+may be inherited or connected through contact rather than three independent
+outcomes. A crude one-per-family illustration retaining A, D, E, and F changes
+the VO proportion from three of four to one of two. That is not a corrected
+estimate of the world: it merely demonstrates that sampling choices change results.
+
+## Rehearse the claim your data can support
+
+<DecisionLab title="🐾 The universal audit" label="Reporting choice" choices={[
+  {label: 'Every VO language has prepositions', result: 'False for this fixture: E has VO and no prepositions.', cost: 'An exceptionless claim can be challenged by one reliable counterexample in the specified domain.'},
+  {label: 'Three of four known VO rows have prepositions', result: 'An accurate descriptive count of the fixture, not a global estimate.', cost: 'A, B, and C share family and area; dependence and selection bias remain.'},
+  {label: 'Count Unknown as No', result: 'You turn a missing observation into an invented negative fact.', cost: 'Missing documentation must remain missing unless actual evidence supports absence.'},
+]} />
+
+## What makes a scientific comparison stronger?
+
+Define categories before counting. Identify the variety and construction.
+Sample across genealogical groups and regions, and document sources and
+coding choices. Analyze family and area dependence rather than simply adding
+more convenient languages. Report uncertainty and counterexamples, and check
+whether alternative definitions change the conclusion.
+
+Large databases help organize evidence but do not remove these responsibilities.
+WALS features have different coverage and definitions. Joining two feature
+tables can change your sample because only some languages have both values.
+Glottolog supplies genealogical classifications and bibliographies, not an
+automatic grammatical description of every member of a family.
+
+## Try it yourself 🧪
+
+Spend twelve minutes on two tasks. First, reproduce the two VO proportions
+above and explain why E and G have different evidential status. Second, choose
+two languages from different atlas regions and draft their profiles for
+genealogy, word order, morphology, and one meaning feature. Use the lessons'
+examples where applicable and mark unknowns honestly. Finish with one common
+attribute, one contrasting attribute, and a question that needs better evidence.
+
+<details>
+<summary>🤓 From a descriptive count to an explanatory model (optional)</summary>
+
+An association may reflect inheritance, contact, processing pressures, shared
+development pathways, or coding decisions. Statistical models can account for
+some family and area structure, but model assumptions must be evaluated too.
+A **unique** feature requires evidence against all relevant alternatives;
+"rare in this sample" is much weaker and usually more defensible. The fixture's
+small proportions are teaching calculations, not inferential tests or estimated
+probabilities for undocumented languages.
+
+</details>
+
+## Recap 🐾
+
+1. A language profile separates features and records scope, provenance, and uncertainty.
+2. Universals, statistical tendencies, counterexamples, and missing values are different claims.
+3. Family, area, coverage, and coding can change a comparison's apparent results.
+
+<Quiz question="Why is G not a counterexample to the VO–preposition hypothesis?" options={[
+  {text: 'Its adposition value is unknown, not established as No.', correct: true, feedback: 'Correct. The cat leaves the cell blank instead of manufacturing a discovery.'},
+  {text: 'Every North-area language must use prepositions.', feedback: 'An area label cannot fill a missing observation. Geography is not an automatic grammar.'},
+  {text: 'Unknown and absent are scientifically identical.', feedback: 'Missing evidence is not evidence of absence. E is a counterexample; G remains untested.'},
+]} />
+
+## Sources and continued exploration
+
+The fixture, profile template, and arithmetic are original teaching material.
+For real comparison criteria, see [WALS chapter 81](https://wals.info/chapter/81)
+and [chapter 95, object–verb order and adpositions](https://wals.info/chapter/95).
+Use [Glottolog](https://glottolog.org/) to find descriptive grammars and family
+proposals, then return to the [atlas](../world-language-atlas.md) for your next stop.

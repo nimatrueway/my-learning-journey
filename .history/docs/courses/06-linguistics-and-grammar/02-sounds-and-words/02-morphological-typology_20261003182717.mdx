@@ -1,0 +1,131 @@
+---
+sidebar_position: 2
+slug: /courses/linguistics-and-grammar/morphological-typology
+title: How Much Grammar Fits in a Word?
+description: Compare analytic, synthetic, agglutinative, fusional, and polysynthetic patterns without treating languages as pure types.
+---
+
+import DecisionLab from '@site/src/components/LuceneDecisionLab';
+import Quiz from '@site/src/components/Quiz';
+import Meme from '@site/src/components/Meme';
+
+English can say *will walk* with two words and *walked* with one. If the same
+language changes its packaging strategy between constructions, calling an
+entire language "one type" is already a simplification.
+
+⏱️ **Reading + practice: ~9 min** · includes 5 minutes of practice; folds are optional extra.
+
+<Meme top="The cat declared every long word polysynthetic." visual="🐱🧩" bottom="The dictionary would like to discuss character count versus grammatical structure." />
+
+## Start with two independent dimensions
+
+**Morphology** studies word structure. A **root** carries a central lexical
+contribution; an **affix** is a bound element attached to a base. Prefixes
+precede, suffixes follow, and infixes occur within a base. **Inflection**
+typically supplies grammatical forms of a lexeme, such as number or tense.
+**Derivation** typically creates a new lexeme, sometimes with a category
+change: English *happy* to *happiness*. Borderline cases require language-specific evidence.
+
+**Synthesis** asks how much morphological material is combined within words.
+An **analytic** construction uses separate words for relevant grammatical
+information; a **synthetic** one combines that information morphologically.
+**Isolating** usually describes a tendency toward very little morphology and
+roughly one morpheme per word. Analytic is broader: a separate auxiliary can
+itself contain inflection.
+
+**Exponence** asks how form maps to categories. In an **agglutinative** pattern,
+separable pieces tend to correspond to individual grammatical functions. In a
+**fusional** pattern, a piece can jointly express several categories. These
+are tendencies, not mutually exclusive passports. A language can have high
+synthesis and both agglutinative and fusional constructions.
+
+## Tiny comparisons with real forms
+
+The first two examples below illustrate familiar analyses; the Latin form
+is also given in the Leipzig Glossing Rules. These are word forms, not full sentences.
+
+```text
+Turkish: ev-ler-de
+         house-PL-LOC
+         'in the houses'
+
+Latin:   insul-arum
+         island-GEN.PL
+         'of the islands'
+
+English: will walk / walk-ed
+         separate auxiliary / walk-PST
+```
+
+Turkish `-ler` marks plural and `-de` locative, a location relationship.
+Vowel harmony and other sound processes affect suffix forms: `-ler` is not
+the only realization of Turkish plural. Latin `-arum` bundles genitive and
+plural. English supplies both analytic and synthetic patterns within one
+small comparison. Count morphologically justified pieces, not syllables or letters.
+
+## Beyond a string of suffixes
+
+Arabic has **root-and-pattern morphology**: consonantal roots participate
+in templates containing vowels and other material. Indonesian uses reduplication
+in several constructions; reduplication does not always mean a simple mandatory
+plural. English *sing/sang* changes the stem; *go/went* is **suppletion**, where
+a paradigm uses a markedly different stem. A word-based analysis may be more
+useful than forcing every grammatical contrast into a detachable segment.
+
+**Polysynthesis** refers to systems with particularly rich word-internal
+grammatical organization, often including extensive argument indexing and,
+in some languages, noun incorporation. The exact definition varies. Kalaallisut
+(West Greenlandic) and Mohawk are important comparison cases, but a long word,
+a compound, or any heavily suffixed form is not automatically polysynthetic.
+**Noun incorporation** combines a noun stem into a larger predicate; it is
+not simply deleting spaces in a written sentence.
+
+## Rehearse a classification of patterns
+
+The widget uses **invented schematic forms**, not undocumented examples from
+the languages above. Change the packaging, keeping the target meaning fixed.
+
+<DecisionLab title="🐾 Pack plural and location" label="Encoding strategy" choices={[
+  {label: 'Separate plural and location words', result: 'The construction is comparatively analytic for these categories.', cost: 'Other categories in the same language may still be expressed with affixes.'},
+  {label: 'root-PL-LOC with separable endings', result: 'The construction illustrates synthetic, agglutinative packaging.', cost: 'Real paradigms can have sound changes, exceptions, and bundled endings too.'},
+  {label: 'root-X where X jointly means PL.LOC', result: 'The ending illustrates cumulative, fusional exponence.', cost: 'One bundled ending does not classify every construction in a language.'},
+]} />
+
+## Try it yourself 🧪
+
+Spend five minutes labeling the synthesis and exponence of the Turkish and
+Latin examples separately. Then analyze English *cats*, *went*, and *will
+go*. Say which contrasts you can segment and which you cannot. Finally,
+explain why a character-count comparison of English and Kalaallisut would
+not measure grammatical complexity fairly.
+
+<details>
+<summary>🤓 Why typologists measure features, not pure types (optional)</summary>
+
+Researchers can operationalize categories per word, morphological dependence,
+and cumulative exponence separately. WALS chapter 22 measures **inflectional
+synthesis of the verb**, not all words or all derivation. Its values depend
+on coding criteria. Morphological richness is not total linguistic complexity:
+syntactic, semantic, and phonological distinctions require different measurements.
+None of these metrics ranks intelligence or sophistication of speakers.
+
+</details>
+
+## Recap 🐾
+
+1. Synthesis measures packaging within words; exponence measures form–category mapping.
+2. Analytic, agglutinative, fusional, and polysynthetic labels summarize tendencies with defined scope.
+3. Stem changes, templates, suppletion, and reduplication prevent a suffix-only view of morphology.
+
+<Quiz question="A language has separable plural suffixes and bundled tense/person endings. What should you report?" options={[
+  {text: 'It is impossible: languages must be pure types.', feedback: 'The pure-type filing cabinet is the problem. Different paradigms can package grammar differently.'},
+  {text: 'The noun and verb constructions show different exponence patterns.', correct: true, feedback: 'Exactly. The cat records the construction instead of squeezing the language into one box.'},
+  {text: 'It has no morphology.', feedback: 'Both suffixes and bundled endings are morphological evidence.'},
+]} />
+
+## Sources
+
+Original synthesis. Latin gloss from [Leipzig rule 4](https://www.eva.mpg.de/lingua/resources/glossing-rules.php).
+Compare [Bickel and Nichols, WALS chapter 22](https://wals.info/chapter/22),
+[Dryer, chapter 26](https://wals.info/chapter/26), and
+[Essentials, morphology beyond affixes](https://ecampusontario.pressbooks.pub/essentialsoflinguistics2/chapter/5-4-morphology-beyond-affixes/).
