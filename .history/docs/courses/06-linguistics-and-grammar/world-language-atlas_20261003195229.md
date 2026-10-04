@@ -12,7 +12,7 @@ the passport paperwork. 🌍🐾
 Regions help us plan the tour; they are not language families. Communities
 cross borders, and languages travel.
 
-⏱️ **~8 min** · optional reference; read once, revisit often.
+⏱️ **~9 min** · optional reference; read once, revisit often.
 
 No memorization exam here. Each row gives a family or branch and a question
 worth exploring, not a complete grammar or a claim of uniqueness. Before

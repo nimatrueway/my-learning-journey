@@ -196,10 +196,8 @@ navigate or evaluate its information.
 - Give the recurring cat a subject-specific role and a distinct mistake per lesson.
   Use original, concise jokes about that lesson's actual mechanism. No repeated
   caption with nouns swapped, generic motivational filler, or unrelated mascot gag.
-- Use `<Meme/>` for epigraph and meme slots. Keep meme-specific captions in
-  component props so the joke can be changed independently. The main teaching
-  content must still be conversational and engaging; "separate meme" does not
-  mean "formal explanation."
+- Use `<Meme/>` for epigraph and meme slots. Keep flavor in component props so
+  it can be changed without rewriting neutral teaching content.
 - Use text, CSS, ASCII, or emoji rather than hotlinked meme images.
 - Use readable emoji signposts: `⏱️` for time, `🧪` for practice, `🤓` for optional
   depth, and `🐾` for recaps. Keep the accompanying words, accessible control
