@@ -1,8 +1,8 @@
 ---
 sidebar_position: 1
 slug: /courses/linguistics-and-grammar/sound-and-sign-systems
-title: What Differences Count? Sounds and Signs
-description: Learn phonetic description, phonemic contrasts, allophones, tone, phonotactics, and signed-language parameters.
+title: When Does a Sound Change the Word?
+description: Try English pat and bat, feel the puff in pin, and compare Mandarin mother and horse; open folds for the sound science.
 ---
 
 import DecisionLab from '@site/src/components/LuceneDecisionLab';
@@ -14,11 +14,18 @@ Say *pat*. Now say *bat*. One sound changed, and you got a different word.
 But not every tiny pronunciation change gets a new dictionary entry. Which
 differences count? Each language has its own answer. Let's listen like detectives.
 
-⏱️ **Reading + practice: ~11 min** · includes 5 minutes of practice; folds are optional extra.
+⏱️ **Reading + practice: ~9 min** · includes 5 minutes of practice; folds are optional extra.
 
 <Meme top="The cat classified every pitch change as a question." visual="🐱🎵" bottom="Mandarin has requested a lexical appeal." />
 
-## First, what are your mouth and ears doing?
+## Pat, bat: one small change, a new word
+
+Say *pat* and *bat* slowly. Keep the vowel and final sound the same. The first
+sound changes, and so does the word. Now we have a useful comparison, not
+just two recordings that happen to sound different.
+
+<details>
+<summary>🤓 The sound science: phonetics, phonemes, and minimal pairs</summary>
 
 For a typical `[p]`, close both lips, block the air, then release it. The vocal
 folds do not vibrate during the closure in this basic description. That gives
@@ -31,30 +38,50 @@ lips are rounded. The **International Phonetic Alphabet (IPA)** gives us
 symbols for sounds, instead of relying on spelling. English `sh` uses two
 letters for the sound written `[ʃ]` in IPA. Letters are not sound counters.
 
-## Now, which differences change the word?
-
 *Pat* and *bat* differ in one sound, in the same position, and have different
 meanings. That is a **minimal pair**. It supports treating `/p/` and `/b/`
 as different **phonemes**: sound categories that can distinguish words in
 the variety we're studying. This is **phonology** territory: how a language
 organizes its signals into meaningful contrasts and patterns.
 
+</details>
+
 ## A puff of air with two possible jobs
 
 Hold a hand near your mouth and say *pin*, then *spin*. In many English
-varieties, the first `/p/` has a stronger puff of air. We write that `[pʰ]`;
-the little `ʰ` marks **aspiration**. Its appearance follows the sound context,
-rather than normally turning one otherwise identical English word into another.
-These pronunciations can be **allophones**: different versions of one phoneme.
+varieties, the first *p* has a stronger puff of air. The sound context helps
+predict the puff; English normally does not use that puff alone to turn one
+otherwise identical word into another.
 
 Hindi can use aspiration to distinguish words. Same puff, different job!
 Never assume another language uses English's sound categories.
+
+<details>
+<summary>🤓 Aspiration, allophones, and why pin/spin isn't a perfect test</summary>
+
+The puff is **aspiration**, written `[pʰ]`. These English pronunciations can
+be **allophones**, different versions of one phoneme. *Pin/spin* is not a
+minimal pair testing aspiration alone: *spin* also adds `/s/`.
 
 When related sounds appear in different, predictable places, linguists call
 that **complementary distribution**. It helps support an allophone explanation.
 Still, collect enough examples: missing overlap in a tiny sample could be luck.
 
-## A world tour of phonological dimensions
+</details>
+
+## Mother or horse? Mandarin needs the pitch
+
+| Mandarin form | Dictionary-style meaning |
+| --- | --- |
+| *mā* | mother |
+| *mǎ* | horse |
+
+The other sounds match, but the pitch pattern changes the word. Not every
+pitch change means "I'm asking a question." This is why copying English's
+habits can send our cat to the wrong dictionary entry.
+
+<details>
+<summary>🤓 Tone, intonation, length, and allowed sound combinations</summary>
 
 | Dimension | Comparison worth investigating |
 | --- | --- |
@@ -62,7 +89,6 @@ Still, collect enough examples: missing overlap in a tiny sample could be luck.
 | Vowel or consonant length | Japanese distinguishes lengths that English spelling does not reliably represent |
 | Click consonants | Found in several southern African families and also in languages such as Zulu through contact |
 | Phonotactics | Languages differ in which consonant clusters and syllable patterns they permit |
-| Signed parameters | Handshape, location, movement, and orientation can distinguish lexical signs |
 
 Mandarin `mā` means "mother" and `mǎ` means "horse" in these dictionary-style
 forms. Change the tone, change the word. **Tone** uses pitch for word or
@@ -70,28 +96,25 @@ grammar distinctions. **Intonation** uses pitch across an utterance, for
 emphasis or some question patterns. A language can use both. The marks here
 are pinyin tone marks; tones can sound different in connected speech.
 
-Signed languages have phonology too, without sound. Change a handshape,
-movement, or location and you may change the sign. Facial actions can also
-carry grammar, not just emotion. An English label for a sign cannot show all
-of that. As with speech, check the particular language rather than copying
-another language's categories.
+</details>
 
-## What would your evidence show?
+## Choose the pair you want to explain
 
-These are **made-up summaries of possible evidence**, not recordings.
+These are real word comparisons. The widget explains the pattern; it is not
+an audio player or pronunciation test.
 
-<DecisionLab title="🐾 Contrast detective" label="Observed distribution" choices={[
-  {label: 'Same position; one sound changes the word', result: 'That minimal pair supports two different phonemes.', cost: 'Check that the contexts and meanings really match, and name the variety you tested.'},
-  {label: 'Related sounds in predictable different places', result: 'These may be two versions of one phoneme: allophones.', cost: 'Try more examples. A small sample can make two sounds look more neatly separated than they are.'},
-  {label: 'Same other sounds; pitch changes the word', result: 'That supports a tone contrast between words.', cost: 'A word-changing tone is not just a question melody. Check what happens in connected speech too.'},
+<DecisionLab title="🐾 Listen for the difference" label="Word pair" choices={[
+  {label: 'English: pat / bat', result: 'Changing the first sound gives a different word.', cost: 'Keep the rest of the word and the speaker variety comparable.'},
+  {label: 'English: pin / spin', result: 'The puff on p differs predictably in many English varieties.', cost: 'Spin also adds s, so this pair changes more than the puff alone.'},
+  {label: 'Mandarin: mā / mǎ', result: 'The tone helps distinguish mother from horse.', cost: 'These are dictionary-style forms. Tone can change in connected speech.'},
 ]} />
 
 ## Try it yourself 🧪
 
 Spend five minutes comparing *pat/bat* and *pin/spin*. What changes? What stays
-the same? Why is *pin/spin* not a minimal pair testing only aspiration? Hint:
-*spin* also adds `/s/`. Then plan a sign-language comparison that changes only
-handshape and checks meaning. An English label alone cannot be your evidence.
+the same? Which pair changes only the first sound, and which also adds *s*?
+Then explain the Mandarin mother/horse example to a friend: why would an
+English spelling-based guess miss something important?
 
 <details>
 <summary>🤓 Categories are not waveform slices (optional)</summary>
@@ -99,27 +122,26 @@ handshape and checks meaning. An English label alone cannot be your evidence.
 Sounds flow into one another. Your mouth prepares the next sound before it
 finishes the current one; this is **coarticulation**. A recording is not a row
 of perfectly separate sound bricks. Stress, syllables, tone, and timing also
-matter. Signs can combine several things at once. Which units best explain
-those patterns is a question to test, not settle from a spelling chart.
+matter. Which units best explain those patterns is a question to test, not
+settle from a spelling chart.
 
 </details>
 
 ## Recap 🐾
 
-1. Phonetics asks how signals are made; phonology asks how a language organizes them.
-2. Test whether a change creates a new word or a predictable version of the same sound category.
-3. Compare tone, length, allowed sound combinations, and sign structure separately.
+1. English *pat/bat* shows a sound difference that changes the word.
+2. The puff in *pin/spin* follows context in many English varieties; the pair also differs by *s*.
+3. Mandarin *mā/mǎ* shows that pitch can distinguish words, not just questions.
 
-<Quiz question="Why does English pin versus spin not establish two aspiration phonemes?" options={[
-  {text: 'Aspiration can never be phonemic in any language.', feedback: 'It can be contrastive elsewhere. English is not the planet\'s sound policy.'},
-  {text: 'The contexts differ, and aspiration is predictable in these English examples.', correct: true, feedback: 'Yes. You controlled the environment before promoting a puff of air to a phoneme.'},
-  {text: 'Spelling determines the phoneme inventory.', feedback: 'Letters are not phonemes. An alphabet is a writing tool, not a phonological experiment.'},
+<Quiz question="Mandarin mā means mother and mǎ means horse. What matters in this comparison?" options={[
+  {text: 'The tone, even though the other sounds match.', correct: true, feedback: 'Yes. The pitch pattern changes the word. The cat should listen before booking a riding lesson.'},
+  {text: 'Only whether the speaker is asking a question.', feedback: 'This contrast distinguishes words, not just question melodies.'},
+  {text: 'The number of letters in the English translation.', feedback: 'Mother and horse are translations. Their English spelling cannot explain the Mandarin contrast.'},
 ]} />
 
 ## Sources
 
 Original synthesis and illustrative comparisons. See
 [Essentials, phonemes and allophones](https://ecampusontario.pressbooks.pub/essentialsoflinguistics2/chapter/4-1-phonemes-and-allophones/),
-[signed articulation](https://ecampusontario.pressbooks.pub/essentialsoflinguistics2/chapter/3-7-signed-language-articulators/),
 and [Maddieson, WALS chapter 13](https://wals.info/chapter/13) for the distribution
 and coding caveats of tone. The widget is a qualitative reasoning exercise, not audio training.

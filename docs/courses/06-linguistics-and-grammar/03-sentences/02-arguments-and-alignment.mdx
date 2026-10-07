@@ -1,8 +1,8 @@
 ---
 sidebar_position: 2
 slug: /courses/linguistics-and-grammar/arguments-and-alignment
-title: Who Did What? Case, Agreement, and Alignment
-description: Distinguish semantic roles, grammatical relations, nominative–accusative and ergative–absolutive alignment, and split systems.
+title: Who Did What? Follow the Participants
+description: Compare real English, Hunzib, Latvian, and Spanish examples; open folds for case, agreement, and alignment.
 ---
 
 import DecisionLab from '@site/src/components/LuceneDecisionLab';
@@ -11,15 +11,44 @@ import Meme from '@site/src/components/Meme';
 
 "The window was broken by the child."
 
-The window is the subject. Did it break itself? No. So "subject = the one
-doing the action" is already in trouble, before we even leave English.
-Let's sort out the grammar without falsely accusing the window.
+The window comes first. Did it break itself? No. Blaming the first noun would
+already get us into trouble, before we even leave English. Let's follow the
+participants without falsely accusing the window.
 
-⏱️ **Reading + practice: ~11 min** · includes 5 minutes of practice; folds are optional extra.
+⏱️ **Reading + practice: ~10 min** · includes 5 minutes of practice; folds are optional extra.
 
-<Meme top="The cat blamed the first noun." visual="🐱⚖️" bottom="The passive window has an alibi. Grammatical relation is not guilt." />
+<Meme top="The cat blamed the first noun." visual="🐱⚖️" bottom="The window has an alibi. Starting the sentence is not proof of guilt." />
 
-## The story's roles and the sentence's jobs
+## English: she sleeps, but someone sees her
+
+| English example | Form for the same female participant |
+| --- | --- |
+| She slept. | *she* |
+| She saw him. | *she* |
+| He saw her. | *her* |
+
+Sleeping alone and doing the seeing both use *she*. Being seen uses *her*.
+The form helps us track the participant's job. But *the child* stays the
+same in these positions. Even English does not give every noun the same wardrobe.
+
+## Hunzib groups participants another way
+
+These two examples are published in WALS, from a grammar of Hunzib, a language
+of the eastern Caucasus:
+
+| Hunzib | Meaning |
+| --- | --- |
+| *kid y-ut'-ur* | The girl slept. |
+| *oždi-l kid hehe-r* | The boy hit the girl. |
+
+Here *kid* means "girl"; it is not the English word *kid*. The girl's word
+stays plain whether she sleeps or is affected by someone else's action.
+The boy's form carries `-l` when he does the action in the second example.
+That is a different grouping from English *she/her*. Same tracking problem,
+different grammar solution.
+
+<details>
+<summary>🤓 The labels: roles, subjects, objects, S, A, and P</summary>
 
 In "the child broke the window," the child starts the action and the window
 is affected. The usual role names are **agent** and **patient**. Other stories
@@ -42,7 +71,10 @@ The sleep example is **intransitive**; the break example is **transitive**.
 These labels help compare patterns without pretending English's subject rules
 are the rules of the world.
 
-## Which two get treated alike?
+</details>
+
+<details>
+<summary>🤓 Accusative versus ergative, with the real Hunzib gloss</summary>
 
 Compare *she slept*, *she saw him*, and *he saw her*. English uses *she* for
 S and A, but *her* for P here. Grouping S with A is **nominative–accusative
@@ -55,32 +87,51 @@ languages offer real cases to study. The relevant A case is called **ergative**;
 the S/P case is **absolutive**. "Ergative" does not mean past tense or the subject
 of every verb. Check which construction uses it.
 
-Try this **made-up case system**, not Basque or Warlpiri:
+The Hunzib forms above have this gloss in WALS:
 
 ```text
-dara       sleep
-child.ABS  sleep
-'The child sleeps.'
+kid  y-ut'-ur
+girl CL2-sleep-PST
+'The girl slept.'
 
-dara-ka    pano        see
-child-ERG  bird.ABS    see
-'The child sees the bird.'
+oždi-l  kid  hehe-r
+boy-ERG girl hit-PST
+'The boy hit the girl.'
 ```
 
-The sleeping child and the seen bird have no ending. The seeing child gets
-`-ka`. S and P alike, A different. That is the grouping to notice first.
-`.ABS` labels our analysis of the plain form; it does not mean an invisible
-spoken suffix was found. The English translation cannot decide the case system.
+The girl as S and P has no overt case suffix here; the boy as A has the
+ergative `-l`. `CL2` labels noun-class agreement on the sleep verb. Case
+marking, agreement, and syntax are separate comparisons: these examples do
+not establish that they all use exactly the same grouping.
 
-## Spot the grouping before naming it
+</details>
 
-<DecisionLab title="🐾 File the argument evidence" label="Observed marking pattern" choices={[
-  {label: 'S and A alike; P different', result: 'S joins A: a nominative–accusative pattern in this marking.', cost: 'Pronouns and full nouns can differ. Check them separately.'},
-  {label: 'S and P alike; A different', result: 'S joins P: an ergative–absolutive pattern in this marking.', cost: 'Case endings do not automatically tell you how verb agreement or sentence structure works.'},
-  {label: 'Pattern changes between aspect constructions', result: 'The grouping depends on the construction: a possible split-alignment system.', cost: 'Write down when each pattern appears rather than forcing the whole language into one box.'},
+## Latvian: the endings help too
+
+Two more WALS examples: *Putn-s lidoja*, "The bird was flying," and
+*Bērn-s zīmē sun-i*, "The child is drawing a dog."
+
+Notice `-s` on the flying bird and the drawing child, versus `-i` on the dog
+being drawn. This is another real way to mark participant jobs. Do not assume
+English pronouns are the only way a language can make the distinction.
+
+## Compare the examples, not imaginary rules
+
+<DecisionLab title="🐾 Track who did what" label="Real comparison" choices={[
+  {label: 'English: she slept / she saw him / he saw her', result: 'She covers sleeping and doing the seeing; her marks the seen participant here.', cost: 'Full nouns such as the child do not show this same form change.'},
+  {label: 'Hunzib: kid asleep / kid affected by the boy', result: 'The girl\'s form stays plain in both jobs; the acting boy gets an ending.', cost: 'This is the case pattern in the cited examples, not every rule of Hunzib.'},
+  {label: 'Latvian: Putn-s / Bērn-s / sun-i', result: 'The flying bird and drawing child have s; the dog being drawn has i.', cost: 'Check more noun forms before predicting every Latvian ending.'},
 ]} />
 
-## One language, more than one pattern
+## Spanish adds a small marker before Juan
+
+Compare the published pair *María vio a Juan*, "Mary saw John," and
+*María vio el libro*, "Mary saw the book." The person gets *a* in this
+comparison; the book does not. Which objects get marked is another question
+worth testing, not something we can settle by counting nouns alone.
+
+<details>
+<summary>🤓 Split alignment, object marking, and agreement</summary>
 
 Check noun-case forms, participant markers on verbs, and sentence behavior
 separately. They need not group S, A, and P in exactly the same way. The pattern
@@ -96,12 +147,14 @@ are good comparison stops, but they do not follow identical rules.
 Case forms, these verb markers, and word order can work together. A language
 does not have to choose just one way of telling us who did what.
 
+</details>
+
 ## Try it yourself 🧪
 
-Spend five minutes labeling S, A, and P in the made-up examples. Then let the
-bird sleep and let the bird see the child. Which noun gets `-ka` now? Our
-predictions are `pano sleep` and `pano-ka dara see`. Explain why the original
-window sentence shows that subject does not always mean doer.
+Spend five minutes circling the participant forms in the English, Hunzib,
+and Latvian examples. Which jobs get matching forms? Write the grouping in
+ordinary words first. Then open a technical fold to add the label. Finally,
+explain why starting the window sentence does not make the window the doer.
 
 <details>
 <summary>🤓 Other alignments and measurement scope (optional)</summary>
@@ -118,17 +171,20 @@ as the language's behavior in every situation.
 ## Recap 🐾
 
 1. A participant's role in the story is not always its job in the grammar.
-2. Accusative patterns group S with A; ergative patterns group S with P in the behavior tested.
+2. English *she/her* and Hunzib's plain *kid* show different participant groupings.
 3. Check nouns, pronouns, verb markers, and clause types: their patterns can differ.
 
-<Quiz question="S and P use one case; A uses another. What do we call this case pattern?" options={[
-  {text: 'Ergative–absolutive case alignment.', correct: true, feedback: 'Exactly. You compared the grouping; the field cat has stopped blaming whichever noun came first.'},
-  {text: 'Nominative–accusative case alignment.', feedback: 'That pattern groups S with A, not P. Recheck the two clause types.'},
-  {text: 'Proof that the language has no subjects.', feedback: 'Case grouping alone does not settle every syntactic relation or theory of subjects.'},
+<Quiz question="In the Hunzib pair, what happens to the girl's word kid?" options={[
+  {text: 'It stays plain both when she sleeps and when she is affected.', correct: true, feedback: 'Yes. Notice the shared form before memorizing the label. The boy doing the action has the special ending.'},
+  {text: 'It must become the English word her.', feedback: 'Hunzib is not English with different spelling. Compare its own forms.'},
+  {text: 'It always gets the acting boy\'s ending.', feedback: 'The published pair shows plain kid in both places. The ending belongs to the boy\'s form here.'},
 ]} />
 
 ## Sources
 
-Original constructed dataset. Definitions and scope follow
-[Comrie, WALS chapter 98](https://wals.info/chapter/98); compare
+Hunzib, Latvian, and Spanish examples from
+[Comrie, WALS chapter 98](https://wals.info/chapter/98), examples 4, 2, and 7.
+The Hunzib source is van den Berg (1995: 122); the Latvian source is Mathiassen
+(1997: 181, 187). English sentences are ordinary grammatical illustrations, not
+recorded quotations. Compare
 [chapter 100](https://wals.info/chapter/100) for verbal person marking.

@@ -14,14 +14,26 @@ import Meme from '@site/src/components/Meme';
 Where did the other words go? Nowhere! Latin packs the meaning differently.
 Let's open the word and see what is inside. 🐱🔬
 
-⏱️ **Reading + practice: ~11 min** · includes 5 minutes of practice; folds are optional extra.
+⏱️ **Reading + practice: ~9 min** · includes 5 minutes of practice; folds are optional extra.
 
 <Meme top="The cat counted English words in the translation." visual="🐱🔬" bottom="Latin filed an objection: one ending, two grammatical jobs." />
 
-## Three lines, three useful views
+## Latin: one word, several jobs
 
-This Latin example comes from the Leipzig Glossing Rules. Read it from top
-to bottom; the explanation is ours:
+Compare these real forms from the Leipzig Glossing Rules:
+
+| Language | Form | Meaning |
+| --- | --- | --- |
+| Latin | *insularum* | of the islands |
+| French | *aux chevaux* | to the horses |
+
+Latin's `-arum` ending tells us both "more than one" and, here, an "of"
+relationship. Two jobs in one ending. French *aux* similarly packs information
+that English spreads across *to the*. Counting English words will not tell us
+how the other language built its phrase.
+
+<details>
+<summary>🤓 Read the three-line label under the Latin example</summary>
 
 ```text
 insul-arum
@@ -29,20 +41,40 @@ island-GEN.PL
 'of the islands'
 ```
 
-The top line gives the Latin form, split into pieces. `insul-` is the stem
-for "island." The ending `-arum` does two jobs: it marks plural and, here,
-an "of" relationship. That second job is called **genitive**.
+The first line shows the Latin form and proposed split. The second is a
+**gloss**, labeling each piece. `GEN` is **genitive**, the category behind
+the "of" translation here; `PL` is plural. The dot says one piece has both
+labels. The third line gives natural English meaning, not Latin structure.
 
-The middle line is a **gloss**: a short label for each piece. `GEN.PL` says
-"genitive and plural, both in this one piece." The bottom line is the natural
-English translation. It tells you the meaning, not how many Latin words exist.
+A **morpheme** is an analyzed piece with a meaning or grammatical job. It
+need not be a whole word or have a separate English translation. Glosses
+help us see the analysis without pretending every language is English.
 
-A small piece with a word-building or meaning job is called a **morpheme**.
-It need not be a whole word or have its own separate English translation.
-That's why a gloss is useful: it shows the proposed pieces and jobs instead
-of quietly replacing the grammar with English.
+</details>
 
-## Those tiny punctuation marks are doing work
+## Indonesian: where did "are" go?
+
+Another published example, this time from Indonesian:
+
+> **Mereka di Jakarta sekarang.**
+>
+> They are in Jakarta now.
+
+The four Indonesian words give *they*, *in*, *Jakarta*, and *now*. There is
+no separate word corresponding to English *are* in this example. Nothing is
+missing from the message. Indonesian does not need English's exact recipe
+for this sentence. The translator supplies natural English, not a photocopy.
+
+## Look at the original before counting the translation
+
+<DecisionLab title="🐾 What got packed where?" label="Real example" choices={[
+  {label: 'Latin: insularum', result: 'One word means of the islands. Its ending carries two grammar jobs.', cost: 'Three English words do not imply three Latin pieces.'},
+  {label: 'French: aux chevaux', result: 'Two words mean to the horses. Aux packs to plus article and plural information.', cost: 'Do not insist that each English word has a separate French word.'},
+  {label: 'Indonesian: Mereka di Jakarta sekarang', result: 'Four words give the message they are in Jakarta now, without a separate are.', cost: 'An English word added by the translator is not evidence of an Indonesian word.'},
+]} />
+
+<details>
+<summary>🤓 Hyphens, dots, equals signs, and abbreviation keys</summary>
 
 | Notation | What it normally communicates |
 | --- | --- |
@@ -61,48 +93,34 @@ Keep the author's abbreviation key nearby. `S` might name the participant in
 "the bird sleeps," not "singular." Labels can vary. The cat's rule: read the
 key before confidently decoding the wrong thing.
 
-## Same-looking pieces, different guesses
+Here is a real equals-sign example from West Greenlandic, also published in
+the Leipzig rules:
 
-These are **made-up notation exercises**, not more Latin examples. Change the
-gloss and notice what changes in our explanation.
+```text
+palasi=lu  niuirtur=lu
+priest=and shopkeeper=and
+'both the priest and the shopkeeper'
+```
 
-<DecisionLab title="🐾 The boundary audit" label="Annotation" choices={[
-  {label: 'lum-ta / bird-PL', result: 'We are treating -ta as one ending that marks plural.', cost: 'Compare more forms to check where it works and whether the ending changes.'},
-  {label: 'lum-ta / bird-GEN.PL', result: 'We are giving one ending two jobs: genitive and plural.', cost: 'The dot does not create two separate endings. We still need evidence for the word split.'},
-  {label: 'lum=ta / bird=Q', result: 'We are treating the question marker as a clitic attached to bird.', cost: 'The equals sign shows our guess. It is not proof that the marker actually behaves like a clitic.'},
-]} />
-
-## The bird gets a small wardrobe
-
-Here is another **made-up dataset**. Compare the bird word in several forms.
-A table of related forms like this is called a **paradigm**.
-
-| Form | Supplied meaning |
-| --- | --- |
-| `lum` | bird |
-| `lum-ta` | birds |
-| `lum-ki` | of a bird |
-| `lum-ta-ki` | of birds |
-
-Now `-ta` looks like plural and `-ki` looks like genitive. In the last row,
-plural comes first. Good! But have we tested `lum-ki-ta`? No. Do all nouns
-work this way? Also unknown. A neat table can still leave big questions open.
+The repeated `=lu` means "and" here. The equals sign marks a clitic boundary
+in this analysis, not a detachable English-style word.
 
 You might see someone label singular with a **zero marker**: a grammatical
 job with no spoken piece of its own. That is a claim about the wider system,
 not a reason to add an invisible ending whenever a table has an empty slot.
 
-Keep three things separate: what was said, what it meant in context, and how
-you explain the pieces. A gloss belongs to that third part. Two researchers
-can agree on the recording but disagree on its labels. Save the original and
-where it came from, so someone else can check the explanation.
+</details>
+
+Keep what was said, what it meant, and how you explain it on separate lines.
+Researchers can agree on the words but disagree about their labels. Save the
+original example and its source so someone else can check your explanation.
 
 ## Try it yourself 🧪
 
-Spend five minutes labeling the pieces in `lum-ta-ki`, then give its natural
-English translation. Compare it with `insul-arum`: where do the plural and
-genitive jobs live in each? Ask for one new noun example to check each word
-split. For our made-up bird, the expected gloss is `bird-PL-GEN`.
+Spend five minutes explaining *insularum*, *aux chevaux*, and *Mereka di
+Jakarta sekarang* without using technical labels. Circle what English spreads
+across more words. Then open the first fold and explain why the dot in `GEN.PL`
+does not mean that Latin has two separate endings.
 
 <details>
 <summary>🤓 What a transcription leaves out (optional)</summary>
@@ -110,27 +128,25 @@ split. For our made-up bird, the expected gloss is `bird-PL-GEN`.
 Ordinary spelling, a list of contrastive sounds, and a detailed pronunciation
 record are different views. `/p/` usually names a phoneme; `[pʰ]` records
 a pronunciation detail, here a puff of air. We will unpack those next.
-In signed-language examples, `BOOK` is a label for a sign, not an English word
-spoken by the signer. The label alone misses movement, handshape, facial
-marking, and timing. For speech and sign alike, a translation cannot replace
-the original recording.
+A written line cannot capture every detail of actual speech. Keep the recording
+when available; an English translation cannot replace it.
 
 </details>
 
 ## Recap 🐾
 
-1. The original shows the form, the gloss labels its pieces, and the translation gives natural meaning.
-2. Hyphens, equals signs, and dots tell you different things; they are not decoration.
-3. Check labels against more forms and keep the original evidence, not just a tidy explanation.
+1. Latin *insularum* fits "of the islands" into one word; count the original, not the translation.
+2. Indonesian's example has no separate *are*, even though natural English needs it.
+3. Extra labels can help explain the pieces, but they are not the original evidence.
 
-<Quiz question="Why does insul-arum have the gloss island-GEN.PL rather than island-GEN-PL?" options={[
-  {text: 'The genitive and plural labels describe one segmented ending.', correct: true, feedback: 'Right. One ending can do two jobs; the cat must not invent an extra boundary.'},
+<Quiz question="Of the islands has three English words. What does that tell us about Latin insularum?" options={[
+  {text: 'Nothing about its word count: Latin packs the message differently.', correct: true, feedback: 'Right. The Latin form is one word. The English translation is not a set of Latin building instructions.'},
   {text: 'Latin uses a separate word for each English word.', feedback: 'The free translation contains separate English words, but the Latin example is one word.'},
   {text: 'Dots and hyphens are interchangeable decoration.', feedback: 'A hyphen splits pieces; a dot gives one piece multiple labels. Tiny punctuation, big difference.'},
 ]} />
 
 ## Sources
 
-Latin form and gloss from the [Leipzig Glossing Rules, rule 4](https://www.eva.mpg.de/lingua/resources/glossing-rules.php).
-Other datasets are original constructed teaching examples. For signed-language
-notation, see [Essentials of Linguistics, section 3.7](https://ecampusontario.pressbooks.pub/essentialsoflinguistics2/chapter/3-7-signed-language-articulators/).
+All language forms are published examples from the [Leipzig Glossing Rules](https://www.eva.mpg.de/lingua/resources/glossing-rules.php):
+Indonesian in rule 1, West Greenlandic in rule 2, and Latin and French in rule 4.
+Explanations and the comparison activity are original synthesis.

@@ -2,17 +2,17 @@
 sidebar_position: 5
 slug: /courses/linguistics-and-grammar/world-language-atlas
 title: World-Language Atlas and Comparison Guide
-description: Thirty-five language comparison stops across world regions, with family labels, structural questions, and a method for investigating additional languages.
+description: Thirty-three spoken-language comparison stops across world regions, with family labels, examples, and a method for investigating additional languages.
 ---
 
 Pick a stop. Ask a question. Follow a surprising pattern. This atlas gives
-you **35 places to start**, with the field cat handling absolutely none of
+you **33 places to start**, with the field cat handling absolutely none of
 the passport paperwork. 🌍🐾
 
 Regions help us plan the tour; they are not language families. Communities
 cross borders, and languages travel.
 
-⏱️ **~8 min** · optional reference; read once, revisit often.
+⏱️ **~8 min** · optional reference; read once, revisit often; technical reminders are folded.
 
 No memorization exam here. Each row gives a family or branch and a question
 worth exploring, not a complete grammar or a claim of uniqueness. Before
@@ -78,7 +78,7 @@ and [grammatical categories](./02-sounds-and-words/03-grammatical-categories.mdx
 "Chinese" can mean related varieties or particular standards. Name the spoken
 variety and writing conventions you are studying. Researchers still debate
 some branches within Sino-Tibetan. Revisit
-[sounds and signs](./02-sounds-and-words/01-sound-and-sign-systems.mdx) and
+[sound comparisons](./02-sounds-and-words/01-sound-and-sign-systems.mdx) and
 [non-compositional expressions](./04-meaning-and-diversity/01-composition-and-idioms.mdx).
 
 ## Islands, Australia, and New Guinea
@@ -114,20 +114,6 @@ neither their spread nor this table represents its full diversity. Read
 [WALS chapter 81](https://wals.info/chapter/81) for Hixkaryana's order example and
 [chapter 98](https://wals.info/chapter/98) for alignment distinctions.
 
-## Signed-language communities
-
-| Stop | Historical anchor | What to investigate |
-| --- | --- | --- |
-| American Sign Language (ASL) | Linked to French Sign Language traditions | What do handshape, movement, location, orientation, and facial or body actions do? Not just English in signs. |
-| British Sign Language (BSL) | British sign-language lineage | Compare it with ASL. Nearby spoken English does not guarantee that their signers understand each other. |
-
-Not all signed languages are one family. Glottolog's
-["Sign Language" pseudo-family](https://glottolog.org/resource/languoid/id/sign1238)
-is an organizational heading, not evidence of ancestry. ASL and BSL do not
-represent all village and emerging sign languages. Consult
-[Essentials on signed articulation](https://ecampusontario.pressbooks.pub/essentialsoflinguistics2/chapter/3-7-signed-language-articulators/)
-and [signed phonology](https://ecampusontario.pressbooks.pub/essentialsoflinguistics2/chapter/4-10-signed-language-phonology/).
-
 ## Shared, distinctive, or unique?
 
 Mandarin, Yoruba, and Navajo all use tone, but that does not put them in one
@@ -140,7 +126,8 @@ needs much more evidence, including varieties and unsettled analyses. An
 unfamiliar structure is still ordinary communication for its users, not
 an exhibit labeled "look how strange these people are."
 
-## Forgot a term? Here's a quick reminder
+<details>
+<summary>🤓 Forgot a term? Open the technical reminders</summary>
 
 - **Phoneme / allophone:** a sound category that distinguishes words / a version of that category.
 - **Morpheme / allomorph:** an analyzed meaning-bearing piece / an alternative form of that piece.
@@ -157,12 +144,14 @@ an exhibit labeled "look how strange these people are."
 
 These are reminders, not substitutes for the lessons' tests and caveats.
 
+</details>
+
 ## Extend the itinerary to any other language
 
 1. Find the **specific variety** in [Glottolog's catalogue](https://glottolog.org/glottolog/language). Note other names, its stable identifier, the classification version, and uncertainty. A country name or similar spelling is not enough.
 2. Follow the bibliography to a grammar or community resource. Look for actual examples, sets of word forms, and limits on the description, not stereotypes.
 3. Find relevant [WALS features](https://wals.info/feature). Read what each feature means and which variety was checked. Blank means no value recorded, not that the feature is absent.
-4. Make the [capstone profile](./04-meaning-and-diversity/03-comparative-capstone.mdx). Compare one shared feature and one difference. Keep family, area, and speaking/signing mode separate.
+4. Make the [capstone profile](./04-meaning-and-diversity/03-comparative-capstone.mdx). Compare one shared feature and one difference. Keep family, area, and writing system separate.
 
 For contact languages, add [APiCS](https://apics-online.info/) to the shelf.
 For glosses, use the [Leipzig Glossing Rules](https://www.eva.mpg.de/lingua/resources/glossing-rules.php).

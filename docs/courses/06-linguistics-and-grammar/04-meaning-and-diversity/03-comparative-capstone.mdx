@@ -1,7 +1,7 @@
 ---
 sidebar_position: 3
 slug: /courses/linguistics-and-grammar/comparative-capstone
-title: Build a Language Profile and Test a Universal
+title: Catch the Cat's World Rule with Real Languages
 description: Combine the course's tools into an evidence-backed grammar profile and investigate sampling bias in typological claims.
 ---
 
@@ -15,27 +15,28 @@ They might be three close relatives, and the next language might disagree.
 For our final stop, you'll build a language profile and test a tiny claim.
 The cat has a clipboard. You have veto power over its dramatic announcements. 📋
 
-⏱️ **Reading + practice: ~18 min** · includes 12 minutes of practice; folds are optional extra.
+⏱️ **Reading + practice: ~19 min** · includes 12 minutes of practice; folds are optional extra.
 
 <Meme top="The cat sampled three cousins and announced a planetary law." visual="🐱📋" bottom="The fourth language brought a counterexample and a very small sample warning." />
 
 ## Make a language passport, not a single label
 
 Choose a language or variety from the [world-language atlas](../world-language-atlas.md).
-Give it separate notes for family history, community and period, sounds or
-signs, word-building, sentence patterns, grammatical categories, and meaning.
+Give it separate notes for family history, community and period, sounds,
+word-building, sentence patterns, grammatical categories, and meaning.
 One label cannot do all those jobs.
 
 For each note, write **what you think is true**, **the example or source**,
-**where the claim applies**, and **how sure you are**. "SOV in these ordinary
-statements" is safer than "always SOV." "These nouns have no visible case
+**where the claim applies**, and **how sure you are**. "Read follows the letter
+in this Japanese statement" is safer than "every sentence works that way."
+"These nouns have no visible case
 contrast" does not mean "nobody can tell who did what." Keep "we don't have
 the data" separate from "we checked and it isn't there."
 
 | Profile field | A useful evidence question |
 | --- | --- |
 | Family and contact | Which classification are you using? What borrowing history is known? |
-| Sounds or signs | What pair or pattern shows that a difference counts? |
+| Sounds | What pair or pattern shows that a difference counts? |
 | Word-building | Which word forms show pieces doing one job or several? |
 | Sentences and participants | Which sentence type and participants did you check? What marks them? |
 | Categories | What must speakers mark, what can they add, and what can context supply? |
@@ -48,41 +49,63 @@ answering every question about how the expression behaves.
 
 ## Can you catch the cat's world rule?
 
-This table is **invented data**, not a survey of real languages. `VO` means
-verb before object; `OV` means object before verb in the construction checked.
-"Prepositions" asks whether placing relation words before their noun phrases
-is the dominant strategy for this exercise. The families and areas are made up too.
+English says "see the woman" and "in the house." The action comes before
+the thing seen; *in* comes before the house. Our cat makes a leap: "When the
+action comes first, relation words must always come first too!"
 
-| Language | Family | Area | Order | Prepositions |
-| --- | --- | --- | --- | --- |
-| A | F1 | North | VO | Yes |
-| B | F1 | North | VO | Yes |
-| C | F1 | North | VO | Yes |
-| D | F2 | South | OV | No |
-| E | F3 | East | VO | No |
-| F | F4 | West | OV | No |
-| G | F5 | North | VO | Unknown |
+Check these **real comparison cases from WALS chapter 95**. The columns
+report dominant patterns, not every possible sentence or relation word.
 
-The cat announces: "Every VO language has prepositions." Check E. VO, but
-no prepositions under our definition. One counterexample breaks that
-exceptionless claim. G is not another exception or a supporting case:
-we simply do not know its value.
+| Language | Action and object | Relation word and noun phrase |
+| --- | --- | --- |
+| English | action first | relation word before |
+| Chalcatongo Mixtec | action first | relation word before |
+| Koyra Chiini | action first | relation word after |
+| Arawak | action first | relation word after |
+| Nivkh | object first | relation word after |
+| Persian | object first | relation word before |
+| Tigre | object first | relation word before |
 
-We can make a smaller claim: among the known rows, **three of four VO languages**
-have prepositions, versus **zero of two OV languages**. Count them yourself.
+Koyra Chiini and Arawak disagree with the cat's rule. In the published Koyra
+Chiini examples, *guna*, "see," precedes the woman phrase; *ra*, a location
+marker, follows the house phrase. Both pieces are worth looking at, not just
+the English translation.
 
-But A, B, and C are relatives in the same area. They might share the feature
-through ancestry or contact, not three separate developments. Keep just A,
-D, E, and F as a rough one-per-family example. The VO count becomes **one of
-two**. That is not the corrected world answer! It shows why choosing a sample
-changes what the numbers seem to say.
+These seven languages were picked to show contrasting patterns. They are
+**not a representative world sample**. The wider WALS survey finds strong
+tendencies; a table deliberately containing unusual cases is not a shortcut
+to world percentages. "Often" survives evidence that defeats "always."
+
+<details>
+<summary>🤓 The real Koyra Chiini forms and the VO/OV terminology</summary>
+
+From WALS chapter 95, example 3, citing Heath (1999b: 103, 124):
+
+```text
+har di o guna woy di
+man DEF IMPF see woman DEF
+'The man sees the woman.'
+
+ay too huu di ra
+1SG arrive house DEF LOC
+'I arrived in the house.'
+```
+
+**VO** means verb before object; **OV** reverses that order. A **preposition**
+precedes its noun phrase; a **postposition** follows. Koyra Chiini has a few
+prepositions too: WALS codes its dominant strategy, not their total absence.
+Among our four VO rows, two have dominant prepositions. Among the three OV
+rows, two do. Those fractions describe this deliberately selected table,
+not the full survey or an ancestry-controlled world estimate.
+
+</details>
 
 ## Pick a headline the table actually supports
 
 <DecisionLab title="🐾 The universal audit" label="Reporting choice" choices={[
-  {label: 'Every VO language has prepositions', result: 'E disagrees: it has VO and no prepositions in this table.', cost: 'One reliable exception is enough to challenge an exceptionless rule with matching definitions.'},
-  {label: 'Three of four known VO rows have prepositions', result: 'Correct for this table, not an estimate for the whole world.', cost: 'A, B, and C share a family and area. Our sample is not three fully independent cases there.'},
-  {label: 'Count Unknown as No', result: 'You just made up a fact about G.', cost: 'No information must stay unknown until evidence tells us more.'},
+  {label: 'Action first means relation words always first', result: 'Koyra Chiini and Arawak have action first but predominantly put relation words after.', cost: 'Dominant patterns are not rules without exceptions inside each language either.'},
+  {label: 'Two of these four action-first rows have relation words first', result: 'Correct for this selected table, not a world percentage.', cost: 'The cases were chosen to show contrasts, not sampled to represent every family and region.'},
+  {label: 'Leave unresearched profile entries unknown', result: 'A question you have not checked stays open.', cost: 'Do not fill a blank using a neighbor\'s grammar or a family name.'},
 ]} />
 
 ## How do we make a better comparison?
@@ -93,15 +116,20 @@ choices. More easy-to-find relatives do not automatically make a better sample.
 Report exceptions and uncertainty. Would another sensible definition change
 the answer? Check that too.
 
+<details>
+<summary>🤓 Sampling, missing data, family relationships, and feature definitions</summary>
+
 WALS helps organize features, but different features cover different languages.
 Combine two tables and you may lose languages with one missing value.
 Glottolog helps find family classifications and sources; it does not hand you
 the grammar of every family member. Useful tools, not an autopilot for conclusions.
 
+</details>
+
 ## Try it yourself 🧪
 
-Spend twelve minutes on two tasks. First, work out the two VO counts above
-and explain why E is an exception but G is unknown. Then choose two languages
+Spend twelve minutes on two tasks. First, find the four action-first rows
+and explain why Koyra Chiini challenges the cat's rule. Then choose two languages
 from different atlas regions. Draft notes for family, word order, word-building,
 and one meaning feature. Reuse the lessons' examples where they fit, and leave
 unknowns honest. Finish with one shared feature, one difference, and one
@@ -125,16 +153,18 @@ teach sampling, not the probabilities of features in unstudied languages.
 2. Always, often, an exception, and unknown are four different things.
 3. Families, regions, missing data, and counting rules can change the apparent pattern.
 
-<Quiz question="Why is G not a counterexample to the VO–preposition hypothesis?" options={[
-  {text: 'We do not know whether it uses prepositions; unknown is not No.', correct: true, feedback: 'Correct. The cat leaves the cell unknown instead of manufacturing a discovery.'},
-  {text: 'Every North-area language must use prepositions.', feedback: 'An area label cannot fill a missing observation. Geography is not an automatic grammar.'},
-  {text: 'Unknown and absent are scientifically identical.', feedback: 'Missing evidence is not evidence of absence. E is a counterexample; G remains untested.'},
+<Quiz question="Why does Koyra Chiini challenge the cat's claim that action-first means relation-words-first?" options={[
+  {text: 'It puts the verb before the object but predominantly uses relation words after noun phrases.', correct: true, feedback: 'Correct. Two observed patterns defeat the always claim. The cat must publish a smaller headline.'},
+  {text: 'It is a fictional language invented for this table.', feedback: 'It is a real Songhay language of Mali. WALS gives published examples and a grammar source.'},
+  {text: 'Having even one preposition would prove prepositions are dominant.', feedback: 'WALS compares dominant patterns. Koyra Chiini has some prepositions, but predominantly uses postpositions.'},
 ]} />
 
 ## Sources and continued exploration
 
-The fixture, profile template, and arithmetic are original teaching material.
-For real comparison criteria, see [WALS chapter 81](https://wals.info/chapter/81)
+The profile template and selected-table arithmetic are original teaching material.
+The seven language patterns and Koyra Chiini forms come from WALS chapter 95,
+especially examples 1–5 and its discussion of dominant versus minority strategies.
+For comparison criteria, see [WALS chapter 81](https://wals.info/chapter/81)
 and [chapter 95, object–verb order and adpositions](https://wals.info/chapter/95).
 Use [Glottolog](https://glottolog.org/) to find descriptive grammars and family
 proposals, then return to the [atlas](../world-language-atlas.md) for your next stop.

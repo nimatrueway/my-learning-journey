@@ -1,131 +1,64 @@
 ---
 name: course-authoring
-description: "Create, expand, restyle, or review a Docusaurus teaching course in this learning site. Use for courses, modules, MDX lessons, quizzes, widgets, syllabi, and catalog/navigation changes. Requires simple conversational explanations, fun example-first teaching, the mdBook theme, and playful cats and emojis. Check desktop/mobile without screenshots unless requested. Use book-to-audio-summary instead for TTS book summaries."
+description: "Create, expand, revise, or review Docusaurus courses, modules, MDX lessons, quizzes, widgets, and course navigation. Use example-first teaching, optional technical depth, the existing site theme, and rendered checks without screenshots unless requested. Use book-to-audio-summary for TTS book summaries."
 ---
 
 # Course Authoring
 
-Build a course that belongs to this learning site in both substance and tone.
-A technically correct but dry course is not a finished course here.
+Build accurate, engaging lessons that belong to the existing learning site.
+Correct content and a successful build are necessary, not sufficient.
 
-## Teach Like a Helpful Friend
+## Teaching Principles
 
-- The default voice is simple, conversational, fun, and engaging. This applies
-   to the main explanation, not just a cat joke pasted onto formal prose.
-- Use this teaching order: concrete puzzle, ordinary-language explanation,
-   technical name, another example, small prediction or experiment.
-- Introduce jargon only when it helps. Define it on the spot and use everyday
-   wording around it. Preserve real distinctions, evidence, and uncertainty.
-- Prefer "What would change your mind?" to "Rehearse a falsifiable prediction."
-   Prefer "This ending does two jobs" before naming cumulative exponence.
-- Ask useful questions and let the learner spot patterns. Keep humor brief,
-   original, and tied to the idea; avoid childish wording and repeated cat filler.
-- Apply the same voice to headings, widget labels/results, practice, recaps,
-   quiz feedback, intros, and catalog descriptions. Reference pages can be compact
-   without becoming jargon-heavy. Preserve book-summary and sensitive-topic exceptions.
-- Read the sample aloud. If it sounds like a paper abstract or requires decoding
-   several unfamiliar terms at once, simplify it before expanding the course.
+- Start with a concrete puzzle, explain it in ordinary language, compare another
+  example, then invite a prediction or experiment. Introduce terminology only
+  when useful; explain necessary terms in place.
+- Use verified real examples for factual comparisons. Distinguish source-backed
+  evidence from original illustrations; never fabricate sources or quotations.
+  Preserve uncertainty, scope, and essential caveats beside the relevant claim.
+- Keep specialist terminology, formal analysis, and research detail in closed
+  folds. With every fold closed, the explanation, exercise, recap, and quiz must
+  still make sense. Optional depth must not hide prerequisites or safety limits.
+- Make widgets and quizzes rehearse the examples, not unexplained labels.
+  Every control should change something meaningful; feedback should explain why.
+- Keep prose, headings, controls, and feedback conversational. Use brief,
+  lesson-specific humor that reinforces the mechanism. Follow the site's playful
+  cat-and-emoji style unless the user, subject, or reference format calls otherwise.
+- Respect the user's scope across lessons, reference pages, navigation, and
+  descriptions. Missing evidence stays unknown; selected examples are not a
+  representative survey unless the sampling supports that claim.
 
-## Load the Contract
+## Workflow
 
-1. Read [the shared course instructions](../../instructions/course-authoring.instructions.md).
-   They own the lesson template, style rules, exceptions, and required gates;
-   do not create a competing copy of those rules in a new file.
-2. Read the current destination or closest accepted lesson, the relevant portions
-   of `src/css/custom.css`, and `src/components/widgets.module.css`. Inspect
-   `src/components/Meme.tsx` and the widget being reused before changing props.
-3. For an established playful technical-course example, inspect
-   `docs/courses/04-apache-lucene-and-search/04-text-retrieval/02-ngrams-autocomplete.mdx`.
-   Use its level of technical specificity and tone, not its prose or joke verbatim.
-4. Check the worktree and preserve existing changes. Read the current catalog and
-   navigation before integrating a course; do not assume those files are unchanged.
-
-## Establish the Course Identity
-
-Before the first lesson edit, state a short style brief in the progress update:
-
-- Subject and learner: what question the learner should be able to answer.
-- Theme: existing documentation layout, typography, colors, and widget styles.
-- Flavor: a cat with a subject-specific role, short original jokes, emoji signposts,
-  and explanatory quiz feedback. Use an established alternate motif or a serious
-  tone only under the shared contract's exceptions or the user's direction.
-- First sample and check: the lesson that best exercises prose, code or math,
-  a purposeful widget, optional depth, and quiz rendering.
-
-Do not spend the style brief designing a new brand, mascot component, or stylesheet.
-Reuse `Meme`, `Quiz`, and appropriate existing interaction patterns. Keep humor
-outside runnable fixtures and preserve the provenance of real claims and examples.
-
-## Build One Sample Before Scaling
-
-1. Draft one complete lesson using the shared template. Put a lesson-specific
-   attention reset where it aids learning, not between every paragraph. Emojis
-   complement descriptive labels; they never replace them.
-2. Keep the technical explanation self-contained. A joke is not a definition,
-   evidence, or an excuse to omit a derivation, test, or security limitation.
-3. Validate the smallest runnable example and compile the MDX. When compiling
-   MDX directly, include `remark-math` and `rehype-katex`, matching the site.
-4. Render the sample using the existing theme. Check desktop and mobile layout
-   without capturing screenshots and exercise the widget and quiz. Check light
-   mode too. Capture screenshots only when the user explicitly requests them.
-5. Compare it to an accepted neighboring lesson using this acceptance checklist:
-
-   - [ ] The opening makes a concrete problem interesting without marketing copy.
-   - [ ] Main explanations sound conversational, not academic; examples come before terminology.
-   - [ ] Necessary terms are explained in place; short sentences preserve the actual science.
-   - [ ] Cat humor teaches this lesson's mechanism, not a generic slogan.
-   - [ ] Time, exercise, recap, and optional-depth labels retain readable words.
-   - [ ] Widget actions change something meaningful; dimensions remain stable.
-   - [ ] Quiz feedback explains the misconception, with humor aimed at the mistake.
-   - [ ] Fonts, colors, frames, spacing, and navigation match the existing site.
-   - [ ] Captions, code, controls, and headings fit desktop/mobile; light mode works.
-   - [ ] Exactly three recap points and honest, derived timing are present.
-
-Fix a failed item before producing more lessons. If proposing a new visual or
-tonal direction, show the sample and obtain user approval; an already accepted
-course style does not require repeated approval for each module.
-
-## Expand in Module Batches
-
-- Use different domain-specific mistakes, exercises, and jokes in each lesson.
-  Repeated component labels are fine; repeated explanatory paragraphs or captions
-  are not. A course-wide mascot does not require identical lesson composition.
-- After each module, validate its examples and MDX, then inspect a representative
-  rendered lesson for substance and style. Do not postpone all style work until
-  the entire syllabus is written.
-- Keep the prose and code accurate. Never invent attributed quotes to fill a slot.
-  Protect safety, health, and authorization caveats from flippant treatment.
-- Calculate time from final visible prose, code, and meme captions at roughly
-  200 words/minute plus explicit practice time. Exclude JSX plumbing from counts.
-  Synchronize lessons, module totals, syllabus, and catalog metadata together.
-
-## Integrate and Verify
-
-1. Follow the shared navigation rules: ordinary courses go in **Contents > Courses**,
-   course categories link to the intro, and module categories use generated indexes
-   so first lessons remain visible. Preserve the separate Books navigation.
-   `navigation.ts` builds navbar, sidebar, and footer from category metadata;
-   update that metadata instead of adding hardcoded menu links. Verify matching
-   labels, icons, order, and destinations in both menus. Collection landing routes
-   follow `/courses/<directory-name>`; preserve explicit book-category slugs.
-2. Keep the landing page and catalog playful too; do not promise one tone in the
-   catalog and deliver dry reference prose in the lessons.
-3. Run `pnpm typecheck` and `pnpm build`. Check emitted routes and downloads.
-4. Using the browser skill, inspect early, middle, and late lessons at desktop
-   and mobile widths without screenshots, and spot-check light mode. Verify callout wrapping, emoji,
-   code scrolling, quiz feedback, widget behavior, collapsed folds, sidebar active
-   state, first-child visibility, and previous/next links. Inspect console errors.
-5. Audit unique flavor, required lesson sections, exactly three recap points, and
-   reading-time consistency. Separate structural checks from visual judgments.
-6. Report what was actually verified and disclose blocked checks. Leave the user
-   a working preview URL. Ask for pacing/flavor feedback before a later large
-   expansion rather than silently dialing the course back to a formal manual.
+1. Load [the shared course contract](../../instructions/course-authoring.instructions.md).
+   It owns the template, theme, navigation, and required gates. Inspect the target,
+   a nearby accepted lesson, reusable components, and relevant styles. Check for
+   existing coverage and preserve unrelated worktree changes.
+2. State the learner's question, intended tone, and first sample to validate.
+   Reuse the existing layout and components; seek approval for a new visual direction.
+3. Complete one representative lesson before scaling. Check its examples, compile
+   MDX with the site's plugins, and exercise it on desktop and mobile. Verify
+   readability, controls, quiz feedback, folds, overflow, and light mode. Do not
+   capture screenshots unless requested.
+4. Expand in module-sized batches, validating a representative lesson after each.
+   Vary puzzles and explanations; repeated scaffolding is not substantive teaching.
+5. Derive timings from visible prose, examples, captions, and control text at about
+   200 words/minute, rounded up, plus stated practice and interaction allowances.
+   Exclude closed-fold subtrees and JSX plumbing; count optional references separately.
+   Synchronize lesson, module, syllabus, and catalog totals.
+6. Run required typecheck/build gates and inspect warnings and emitted routes.
+   Avoid concurrent processes that share build caches; stop only task-owned servers.
+   Check Markdown/JSX block boundaries when generated HTML is invalid. Use the
+   repository's actual production-preview command, not an assumed script alias.
+7. Inspect early, middle, and late lessons on desktop/mobile without screenshots.
+   Check navigation consistency, active state, first-lesson visibility, previous/next
+   links, interactions, and console errors. Audit required sections, three-point
+   recaps, source integrity, distinctive flavor, and timing consistency.
+8. Report only verified outcomes, disclose blocked checks, and provide a working
+   preview URL. Do not treat structural checks as proof of teaching or visual quality.
 
 ## Boundaries
 
-- These instructions and checks guide agent behavior; they are not an automatic
-  tool-blocking hook. Do not claim mechanical style enforcement from their presence.
-- Book summaries use the dedicated `book-to-audio-summary` skill. Preserve its
-  TTS-friendly, source-grounded prose without inserting cats, emojis, or quizzes.
-- Do not restyle unrelated courses or global UI to make a new course fit. Reuse
-  the theme; ask before changing the site's visual direction.
+- Keep changes scoped; do not restyle unrelated courses or create a competing theme.
+- Book summaries follow the dedicated skill's source fidelity and TTS voice.
+- These instructions guide behavior; they are not automatic enforcement hooks.
