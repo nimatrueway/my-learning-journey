@@ -2,19 +2,19 @@
 sidebar_position: 1
 slug: /courses/books/
 title: Books
-description: Ten detailed book summaries and 234 Paul Graham essays on startups, product-led growth, company building, technology, design, writing, and careers.
+description: Eleven detailed book summaries and 234 Paul Graham essays across eight subjects, including economics, startups, product-led growth, technology, design, writing, and careers.
 ---
 
 # 📚 Books
 
-Ten detailed book summaries and 234 Paul Graham essays about company building,
-product-led growth, technology, design, writing, careers, and the people who
+Eleven detailed book summaries and 234 Paul Graham essays about economics,
+company building, product-led growth, technology, design, writing, careers, and the people who
 shaped consequential organizations. Read straight through for a broad study of
 strategy and leadership, or choose a subject below. Each summary preserves the
 book's reasoning, examples, tensions, and caveats rather than reducing it to a
 list of slogans.
 
-**~56 hr 28 min total** · ten book summaries and 234 essays
+**~57 hr 15 min total** · eleven book summaries and 234 essays across eight subjects
 
 ## IKEA · ~1 hr 7 min
 
@@ -70,16 +70,28 @@ Wes Bush explains how to choose a free-trial, freemium, demo, or hybrid model;
 align pricing and onboarding around customer outcomes; and improve expansion and
 retention without assuming that free access automatically creates value.
 
-## Paul Graham Essays · ~48 hr 25 min
+## Paul Graham Essays · ~48 hr 17 min
 
 [Browse all 234 essays](/courses/books/paul-graham), ordered from the newest to
 the earliest. The collection spans startups, technology, programming languages,
 writing, ambition, work, and independent thought. Each page links back to its
 original source.
 
+## Adam Smith · ~55 min
+
+1. [The Wealth of Nations](/courses/books/adam-smith/the-wealth-of-nations) — ~55 min
+
+Adam Smith follows the sources of national wealth through specialization,
+wages, profits, rent, capital, trade, colonial monopoly, public institutions,
+taxation, and debt. The summary covers all five books and all 32 chapters,
+including the longer internal parts and appendices, while distinguishing his
+historical claims from modern conclusions.
+
 ## Reading method
 
 Use the summaries to recover an argument, compare authors, or decide which
-original work deserves a deeper read. The Paul Graham pages preserve the essay
+original work deserves a deeper read; summaries do not replace the original books.
+Reading times use approximately 200 prose words per minute; the total adds the
+book estimates and the estimate for the full essay collection. The Paul Graham pages preserve the essay
 text and identify the original source. Claims and judgments belong to the named
 authors unless a page explicitly marks a qualification or counterpoint.
