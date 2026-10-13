@@ -17,12 +17,12 @@ courage you don't have yet.
 
 <Meme quote="If more information was the answer, then we'd all be billionaires with perfect abs." author="Derek Sivers" />
 
-⏱️ **Reading + practice: ~14 min** · includes 7 minutes for the scope exercise,
-widget, and quizzes; building your solution and optional depth are extra.
+⏱️ **Reading + practice: ~22 min** · includes 11 minutes for the scope exercise,
+tool-building check, widget, and quizzes; building your solution and optional depth are extra.
 
-Knowledge obsession is not a love of learning problem. It is usually an
-avoidance strategy wearing a graduation gown: consuming feels like progress
-while carrying none of the risk of doing.
+A love of learning is not the problem. But learning can become an avoidance
+strategy wearing a graduation gown: consuming feels like progress while
+postponing the risk of trying. Building useful-looking tools can do the same.
 
 ## Play: Convert One Obsession
 
@@ -149,7 +149,94 @@ then choose a responsible next move. Hunting indefinitely for the perfect
 shortcut is the same delay in a smaller hat. After trying the solution, review
 what it actually achieved; stop, improve, or replace it based on that evidence.
 
-## 5. Operating Rules
+## 5. Why Am I Building Productivity Tools Instead of Doing My Work?
+
+The dishes are waiting. A work update is overdue. You open your editor to
+improve a shortcut, and suddenly two hours have disappeared. You worked hard;
+the responsibility barely moved. How can both be true?
+
+**You may be choosing the activity that feels better now, not the outcome that
+matters more later.** Building can be genuinely enjoyable *and* serve as a way
+to avoid something uncomfortable. Those explanations can coexist. This is a
+possible account of the pattern, not a verdict about your motives.
+
+### The editor offers something the sink does not
+
+These are illustrative possibilities; check which ones fit your experience:
+
+| What building may offer | What the waiting responsibility may feel like |
+| --- | --- |
+| Interest and a fresh puzzle | Repetition: the dishes will return tomorrow |
+| Control over the design and finish line | Someone else's demands or priorities |
+| Visible feedback: a shortcut finally works | Slow, ambiguous progress or a response you cannot control |
+| A familiar place to feel capable | Uncertainty, mistakes, or being evaluated |
+| The promise of making future work easier | The discomfort of doing today's work now |
+
+Psychologists call doing something because it is interesting or satisfying
+**intrinsic motivation**. Motivation research also emphasizes **autonomy**
+(feeling you have a choice) and **competence** (feeling capable). Your own tool
+project may supply more of these than a chore or an unclear assignment. That
+does not make the chore worthless, or prove that you are afraid of your job.
+
+If opening the editor also makes boredom, worry, or resentment fade, that
+relief can encourage the switch next time. A procrastination model calls this
+**short-term mood repair**: feeling better now takes priority over the costs
+your future self will inherit. Here, the delay looks respectable because the
+replacement activity is difficult and potentially useful.
+
+### Useful tool or useful-looking detour?
+
+Ask: **“Which responsibility will this help me complete, and when will I use
+it on that responsibility?”** A tool is not automatically avoidance. Fixing a
+broken workflow that actually blocks today's deliverable may be necessary.
+Building a system for a hypothetical future bottleneck is a different bet.
+
+For example: cleaning five dishes needs no new task manager. Sending a work
+update may need three bullets about progress, blockers, and the next step, not
+a reporting platform. If the tool works but you still avoid the task, the
+missing feature probably was not the whole barrier.
+
+<Meme top="The cat automated the chore reminders." visual="🐱" bottom="The dishes remain impressively unautomated." />
+
+### A three-minute check before opening the editor
+
+1. **Name the switch.** Write the responsibility and what you feel about it:
+  bored, unsure, tired, resentful, worried about judgment, or something else.
+  “I am lazy” is a judgment, not useful information about this moment.
+2. **Try two minutes directly.** Wash five items, draft the first three bullets,
+  or identify the one requirement you need clarified. Use what already exists.
+  Record whether starting became easier, stayed difficult, or was genuinely
+  blocked. The point is to learn, not finish everything in two minutes.
+3. **Make the next choice explicit.** Continue with a small work block, ask for
+  clarification, or address fatigue. If a tool is necessary, name the exact
+  blocker, cap the change, and return to the task to test it. Park other ideas
+  in one sentence rather than starting another planning system.
+
+Repeat on a few occasions. Relief right after switching supports an avoidance
+account; strong interest even during freely chosen leisure supports genuine
+enjoyment. Both may be present, and this informal check cannot prove a cause.
+It is fine to schedule tool-building as a hobby without making it justify
+itself as productivity. Agreed responsibilities still need their own time.
+
+Being absorbed in enjoyable coding does not establish ADHD or any other
+diagnosis. Interest, stress, sleep loss, unclear work, and other factors can
+affect starting and switching. If this repeatedly harms work or home life
+despite practical changes, an assessment can examine the broader pattern
+rather than treating one appealing activity as a diagnostic test.
+
+<details>
+<summary>🧠 What the research does and does not explain (optional)</summary>
+
+Sirois and Pychyl's 2013 review describes procrastination in terms of
+short-term mood regulation and costs to the future self. Self-determination
+theory describes how interest, autonomy, and competence relate to motivation.
+Neither source establishes why a particular person builds productivity tools.
+The editor-versus-dishes comparison and three-minute check above are practical
+illustrations of those ideas, not a validated diagnostic instrument or treatment.
+
+</details>
+
+## 6. Operating Rules
 
 - **No artifact, no enrollment.** Before starting any course, book, or
   tutorial, name the small real thing it will produce within two weeks.
@@ -181,14 +268,23 @@ what it actually achieved; stop, improve, or replace it based on that evidence.
 
 ## Three Things to Keep
 
-- Endless learning is avoidance with excellent PR — it feels like progress
-  because it risks nothing.
+- Learning and tool-building can be valuable or become useful-looking delay;
+  check whether they move the responsibility or mainly change how you feel.
 - Put curiosity on a project leash: no artifact, no enrollment; learn
   just-in-time inside the build.
 - Look for a smaller useful solution, not just a smaller task; preserve
   non-negotiable standards and let feedback, not endless polish, guide the next step.
 
 ## Quick Check
+
+<Quiz
+  question="You keep improving your task app while the dishes and a work update wait. What would best help you understand the pattern?"
+  options={[
+    {text: 'Assume intense coding focus proves ADHD', feedback: 'One absorbing activity cannot establish a diagnosis. You need the wider history and pattern, not a shortcut from one observation.'},
+    {text: 'Notice the feeling before switching, try two minutes of the responsibility, and check whether a tool removes an actual blocker', correct: true, feedback: 'Yes. This gives you information about interest, relief, and task friction without assuming that building is always avoidance.'},
+    {text: 'Finish the perfect productivity system before attempting any responsibility', feedback: 'That makes a finished system the entry fee for ordinary life. Test the actual barrier before extending the build.'},
+  ]}
+/>
 
 <Quiz
   question="A fascinating new framework appears. Your finger hovers over 'Enroll in the 40-hour masterclass.' What now?"
@@ -207,3 +303,8 @@ what it actually achieved; stop, improve, or replace it based on that evidence.
     {text: 'Share a verified comparison against the must-have criteria today, then improve it only where feedback shows a need', correct: true, feedback: 'Yes. The useful outcome arrives on time and the essential checks survive. The dashboard can wait until it has an actual job.'},
   ]}
 />
+
+## References for the Tool-Building Question
+
+- [Sirois & Pychyl (2013): Procrastination and the Priority of Short-Term Mood Regulation](https://doi.org/10.1111/spc3.12011)
+- [Self-Determination Theory: motivation, autonomy, and competence](https://selfdeterminationtheory.org/theory/)
