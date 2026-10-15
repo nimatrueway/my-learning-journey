@@ -34,8 +34,21 @@ export default function Locked({payload, author = 'writer', length = 120, label 
   const vault = useWriterVault();
   const [modalOpen, setModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [capsLock, setCapsLock] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const mask = useMemo(() => blobMask(length), [length]);
+
+  const openModal = () => {
+    setError(null);
+    setCapsLock(false);
+    setShowPassword(false);
+    setModalOpen(true);
+  };
+
+  const trackCapsLock = (event: React.KeyboardEvent | React.MouseEvent) => {
+    setCapsLock(event.getModifierState?.('CapsLock') ?? false);
+  };
 
   if (vault.checking) {
     return <span className={styles.blobChecking} role="status">🔒…</span>;
@@ -64,11 +77,11 @@ export default function Locked({payload, author = 'writer', length = 120, label 
         className={styles.blob}
         title={`Encrypted ${label} by ${author} — click to unlock`}
         aria-label={`Encrypted ${label} by ${author}. Opens password prompt.`}
-        onClick={() => setModalOpen(true)}
+        onClick={openModal}
         onKeyDown={(event) => {
           if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
-            setModalOpen(true);
+            openModal();
           }
         }}
       >
@@ -82,16 +95,34 @@ export default function Locked({payload, author = 'writer', length = 120, label 
               This {label} span was written by <strong>{author}</strong> and is
               encrypted. What is your password, {author}?
             </p>
-            <input
-              className={styles.passwordInput}
-              type="password"
-              value={vault.passwordInput}
-              onChange={(event) => vault.setPasswordInput(event.target.value)}
-              placeholder={`Password for ${author}`}
-              aria-label={`Password for ${author}`}
-              autoComplete="off"
-              autoFocus
-            />
+            <div className={styles.passwordWrap}>
+              <input
+                className={styles.passwordInput}
+                type={showPassword ? 'text' : 'password'}
+                value={vault.passwordInput}
+                onChange={(event) => vault.setPasswordInput(event.target.value)}
+                onKeyDown={trackCapsLock}
+                onKeyUp={trackCapsLock}
+                onClick={trackCapsLock}
+                placeholder={`Password for ${author}`}
+                aria-label={`Password for ${author}`}
+                autoComplete="off"
+                autoFocus
+              />
+              <button
+                className={styles.eyeButton}
+                type="button"
+                onClick={() => setShowPassword((shown) => !shown)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-pressed={showPassword}
+                title={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </button>
+            </div>
+            {capsLock && (
+              <p className={styles.capsWarning} role="status">⇪ Caps Lock is on</p>
+            )}
             <p className={styles.scopeRow}>
               Keep unlocked for{' '}
               <select
