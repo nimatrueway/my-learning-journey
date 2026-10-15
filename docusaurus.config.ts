@@ -4,7 +4,7 @@ import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
-import {categoryNavigationPlugin, collections, footerItems} from './navigation';
+import {categoryNavigationPlugin, collections} from './navigation';
 
 const gitCommit = execSync('git rev-parse --short HEAD').toString().trim();
 const gitDate = execSync('git log -1 --format=%cs HEAD').toString().trim();
@@ -138,21 +138,7 @@ const config: Config = {
     },
     footer: {
       style: 'dark',
-      links: [
-        {
-          title: 'Contents',
-          items: footerItems,
-        },
-        {
-          title: 'Source',
-          items: [
-            {
-              label: 'GitHub repository',
-              href: 'https://github.com/nimatrueway/my-learning-journey',
-            },
-          ],
-        },
-      ],
+      links: [],
       copyright: `<span class="footerPrompt">nima@github:~/my-learning-journey$</span> git log -1 → <a href="https://github.com/nimatrueway/my-learning-journey/commit/${gitCommit}">${gitCommit}</a> · deployed ${gitDate} · © ${new Date().getFullYear()} · press <kbd>?</kbd> for shortcuts`,
     },
     prism: {

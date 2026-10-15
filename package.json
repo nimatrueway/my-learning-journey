@@ -14,6 +14,10 @@
     "clear": "docusaurus clear",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
+    "notes:lock": "node scripts/lock-notes.mjs lock",
+    "notes:unlock": "node scripts/lock-notes.mjs unlock",
+    "notes:register": "node scripts/lock-notes.mjs register",
+    "notes:verify": "node scripts/lock-notes.mjs verify",
     "typecheck": "tsc"
   },
   "dependencies": {
@@ -36,6 +40,7 @@
     "@docusaurus/tsconfig": "3.10.2",
     "@docusaurus/types": "3.10.2",
     "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.3.0",
     "typescript": "~6.0.2"
   },
   "browserslist": {

@@ -1,0 +1,74 @@
+/* Compact dated note entry (Notes collection). */
+
+.entry {
+  margin: 0.55rem 0;
+  padding: 0.4rem 0.85rem 0.5rem;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-left: 3px solid var(--ifm-color-emphasis-400);
+  border-radius: 4px;
+  background: var(--ifm-background-surface-color);
+}
+
+.do {
+  border-left-color: #2e9e5b;
+}
+
+.dont {
+  border-left-color: #d9534f;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.title {
+  font-weight: 600;
+}
+
+.date {
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  color: var(--ifm-color-emphasis-600);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.body p {
+  margin: 0.2rem 0 0;
+  font-size: 0.92rem;
+}
+
+/* 📎 Context panel: chip label + accent-bordered content. */
+
+.context {
+  margin-top: 0.45rem;
+  padding: 0.35rem 0.65rem 0.45rem;
+  border: 1px dashed var(--ifm-color-emphasis-300);
+  border-radius: 3px;
+  background: var(--ifm-color-emphasis-100);
+}
+
+.contextLabel {
+  display: inline-block;
+  margin-bottom: 0.15rem;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  color: var(--ifm-color-emphasis-600);
+}
+
+.contextBody p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--ifm-color-emphasis-800);
+}
+
+@media (max-width: 480px) {
+  .header {
+    flex-wrap: wrap;
+    gap: 0 0.75rem;
+  }
+}

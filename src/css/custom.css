@@ -423,7 +423,7 @@ details > summary {
 
 .footer {
   position: relative;
-  padding-top: 2.5rem;
+  padding: 0.9rem 0 0.8rem;
   border-top: 0;
   background: var(--ifm-background-surface-color);
 }
@@ -439,40 +439,12 @@ details > summary {
   opacity: 0.9;
 }
 
-.footer,
-.footer__link-item {
+.footer {
   color: var(--ifm-color-emphasis-600);
 }
 
-.footer__title {
-  color: var(--ifm-color-emphasis-500);
-  font-family: var(--ifm-font-family-monospace);
-  font-size: 0.8rem;
-  text-transform: lowercase;
-}
-
-.footer__title::before {
-  content: '# ';
-  color: var(--ifm-color-primary);
-}
-
-.footer__link-item:hover {
-  color: var(--ifm-color-primary);
-  text-decoration: none;
-}
-
-.footer__link-item::after {
-  content: ' →';
-  opacity: 0;
-  transition: opacity 140ms ease;
-}
-
-.footer__link-item:hover::after {
-  opacity: 1;
-}
-
 .footer__copyright {
-  margin-top: 1.5rem;
+  margin-top: 0;
   color: var(--ifm-color-emphasis-500);
   font-family: var(--ifm-font-family-monospace);
   font-size: 0.78rem;

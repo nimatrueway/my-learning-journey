@@ -63,6 +63,7 @@ function collection(directory: string): Collection {
 
 const books = collection('books');
 const calculator = collection('calculator');
+const notes = collection('notes');
 const courses = collections.filter(entry => entry.directory.startsWith('courses/'));
 const courseGroup = JSON.parse(readFileSync(
   path.join(__dirname, 'docs/courses/_category_.json'), 'utf8',
@@ -72,6 +73,7 @@ export const navigation = [
   {label: courseGroup.label, collections: courses},
   {label: books.label, collections: [books], to: books.to},
   {label: calculator.label, collections: [calculator], to: calculator.to},
+  {label: notes.label, collections: [notes], to: notes.to},
 ];
 
 function collectionSidebar(entry: Collection): SidebarItemConfig {
@@ -137,8 +139,3 @@ export function categoryNavigationPlugin(): Plugin {
     },
   };
 }
-
-export const footerItems = [
-  allContents,
-  ...navigation.flatMap(group => group.collections.map(({label, to}) => ({label, to}))),
-];

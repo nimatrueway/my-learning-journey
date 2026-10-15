@@ -1,0 +1,11 @@
+{
+  "nima": {
+    "salt": "e114cd0f409e6b2682db9efc1c1015bb",
+    "hash": "bfe9ef032d2672c95b75d71a0e1fd6a3a2703c060c87ae5eb0c2d5542af9dcfee926a14646355cd0827159c8ff112f64a76e6249f6641329742b73d2802734a4",
+    "scrypt": {
+      "N": 32768,
+      "r": 8,
+      "p": 1
+    }
+  }
+}
