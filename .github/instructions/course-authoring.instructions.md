@@ -266,6 +266,12 @@ navigate or evaluate its information.
 
 After course changes:
 
+0. Never run a second `pnpm start` or `pnpm build` while the user's dev
+   server is running. Every Docusaurus command regenerates the shared
+   `.docusaurus/` directory; a concurrent server picks up mismatched chunks
+   and hot reload breaks with confusing errors (`process is not defined`,
+   "Cannot find module" for deleted pages). Verify through the user's running
+   server instead, or ask them to stop theirs first.
 1. Run `pnpm typecheck`.
 2. Run `pnpm build` and resolve MDX, route, and broken-link errors.
 3. For a multi-lesson source-derived course, audit source IDs and links, minimum

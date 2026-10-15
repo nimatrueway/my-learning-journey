@@ -22,7 +22,10 @@ When you catch yourself avoiding a chore or work task, write down the feelings
 making you hesitate. Naming them can clarify what is getting in the way and
 take some of the edge off. If the task still needs doing, spend just 10
 minutes on it, then reassess how you feel. Starting can make continuing
-easier; you do not always need to feel motivated first.
+easier; you do not always need to feel motivated first. And watch the classic
+trap: avoidance wearing a productive disguise, like
+[building tools instead of doing the work](/courses/performance-foundations/part-9-from-learning-to-doing#5-why-am-i-building-productivity-tools-instead-of-doing-my-work)
+(🧠 Psychology, Part IX).
 
 <NoteContext>
 
