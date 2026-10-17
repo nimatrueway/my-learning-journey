@@ -1,0 +1,9 @@
+{
+  "label": "📰 Articles",
+  "position": 6,
+  "collapsed": false,
+  "link": {
+    "type": "doc",
+    "id": "articles/intro"
+  }
+}

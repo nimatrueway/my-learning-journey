@@ -2,7 +2,7 @@
 sidebar_position: 1
 slug: /courses/books/
 title: Books
-description: Ten detailed book summaries and 234 Paul Graham essays on startups, product-led growth, company building, technology, design, writing, and careers.
+description: Ten detailed book summaries and 234 Paul Graham essays.
 ---
 
 # 📚 Books
@@ -14,7 +14,8 @@ strategy and leadership, or choose a subject below. Each summary preserves the
 book's reasoning, examples, tensions, and caveats rather than reducing it to a
 list of slogans.
 
-**~56 hr 28 min total** · ten book summaries and 234 essays
+**~56 hr 28 min** · ten book summaries and 234 essays;
+external reading is additional
 
 ## IKEA · ~1 hr 7 min
 
@@ -80,6 +81,6 @@ original source.
 ## Reading method
 
 Use the summaries to recover an argument, compare authors, or decide which
-original work deserves a deeper read. The Paul Graham pages preserve the essay
+original work deserves a deeper read. The Paul Graham pages preserve the supplied article
 text and identify the original source. Claims and judgments belong to the named
 authors unless a page explicitly marks a qualification or counterpoint.

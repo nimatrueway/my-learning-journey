@@ -24,7 +24,7 @@ function currentGroup(
 ): Pick<RecentModule, 'key' | 'module'> | null {
   const course = chain?.[0];
   if (!course) return null;
-  const group = normalize(course.href ?? '').endsWith('/courses/books')
+  const group = /\/courses\/(books|articles)$/.test(normalize(course.href ?? ''))
     ? chain?.[1] ?? course
     : course;
   return {key: normalize(group.href ?? target), module: group.label};

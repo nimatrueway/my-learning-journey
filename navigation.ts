@@ -62,6 +62,7 @@ function collection(directory: string): Collection {
 }
 
 const books = collection('books');
+const articles = collection('articles');
 const calculator = collection('calculator');
 const courses = collections.filter(entry => entry.directory.startsWith('courses/'));
 const courseGroup = JSON.parse(readFileSync(
@@ -71,6 +72,7 @@ const allContents: NavigationLink = {label: 'All contents', to: '/'};
 export const navigation = [
   {label: courseGroup.label, collections: courses},
   {label: books.label, collections: [books], to: books.to},
+  {label: articles.label, collections: [articles], to: articles.to},
   {label: calculator.label, collections: [calculator], to: calculator.to},
 ];
 
