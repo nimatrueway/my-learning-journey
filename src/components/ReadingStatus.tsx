@@ -3,6 +3,7 @@ import {useLocation} from '@docusaurus/router';
 import {useDocsSidebar} from '@docusaurus/plugin-content-docs/client';
 import type {PropSidebarItem, PropSidebarItemCategory} from '@docusaurus/plugin-content-docs';
 import {recordRecentModule} from './RecentModules';
+import {useJamesClearVisit} from './ArticlesNewBadge';
 
 const normalize = (path: string) => path.replace(/\/+$/, '');
 
@@ -145,6 +146,7 @@ function useScrollPosition(pathname: string): {section: string | null; pagePct: 
 }
 
 export default function ReadingStatus(): React.ReactElement | null {
+  useJamesClearVisit();
   const sidebar = useDocsSidebar();
   const {pathname} = useLocation();
   const {section, pagePct} = useScrollPosition(pathname);

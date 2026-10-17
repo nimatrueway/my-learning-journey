@@ -715,6 +715,14 @@ kbd {
   font-weight: 700;
 }
 
+.articlesNewBadge {
+  display: inline-block;
+  margin-right: 0.5rem;
+  padding: 0.1rem 0.45rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+}
+
 .courseCard h3 {
   align-self: end;
   margin: 2.5rem 0 0.8rem;

@@ -30,9 +30,17 @@ deployed.
 ## Add a course
 
 The source folders mirror the Contents navigation: `docs/courses/`, `docs/books/`,
-and `docs/calculator/` are siblings, with `docs/index.mdx` as the Contents page.
+`docs/articles/`, and `docs/calculator/` are siblings, with `docs/index.mdx` as the Contents page.
 Books and Calculator retain their existing `/courses/books/...` and
 `/courses/calculator/...` public URLs through explicit slugs.
+Articles has its landing page at `/courses/articles/`. James Clear's collection
+lives in `docs/articles/james-clear/`; its existing `/courses/books/the-power-of-imperfect/...`
+URLs remain unchanged so saved links continue to work.
+The Articles homepage card shows a New badge until the visitor opens James
+Clear's collection or any of its articles. This preference is stored in that
+browser's local storage, not synced across devices, and resets when site data
+is cleared. If storage is unavailable, the badge stays hidden and a warning is
+logged to the browser console.
 
 1. Create `docs/courses/<course-slug>/intro.md`.
 2. Add `_category_.json` in that directory with its label, position, and intro
@@ -52,7 +60,7 @@ descendants in the left sidebar. This boundary stays fixed while opening deeper
 pages. The menu's level-2 links define the sidebar scopes for every content type
 on desktop and mobile, with an All contents return link and no special metadata.
 
-Courses, Books, and Calculator each retain a landing page. The Courses overview at
+Courses, Books, Articles, and Calculator each retain a landing page. The Courses overview at
 `/courses` describes each course in `docs/courses/intro.md`; update it when adding
 a course. In the home sidebar, root
 titles open these pages and their arrows expand the level-2 links; the Contents
