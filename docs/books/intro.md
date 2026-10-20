@@ -2,19 +2,20 @@
 sidebar_position: 1
 slug: /courses/books/
 title: Books
-description: Eleven detailed book summaries and 234 Paul Graham essays across eight subjects, including economics, startups, product-led growth, technology, design, writing, and careers.
+description: Eleven detailed book summaries, 234 Paul Graham essays, and thirteen country and regional proverb collections across nine subjects, including economics, startups, product-led growth, technology, design, writing, careers, and culture.
 ---
 
 # 📚 Books
 
-Eleven detailed book summaries and 234 Paul Graham essays about economics,
-company building, product-led growth, technology, design, writing, careers, and the people who
-shaped consequential organizations. Read straight through for a broad study of
+Eleven detailed book summaries, 234 Paul Graham essays, and thirteen country
+and regional proverb collections about economics, company building, product-led growth,
+technology, design, writing, careers, culture, and the people who shaped
+consequential organizations. Read straight through for a broad study of
 strategy and leadership, or choose a subject below. Each summary preserves the
 book's reasoning, examples, tensions, and caveats rather than reducing it to a
 list of slogans.
 
-**~57 hr 15 min total** · eleven book summaries and 234 essays across eight subjects
+**~58 hr 26 min total** · eleven book summaries, 234 essays, and thirteen proverb collections across nine subjects
 
 ## IKEA · ~1 hr 7 min
 
@@ -86,6 +87,34 @@ wages, profits, rent, capital, trade, colonial monopoly, public institutions,
 taxation, and debt. The summary covers all five books and all 32 chapters,
 including the longer internal parts and appendices, while distinguishing his
 historical claims from modern conclusions.
+
+## Proverbs by Culture · ~1 hr 11 min
+
+1. [China](/courses/books/proverbs/china) — ~8 min
+2. [Korea](/courses/books/proverbs/korea) — ~7 min
+3. [Japan](/courses/books/proverbs/japan) — ~6 min
+4. [The Netherlands](/courses/books/proverbs/netherlands) — ~6 min
+5. [Germany](/courses/books/proverbs/germany) — ~5 min
+6. [Sweden](/courses/books/proverbs/sweden) — ~4 min
+7. [Norway](/courses/books/proverbs/norway) — ~4 min
+8. [Denmark](/courses/books/proverbs/denmark) — ~4 min
+9. [Switzerland](/courses/books/proverbs/switzerland) — ~6 min
+10. [Austria](/courses/books/proverbs/austria) — ~5 min
+11. [India](/courses/books/proverbs/india) — ~6 min
+12. [Britain](/courses/books/proverbs/britain) — ~5 min
+13. [France](/courses/books/proverbs/france) — ~5 min
+
+Proverbs and everyday sayings grouped by theme, each with the original wording,
+romanization where needed, a literal translation, its usual meaning, and the
+cultural habit it reflects. Read them side by side to compare how cultures
+talk about modesty, effort, harmony, thrift, and home, and where the same image
+travels across borders. The collections are curated, not exhaustive, and
+proverbs describe shared ideals rather than how every person behaves.
+Switzerland's page includes Swiss German and shared French and Italian sayings;
+India's initial selection identifies its Hindi and Tamil sources rather than
+claiming to cover every language.
+Britain's page brings together English, Scots, and Welsh examples, with
+Great Britain distinguished from the wider United Kingdom.
 
 ## Reading method
 
