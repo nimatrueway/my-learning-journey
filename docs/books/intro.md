@@ -2,20 +2,20 @@
 sidebar_position: 1
 slug: /courses/books/
 title: Books
-description: Eleven detailed book summaries, 234 Paul Graham essays, and thirteen country and regional proverb collections across nine subjects, including economics, startups, product-led growth, technology, design, writing, careers, and culture.
+description: Fifteen detailed book summaries, 234 Paul Graham essays, and thirteen country and regional proverb collections across twelve subjects, including classic epics, strategy, economics, startups, product-led growth, technology, design, writing, careers, and culture.
 ---
 
 # 📚 Books
 
-Eleven detailed book summaries, 234 Paul Graham essays, and thirteen country
-and regional proverb collections about economics, company building, product-led growth,
+Fifteen detailed book summaries, 234 Paul Graham essays, and thirteen country
+and regional proverb collections about classic epics, military strategy, economics, company building, product-led growth,
 technology, design, writing, careers, culture, and the people who shaped
 consequential organizations. Read straight through for a broad study of
 strategy and leadership, or choose a subject below. Each summary preserves the
 book's reasoning, examples, tensions, and caveats rather than reducing it to a
 list of slogans.
 
-**~58 hr 26 min total** · eleven book summaries, 234 essays, and thirteen proverb collections across nine subjects
+**~71 hr 20 min total** · fifteen book summaries, 234 essays, and thirteen proverb collections across twelve subjects
 
 ## IKEA · ~1 hr 7 min
 
@@ -115,6 +115,38 @@ India's initial selection identifies its Hindi and Tamil sources rather than
 claiming to cover every language.
 Britain's page brings together English, Scots, and Welsh examples, with
 Great Britain distinguished from the wider United Kingdom.
+
+## Homer · ~7 hr 31 min
+
+1. [The Iliad](/courses/books/homer/the-iliad) — ~3 hr 16 min
+2. [The Odyssey](/courses/books/homer/the-odyssey) — ~4 hr 15 min
+
+The two oldest epics of Greek literature, retold book by book in clear, simple
+English for readers whose first language is not English. The Iliad follows the
+anger of Achilles, the death of Patroclus and Hector, and Priam's visit to ask
+for his son's body. The Odyssey follows Telemachus's search for his father,
+Odysseus's adventures at sea, and his return to Ithaca to face the suitors.
+Each summary covers all 24 books and uses the Greek names of gods and heroes.
+
+## Virgil · ~3 hr 39 min
+
+1. [The Aeneid](/courses/books/virgil/the-aeneid) — ~3 hr 39 min
+
+The Roman epic that continues Homer's story from the Trojan side, retold book
+by book in clear, simple English. Aeneas escapes burning Troy, loves and leaves
+Dido in Carthage, visits his father in the underworld, and fights Turnus for a
+new home in Italy. The summary covers all 12 books, uses Virgil's Roman names
+for the gods, and separates the story from later interpretation.
+
+## Sun Tzu · ~1 hr 44 min
+
+1. [The Art of War](/courses/books/sun-tzu/the-art-of-war) — ~1 hr 44 min
+
+Sun Tzu's ancient Chinese guide to strategy, explained chapter by chapter in
+clear, simple English. The summary covers all 13 chapters, from planning and
+deception to terrain, the nine situations, fire, and spies. It keeps Sun Tzu's
+own teaching separate from the examples added by Lionel Giles and the Chinese
+commentators, and marks modern business readings as later uses.
 
 ## Reading method
 
