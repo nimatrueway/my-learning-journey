@@ -40,6 +40,42 @@ Source: [Brian Chesky, *Stanford Graduate School of Business interview*](https:/
 
 </NoteEntry>
 
+<NoteEntry kind="do" date="2026-10-21" title="Follow curiosity into ambitious work">
+
+Choose work that fits both your natural aptitude and your deep interests, then
+build a habit of pursuing your own excitingly ambitious projects. Work hard
+without burning out, study the best examples, seek excellent colleagues, and
+look closely for gaps at the frontier of what is known. Take affordable risks,
+stay honest with yourself, and protect the health that lets you keep going.
+When the path is unclear, follow your curiosity.
+
+Source: [Paul Graham, *Superlinear Returns*](https://paulgraham.com/superlinear.html)
+
+</NoteEntry>
+
+<NoteEntry kind="do" date="2026-10-21" title="Choose work that compounds">
+
+Look for work where today's progress makes tomorrow's progress easier.
+Learning compounds because each new idea helps you absorb the next one;
+audiences compound because existing fans bring new ones. The curve may feel
+flat at first, so pay attention to the growth mechanism before the visible
+results become dramatic.
+
+Source: [Paul Graham, *How to Do Great Work*](https://paulgraham.com/greatwork.html)
+
+</NoteEntry>
+
+<NoteEntry kind="do" date="2026-10-21" title="Find work worth unreasonable attention">
+
+Great work often requires spending far longer on a problem than other people
+would consider reasonable. Choose work engaging enough that the time does not
+feel merely like a cost. Genuine interest makes sustained attention possible;
+without it, the price will eventually feel too high.
+
+Source: [Paul Graham, *How to Do Great Work*](https://paulgraham.com/greatwork.html)
+
+</NoteEntry>
+
 <NoteEntry kind="do" date="2026-10-14" title="When avoiding work, name the feeling, then start">
 
 When you catch yourself avoiding a chore or work task, write down the feelings
