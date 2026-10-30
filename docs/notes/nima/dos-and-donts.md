@@ -16,6 +16,30 @@ A running list of lessons, newest first within each section.
 
 ## ✅ DOs
 
+<NoteEntry kind="do" date="2026-10-30" title="Aim to be the best, not merely good">
+
+Set your sights on the best work in your field. Ambition tends to miss by
+falling short, aiming to be the best may demand a qualitatively different kind
+of commitment, and "good" is too vague to guide the work. A precise, demanding
+standard gives your taste and effort something real to converge on.
+
+Source: [Paul Graham, *How to Do Great Work*](https://paulgraham.com/greatwork.html)
+
+</NoteEntry>
+
+<NoteEntry kind="do" date="2026-10-30" title="Make it worthy before you test it">
+
+Take a design to the point where you love it and are proud to put your name on
+it before asking other people to judge it. Simplify by understanding the
+problem's physics and first principles deeply enough to distill the solution to
+its essence, then obsess over the details. Inside an organization, translate
+that craft into its language: explain which real goal the work advances and
+why customers loving the product benefits the business.
+
+Source: [Brian Chesky, *Stanford Graduate School of Business interview*](https://youtu.be/Dkfijg7s76o?t=984)
+
+</NoteEntry>
+
 <NoteEntry kind="do" date="2026-10-14" title="When avoiding work, name the feeling, then start">
 
 When you catch yourself avoiding a chore or work task, write down the feelings
@@ -36,6 +60,17 @@ trap: avoidance wearing a productive disguise, like
 </NoteEntry>
 
 ## 🚫 DON'Ts
+
+<NoteEntry kind="dont" date="2026-10-30" title="Use testing or growth as a substitute for judgment">
+
+Do not test a design before you are happy with it and expect other people to
+finish the designer's thinking. Exercise your own taste and craft first. And do
+not call growth the goal: growth is a direction. Keep asking what outcome the
+growth is meant to serve, then connect the design to that outcome.
+
+Source: [Brian Chesky, *Stanford Graduate School of Business interview*](https://youtu.be/Dkfijg7s76o?t=984)
+
+</NoteEntry>
 
 <NoteEntry kind="dont" date="2026-10-14" title="Let the list go stale">
 
