@@ -27,6 +27,27 @@ pnpm preview
 `pnpm preview` serves the generated `build/` directory exactly as it will be
 deployed.
 
+Installed/offline-enabled apps show a percentage and downloaded/total MB while an
+update downloads. The Workbox worker excludes unchanged cached revisions and counts
+streamed, uncompressed asset bytes (not compressed network traffic). It stays below
+100% until caching completes, then offers the existing Refresh prompt. Reading can
+continue during an update; failed installs leave the current version available.
+Reload when online to retry a failed update.
+
+The local PWA plugin preserves Docusaurus registration and the Refresh popup while
+building a worker with progress reporting. Its cache name and revision keys match
+the default worker, so existing cached assets can be reused.
+
+Commit/date information lives in `deployment.json`, fetched separately by the
+footer and excluded from precaching. Changing only deployment metadata no longer
+changes every page or the service worker; actual content/shared-bundle changes
+still invalidate their affected assets. Offline, the footer reports that deployment
+info is unavailable. The first release of this change must still download changed
+page and application assets; byte-progress UI is available after loading that release.
+
+Run `node --test scripts/pwa-update.test.mjs scripts/pwa-worker.test.mjs` to check
+changed-byte accounting, streaming progress, and the notice lifecycle.
+
 ## Add a course
 
 The source folders mirror the Contents navigation: `docs/courses/`, `docs/books/`,
