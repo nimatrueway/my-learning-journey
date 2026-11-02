@@ -16,6 +16,15 @@ A running list of lessons, newest first within each section.
 
 ## ✅ DOs
 
+<NoteEntry kind="do" date="2026-11-01" title="Take the learning with you">
+
+The only things you truly take away from a company are the experience and
+knowledge you gained. Not the product, not the title, and not even most of the
+people you came to know. Those things stay behind or fade; what you learned
+travels with you. This is how I managed to get through a difficult time at university.
+
+</NoteEntry>
+
 <NoteEntry kind="do" date="2026-10-30" title="Aim to be the best, not merely good">
 
 Set your sights on the best work in your field. Ambition tends to miss by
