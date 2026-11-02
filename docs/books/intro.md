@@ -2,19 +2,20 @@
 sidebar_position: 1
 slug: /courses/books/
 title: Books
-description: Eleven detailed book summaries and 234 Paul Graham essays across eight subjects, including economics, startups, product-led growth, technology, design, writing, and careers.
+description: Eleven detailed book summaries, a Syrup reading companion, and 234 Paul Graham essays across nine subjects.
 ---
 
 # 📚 Books
 
-Eleven detailed book summaries and 234 Paul Graham essays about economics,
+Eleven detailed book summaries, a spoiler-filled reading companion to Max Barry's
+Syrup, and 234 Paul Graham essays about economics,
 company building, product-led growth, technology, design, writing, careers, and the people who
 shaped consequential organizations. Read straight through for a broad study of
 strategy and leadership, or choose a subject below. Each summary preserves the
 book's reasoning, examples, tensions, and caveats rather than reducing it to a
 list of slogans.
 
-**~57 hr 15 min total** · eleven book summaries and 234 essays across eight subjects
+**~57 hr 30 min total** · eleven book summaries, one reading companion, and 234 essays across nine subjects
 
 ## IKEA · ~1 hr 7 min
 
@@ -86,6 +87,15 @@ wages, profits, rent, capital, trade, colonial monopoly, public institutions,
 taxation, and debt. The summary covers all five books and all 32 chapters,
 including the longer internal parts and appendices, while distinguishing his
 historical claims from modern conclusions.
+
+## Max Barry · ~15 min
+
+1. [Syrup: Selling a Drink, Selling a Self](/courses/books/max-barry/syrup) — ~15 min
+
+A spoiler-filled reading companion to Barry's 1999 novel, with a sourced
+overview of the central plot and broad ending, character portraits, and
+original analysis of ambition, marketing, identity, and intimacy. This is
+review-based commentary, not a scene-by-scene or full-text-verified account.
 
 ## Reading method
 
