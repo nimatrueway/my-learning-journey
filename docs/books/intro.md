@@ -2,12 +2,13 @@
 sidebar_position: 1
 slug: /courses/books/
 title: Books
-description: Fifteen detailed book summaries, 234 Paul Graham essays, and thirteen country and regional proverb collections across twelve subjects, including classic epics, strategy, economics, startups, product-led growth, technology, design, writing, careers, and culture.
+description: Fifteen detailed book summaries, a Syrup reading companion, 234 Paul Graham essays, and thirteen country and regional proverb collections across thirteen subjects.
 ---
 
 # 📚 Books
 
-Fifteen detailed book summaries, 234 Paul Graham essays, and thirteen country
+Fifteen detailed book summaries, a spoiler-filled reading companion to Max Barry's
+Syrup, 234 Paul Graham essays, and thirteen country
 and regional proverb collections about classic epics, military strategy, economics, company building, product-led growth,
 technology, design, writing, careers, culture, and the people who shaped
 consequential organizations. Read straight through for a broad study of
@@ -15,7 +16,7 @@ strategy and leadership, or choose a subject below. Each summary preserves the
 book's reasoning, examples, tensions, and caveats rather than reducing it to a
 list of slogans.
 
-**~71 hr 20 min total** · fifteen book summaries, 234 essays, and thirteen proverb collections across twelve subjects
+**~71 hr 35 min total** · fifteen book summaries, one reading companion, 234 essays, and thirteen proverb collections across thirteen subjects
 
 ## IKEA · ~1 hr 7 min
 
@@ -147,6 +148,15 @@ clear, simple English. The summary covers all 13 chapters, from planning and
 deception to terrain, the nine situations, fire, and spies. It keeps Sun Tzu's
 own teaching separate from the examples added by Lionel Giles and the Chinese
 commentators, and marks modern business readings as later uses.
+
+## Max Barry · ~15 min
+
+1. [Syrup: Selling a Drink, Selling a Self](/courses/books/max-barry/syrup) — ~15 min
+
+A spoiler-filled reading companion to Barry's 1999 novel, with a sourced
+overview of the central plot and broad ending, character portraits, and
+original analysis of ambition, marketing, identity, and intimacy. This is
+review-based commentary, not a scene-by-scene or full-text-verified account.
 
 ## Reading method
 
