@@ -2,20 +2,20 @@
 sidebar_position: 1
 slug: /courses/books/
 title: Books
-description: Fifteen detailed book summaries, 234 Paul Graham essays, and thirteen country and regional proverb collections across twelve subjects, including classic epics, strategy, economics, startups, product-led growth, technology, design, writing, careers, and culture.
+description: Sixteen detailed book summaries, 234 Paul Graham essays, and thirteen country and regional proverb collections across thirteen subjects, including classic epics, strategy, economics, startups, product-led growth, Nvidia, artificial intelligence, design, writing, careers, and culture.
 ---
 
 # 📚 Books
 
-Fifteen detailed book summaries, 234 Paul Graham essays, and thirteen country
+Sixteen detailed book summaries, 234 Paul Graham essays, and thirteen country
 and regional proverb collections about classic epics, military strategy, economics, company building, product-led growth,
-technology, design, writing, careers, culture, and the people who shaped
+technology, artificial intelligence, design, writing, careers, culture, and the people who shaped
 consequential organizations. Read straight through for a broad study of
 strategy and leadership, or choose a subject below. Each summary preserves the
 book's reasoning, examples, tensions, and caveats rather than reducing it to a
 list of slogans.
 
-**~71 hr 20 min total** · fifteen book summaries, 234 essays, and thirteen proverb collections across twelve subjects
+**~72 hr 49 min total** · sixteen book summaries, 234 essays, and thirteen proverb collections across thirteen subjects
 
 ## IKEA · ~1 hr 7 min
 
@@ -148,11 +148,22 @@ deception to terrain, the nine situations, fire, and spies. It keeps Sun Tzu's
 own teaching separate from the examples added by Lionel Giles and the Chinese
 commentators, and marks modern business readings as later uses.
 
+## Nvidia · ~1 hr 29 min
+
+1. [The Nvidia Way: Jensen Huang and the Making of a Tech Giant](/courses/books/nvidia/the-nvidia-way) — ~1 hr 29 min
+
+Tae Kim traces Nvidia from its three founders and repeated near-failures to
+graphics leadership, CUDA, and the AI boom. The summary follows the introduction,
+all fourteen chapters, conclusion, and appendix, preserving the technical bets,
+research and customer stories, demanding work culture, and unresolved dependence
+on Jensen Huang. Market figures and forecasts belong to the book's reporting
+through 2024, not the present.
+
 ## Reading method
 
 Use the summaries to recover an argument, compare authors, or decide which
 original work deserves a deeper read; summaries do not replace the original books.
 Reading times use approximately 200 prose words per minute; the total adds the
-book estimates and the estimate for the full essay collection. The Paul Graham pages preserve the essay
+book estimates and the estimates for the full essay and proverb collections. The Paul Graham pages preserve the essay
 text and identify the original source. Claims and judgments belong to the named
 authors unless a page explicitly marks a qualification or counterpoint.
