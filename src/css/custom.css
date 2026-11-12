@@ -574,35 +574,110 @@ html.show-reading-status #reading-status {
   letter-spacing: -0.04em;
 }
 
-/* Keyboard shortcut guide */
-.navbarModeBtn,
-.navbarKbdBtn {
-  padding: 0 0.5rem;
-  color: var(--ifm-color-emphasis-500);
-  border: 0;
+/* Navbar settings menu */
+.settingsMenu {
+  position: relative;
+}
+
+.settingsMenuTrigger {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  padding: 0;
+  color: var(--ifm-color-emphasis-600);
+  border: 1px solid transparent;
+  border-radius: 3px;
   background: transparent;
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   line-height: 1;
   cursor: pointer;
 }
 
-.navbarModeBtn {
-  padding: 0.3rem 0.5rem;
-  border: 1px solid transparent;
+.settingsMenuTrigger:hover,
+.settingsMenuTrigger[aria-expanded='true'] {
+  color: var(--ifm-color-primary);
+  border-color: var(--ifm-color-emphasis-300);
+}
+
+.settingsMenuPanel {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  z-index: 300;
+  min-width: 15rem;
+  padding: 0.3rem 0;
+  border: 1px solid var(--ifm-color-emphasis-300);
   border-radius: 3px;
-  font-family: var(--ifm-font-family-base);
-  font-size: 0.78rem;
+  background: var(--ifm-navbar-background-color);
+}
+
+.settingsMenuPanel[hidden] {
+  display: none;
+}
+
+.settingsMenuPanel ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.settingsMenuPanel li {
+  margin: 0;
+}
+
+.settingsMenuPanel button,
+.settingsMenuPanel a {
+  display: grid;
+  width: 100%;
+  min-height: 2.5rem;
+  grid-template-columns: 1.1rem 1fr auto;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.35rem 0.85rem;
+  color: var(--ifm-font-color-base);
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 0.88rem;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.settingsMenuPanel button:hover,
+.settingsMenuPanel a:hover,
+.settingsMenuPanel button:focus-visible,
+.settingsMenuPanel a:focus-visible {
+  color: var(--ifm-color-primary);
+  background: var(--ifm-color-emphasis-100);
+}
+
+.settingsMenuCheck {
+  color: var(--ifm-color-primary);
   font-weight: 700;
 }
 
-.navbarModeBtn--active {
-  color: var(--ifm-color-primary);
-  border-color: var(--ifm-color-primary);
+.settingsMenuPanel kbd {
+  color: var(--ifm-color-emphasis-600);
+  font-size: 0.72rem;
 }
 
-.navbarModeBtn:hover,
-.navbarKbdBtn:hover {
-  color: var(--ifm-color-primary);
+.settingsMenuHint {
+  display: block;
+  color: var(--ifm-color-emphasis-600);
+  font-size: 0.74rem;
+}
+
+.settingsMenuPanel button:disabled {
+  cursor: default;
+  opacity: 0.75;
+}
+
+.settingsMenuDivider {
+  margin-top: 0.3rem !important;
+  padding-top: 0.3rem;
+  border-top: 1px solid var(--ifm-color-emphasis-200);
 }
 
 #kbd-guide {
@@ -828,26 +903,12 @@ kbd {
     transform: none;
   }
 
-  .navbar__items--right > .navbar__item:has(.navbarModeBtn) {
-    display: flex;
-  }
-
-  .navbar__items--right > .navbar__item .navbarModeBtn {
-    padding: 0.3rem 0.4rem;
-    font-size: 0.72rem;
+  .navbar__items--right > .navbar__item.settingsMenu {
+    display: block;
   }
 
   .theme-doc-markdown {
     max-width: 100%;
-  }
-
-  .navbar-sidebar .navbarModeBtn {
-    display: block;
-    width: 100%;
-    padding: 0.75rem;
-    border-radius: 0;
-    font-size: 0.9rem;
-    text-align: left;
   }
 }
 

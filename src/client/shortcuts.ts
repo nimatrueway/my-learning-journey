@@ -1,4 +1,5 @@
 import ExecutionEnvironment from '@docusaurus/ExecutionEnvironment';
+import {TOGGLE_THEME_EVENT} from './events';
 
 const ZEN_STORAGE_KEY = 'zen-mode';
 const STATUS_STORAGE_KEY = 'reading-status';
@@ -154,11 +155,9 @@ const syncModeButtons = () => {
     zen: document.documentElement.classList.contains('zen-mode'),
     status: document.documentElement.classList.contains('show-reading-status'),
   };
-  document.querySelectorAll<HTMLButtonElement>('[data-reading-action]').forEach((button) => {
+  document.querySelectorAll<HTMLButtonElement>('[data-reading-action="zen"], [data-reading-action="status"]').forEach((button) => {
     const action = button.dataset.readingAction as keyof typeof states;
-    const active = states[action] ?? false;
-    button.classList.toggle('navbarModeBtn--active', active);
-    button.setAttribute('aria-pressed', String(active));
+    button.setAttribute('aria-pressed', String(states[action] ?? false));
   });
 };
 
@@ -184,12 +183,7 @@ const setZen = (on: boolean) => {
 
 const isZen = () => document.documentElement.classList.contains('zen-mode');
 
-const toggleTheme = () => {
-  const button = document.querySelector<HTMLButtonElement>(
-    '[class*="colorModeToggle"] button, .navbar button[aria-label^="Switch between dark and light mode"]',
-  );
-  button?.click();
-};
+const toggleTheme = () => document.dispatchEvent(new CustomEvent(TOGGLE_THEME_EVENT));
 
 const ensureZenExit = () => {
   if (!document.body || document.getElementById('zen-exit')) return;
@@ -264,12 +258,10 @@ const init = () => {
 
   document.addEventListener('click', (event) => {
     const target = event.target as HTMLElement | null;
-    if (target?.closest('#kbd-guide-btn')) {
-      toggleGuide();
-      return;
-    }
     const modeButton = target?.closest<HTMLButtonElement>('[data-reading-action]');
-    if (modeButton?.dataset.readingAction === 'zen') {
+    if (modeButton?.dataset.readingAction === 'shortcuts') {
+      toggleGuide();
+    } else if (modeButton?.dataset.readingAction === 'zen') {
       setZen(!isZen());
     } else if (modeButton?.dataset.readingAction === 'status') {
       setStatusBar(!document.documentElement.classList.contains('show-reading-status'));

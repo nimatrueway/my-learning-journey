@@ -62,6 +62,8 @@ const config: Config = {
       require.resolve('./pwaPlugin.ts'),
       {
         offlineModeActivationStrategies: ['appInstalled', 'standalone', 'queryString'],
+        // Adds the reader's opt-in from the settings menu to these strategies.
+        swRegister: require.resolve('./src/pwa/registerSw.ts'),
         pwaHead: [
           {tagName: 'link', rel: 'manifest', href: '/my-learning-journey/manifest.json'},
           {tagName: 'meta', name: 'theme-color', content: '#161923'},
@@ -93,6 +95,8 @@ const config: Config = {
     },
     colorMode: {
       defaultMode: 'dark',
+      // The theme switch lives in the navbar settings menu.
+      disableSwitch: true,
       respectPrefersColorScheme: false,
     },
     navbar: {
@@ -111,26 +115,7 @@ const config: Config = {
             {type: 'custom-categoryTree'},
           ],
         },
-        {
-          href: 'https://github.com/nimatrueway/my-learning-journey',
-          label: 'GitHub',
-          position: 'right',
-        },
-        {
-          type: 'html',
-          position: 'right',
-          value: '<button class="navbarModeBtn" data-reading-action="zen" type="button" aria-pressed="false">Zen mode</button>',
-        },
-        {
-          type: 'html',
-          position: 'right',
-          value: '<button class="navbarModeBtn" data-reading-action="status" type="button" aria-pressed="false">Status bar</button>',
-        },
-        {
-          type: 'html',
-          position: 'right',
-          value: '<button class="navbarKbdBtn" id="kbd-guide-btn" type="button" title="Keyboard shortcuts (?)">⌨</button>',
-        },
+        {type: 'custom-settingsMenu', position: 'right'},
       ],
     },
     footer: {

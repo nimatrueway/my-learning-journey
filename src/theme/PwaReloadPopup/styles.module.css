@@ -26,3 +26,25 @@
   width: 100%;
   accent-color: var(--ifm-color-primary);
 }
+
+.close {
+  display: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: inherit;
+}
+
+@media (max-width: 996px) {
+  .download {
+    padding-right: 3rem;
+  }
+
+  .close {
+    display: block;
+  }
+}

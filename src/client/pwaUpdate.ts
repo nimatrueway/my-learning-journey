@@ -21,6 +21,14 @@ const watchForUpdates = (registration: ServiceWorkerRegistration) => {
     progress.setAttribute('aria-label', 'Downloading update');
     progress.setAttribute('max', '100');
     notice.appendChild(progress);
+
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = `clean-btn ${styles.close}`;
+    close.setAttribute('aria-label', 'Hide update progress');
+    close.textContent = '×';
+    close.addEventListener('click', () => notice.remove());
+    notice.appendChild(close);
     document.body.appendChild(notice);
 
     let failed = false;
@@ -30,12 +38,15 @@ const watchForUpdates = (registration: ServiceWorkerRegistration) => {
       label.textContent = 'Update failed. Your current version is still available. Reload to retry when online.';
       notice.className = `alert alert--danger ${styles.popup} ${styles.download}`;
       progress.remove();
+      close.remove();
       const dismiss = document.createElement('button');
       dismiss.type = 'button';
       dismiss.className = 'button button--link';
       dismiss.textContent = 'Dismiss';
       dismiss.addEventListener('click', () => notice.remove());
       notice.appendChild(dismiss);
+      // A hidden progress notice must still surface the failure.
+      if (!notice.isConnected && currentNotice === notice) document.body.appendChild(notice);
     };
 
     const updateProgress = (event: MessageEvent<unknown>) => {
