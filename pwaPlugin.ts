@@ -9,6 +9,8 @@ import {injectManifest} from 'workbox-build';
 
 export {validateOptions} from '@docusaurus/plugin-pwa/lib/index';
 
+const OFFLINE_SHELL = '404.html';
+
 export default function progressPwaPlugin(context: LoadContext, options: PluginOptions): Plugin<void> | null {
   const pwaDir = path.dirname(require.resolve('@docusaurus/plugin-pwa/lib/index'));
   const plugin = pwaPlugin(context, {
@@ -50,7 +52,9 @@ export default function progressPwaPlugin(context: LoadContext, options: PluginO
         swSrc: path.join(outDir, 'sw.js'),
         swDest: path.join(outDir, 'sw.js'),
         globDirectory: outDir,
-        globPatterns: ['**/*.{js,json,css,html,png,jpg,jpeg,gif,svg,ico,woff,woff2,eot,ttf,otf}'],
+        // Every page embeds main/runtime hashes, so precaching all HTML re-downloads every page on each deploy.
+        // Precache one shell page instead; the service worker uses it as the offline navigation fallback.
+        globPatterns: ['**/*.{js,json,css,png,jpg,jpeg,gif,svg,ico,woff,woff2,eot,ttf,otf}', OFFLINE_SHELL],
         globIgnores: ['deployment.json'],
         manifestTransforms: [
           ...(options.injectManifestConfig.manifestTransforms ?? []),

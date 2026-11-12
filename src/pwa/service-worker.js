@@ -2,6 +2,7 @@ import {PrecacheController} from 'workbox-precaching';
 
 const params = JSON.parse(new URL(self.location.href).searchParams.get('params') ?? '{}');
 const manifest = self.__WB_MANIFEST;
+const OFFLINE_SHELL = '404.html';
 const pending = new Map();
 const downloads = [];
 let status = {type: 'UPDATE_PROGRESS', phase: 'checking', downloadedBytes: 0, totalBytes: 0};
@@ -87,6 +88,12 @@ self.addEventListener('fetch', event => {
   if (!params.offlineMode || event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
+  // Pages are not precached. Offline, serve the shell; the client router renders the route from precached chunks.
+  if (event.request.mode === 'navigate') {
+    event.respondWith(fetch(event.request).catch(async () =>
+      (await controller.matchPrecache(OFFLINE_SHELL)) ?? Response.error()));
+    return;
+  }
   url.search = '';
   url.hash = '';
   const candidates = [
