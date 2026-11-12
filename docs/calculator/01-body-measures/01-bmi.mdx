@@ -42,13 +42,25 @@ These are screening categories, not diagnoses. BMI can misrepresent people with
 high muscularity, pregnancy, age-related changes in body composition, or health
 risks that are not captured by weight and height.
 
-## Why the Calculator Does Not Invent a Percentile
+## When the Calculator Shows a Percentile
 
-Adult BMI uses fixed thresholds rather than age percentiles. For children and
-teenagers age 2-19, BMI is interpreted against official age- and sex-specific
-growth references. A valid pediatric percentile needs age in months and the
-appropriate reference population; age, height, and weight alone cannot produce
-an honest percentile.
+Adult BMI uses fixed thresholds rather than age percentiles, so adults get a
+screening range and no percentile.
+
+For children and teenagers age 2-19, the same BMI means different things at
+different ages, so it is compared with children of the same age and sex. Pick
+girl or boy and the calculator reports a BMI-for-age percentile from the CDC
+2000 LMS reference, interpolated at the exact age you typed:
+
+- Below the 5th percentile: underweight range.
+- 5th to below the 85th: healthy-weight range.
+- 85th to below the 95th: overweight range.
+- 95th and above: obesity range; 120% or more of the 95th percentile is the
+  severe obesity range.
+
+The 2000 curves get unreliable at the very top, so above the 97th the
+calculator shows `>97th` and reports BMI as a percentage of the 95th percentile,
+which is how the CDC's extended charts describe very high values.
 
 ## What Baby Growth Mode Shows
 
@@ -74,8 +86,8 @@ Growth is a trajectory, not a single score. Accurate recumbent length is hard to
 measure, premature infants may need corrected age, and clinical interpretation
 depends on repeated measurements, medical history, feeding, and development.
 
-For ages 2-19, use an official BMI-for-age growth chart with sex and exact age.
-The BMI mode calculates the number but intentionally withholds a percentile.
+For ages 2-19, switch to BMI mode: it uses the CDC BMI-for-age reference
+instead of the WHO infant standards.
 
 ## Try It Yourself
 
@@ -115,6 +127,8 @@ medications, symptoms, and personal context.
 
 - [CDC: About Adult BMI](https://www.cdc.gov/bmi/adult-calculator/bmi-categories.html)
 - [CDC: Child and Teen BMI Calculator](https://www.cdc.gov/bmi/child-teen-calculator/)
+- [CDC: Growth chart data files (BMI-for-age LMS)](https://www.cdc.gov/growthcharts/cdc-data-files.htm)
+- [CDC: Extended BMI-for-age growth charts](https://www.cdc.gov/growthcharts/extended-bmi.htm)
 - [CDC: WHO Growth Standards for Ages 0-2](https://www.cdc.gov/growth-chart-training/hcp/using-growth-charts/who-using.html)
 - [WHO: Weight-for-length standards](https://www.who.int/tools/child-growth-standards/standards/weight-for-length-height)
 - [WHO: Length-for-age standards](https://www.who.int/tools/child-growth-standards/standards/length-height-for-age)

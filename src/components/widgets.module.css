@@ -78,7 +78,7 @@
   align-items: center;
 }
 
-.numericControlRow input[type='number'] {
+.numericControlRow input:not([type='range']) {
   min-width: 0;
 }
 
@@ -187,6 +187,14 @@
   padding: 1rem;
   border-left: 4px solid var(--ifm-color-primary);
   background: var(--ifm-color-emphasis-100);
+}
+
+.bmiResultGridThree {
+  grid-template-columns: minmax(6rem, 0.6fr) minmax(8rem, 0.8fr) minmax(12rem, 1.3fr);
+}
+
+.bmiSexField {
+  margin-bottom: 1rem;
 }
 
 .bmiResultLabel,

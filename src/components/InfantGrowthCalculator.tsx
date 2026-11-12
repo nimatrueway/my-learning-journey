@@ -8,6 +8,8 @@ import {
   weightForLengthBoy,
   weightForLengthGirl,
 } from '@site/src/data/whoGrowthStandards';
+import {formatPercentile, interpolate, percentileFor, valueAtZ, zScore} from '@site/src/lib/growthLms';
+import DecimalInput from './DecimalInput';
 import usePersistentState from './usePersistentState';
 import styles from './widgets.module.css';
 
@@ -20,55 +22,6 @@ const REFERENCE_LINES = [PERCENTILE_15_Z, 0, PERCENTILE_85_Z] as const;
 const isGrowthSex = (value: unknown): value is GrowthSex => value === 'girl' || value === 'boy';
 const isInfantAgeUnit = (value: unknown): value is InfantAgeUnit => value === 'months' || value === 'weeks';
 const isFiniteNumber = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
-
-function interpolate(rows: readonly GrowthRow[], x: number): GrowthRow {
-  if (x <= rows[0][0]) return rows[0];
-  if (x >= rows[rows.length - 1][0]) return rows[rows.length - 1];
-  const upperIndex = rows.findIndex((row) => row[0] >= x);
-  const lower = rows[upperIndex - 1];
-  const upper = rows[upperIndex];
-  const ratio = (x - lower[0]) / (upper[0] - lower[0]);
-  return [
-    x,
-    lower[1] + (upper[1] - lower[1]) * ratio,
-    lower[2] + (upper[2] - lower[2]) * ratio,
-    lower[3] + (upper[3] - lower[3]) * ratio,
-  ];
-}
-
-function valueAtZ(row: GrowthRow, z: number): number {
-  const [, l, m, s] = row;
-  return Math.abs(l) < 1e-9 ? m * Math.exp(s * z) : m * ((1 + l * s * z) ** (1 / l));
-}
-
-function zScore(row: GrowthRow, value: number): number {
-  const [, l, m, s] = row;
-  return Math.abs(l) < 1e-9 ? Math.log(value / m) / s : (((value / m) ** l) - 1) / (l * s);
-}
-
-function normalCdf(z: number): number {
-  const sign = z < 0 ? -1 : 1;
-  const x = Math.abs(z) / Math.sqrt(2);
-  const t = 1 / (1 + 0.3275911 * x);
-  const erf = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t
-    - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
-  return 0.5 * (1 + sign * erf);
-}
-
-function percentileFor(rows: readonly GrowthRow[], x: number, value: number): number {
-  return normalCdf(zScore(interpolate(rows, x), value)) * 100;
-}
-
-function formatPercentile(value: number): string {
-  if (value < 0.1) return '<0.1st';
-  if (value > 99.9) return '>99.9th';
-  const rounded = Math.round(value);
-  const remainder = rounded % 100;
-  const suffix = remainder >= 11 && remainder <= 13
-    ? 'th'
-    : rounded % 10 === 1 ? 'st' : rounded % 10 === 2 ? 'nd' : rounded % 10 === 3 ? 'rd' : 'th';
-  return `${rounded}${suffix}`;
-}
 
 function percentileStatus(value: number): string {
   if (value < 15) return 'Below the WHO 15th-percentile reference line';
@@ -253,9 +206,8 @@ export default function InfantGrowthCalculator(): React.ReactElement {
         <label className={styles.control} htmlFor={ageId}>
           Age ({ageUnit})
           <span className={styles.numericControlRow}>
-            <input id={ageId} type="number" min="0" max={ageMax} step={ageStep} value={displayedAge}
-              onChange={(event) => updateAge(Number(event.target.value))} />
-            <input type="range" min="0" max={ageMax} step={ageStep} value={displayedAge}
+            <DecimalInput id={ageId} value={displayedAge} onChange={updateAge} />
+            <input type="range" min="0" max={ageMax} step={ageStep} value={Number.isFinite(displayedAge) ? displayedAge : 0}
               aria-label={`Age in ${ageUnit} slider`}
               onChange={(event) => updateAge(Number(event.target.value))} />
           </span>
@@ -263,9 +215,8 @@ export default function InfantGrowthCalculator(): React.ReactElement {
         <label className={styles.control} htmlFor={lengthId}>
           Recumbent length (cm)
           <span className={styles.numericControlRow}>
-            <input id={lengthId} type="number" min="45" max="110" step="0.1" value={length}
-              onChange={(event) => setLength(Number(event.target.value))} />
-            <input type="range" min="45" max="110" step="0.1" value={length}
+            <DecimalInput id={lengthId} value={length} onChange={setLength} />
+            <input type="range" min="45" max="110" step="0.1" value={Number.isFinite(length) ? length : 45}
               aria-label="Recumbent length slider"
               onChange={(event) => setLength(Number(event.target.value))} />
           </span>
@@ -273,9 +224,8 @@ export default function InfantGrowthCalculator(): React.ReactElement {
         <label className={styles.control} htmlFor={weightId}>
           Weight (kg)
           <span className={styles.numericControlRow}>
-            <input id={weightId} type="number" min="1" max="30" step="0.1" value={weight}
-              onChange={(event) => setWeight(Number(event.target.value))} />
-            <input type="range" min="1" max="30" step="0.1" value={weight}
+            <DecimalInput id={weightId} value={weight} onChange={setWeight} />
+            <input type="range" min="1" max="30" step="0.1" value={Number.isFinite(weight) ? weight : 1}
               aria-label="Baby weight slider"
               onChange={(event) => setWeight(Number(event.target.value))} />
           </span>

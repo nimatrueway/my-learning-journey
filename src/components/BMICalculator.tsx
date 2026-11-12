@@ -1,4 +1,7 @@
 import React, {useId} from 'react';
+import {bmiForAgeBoy, bmiForAgeGirl} from '@site/src/data/cdcBmiForAge';
+import {formatPercentile, interpolate, percentileFor, valueAtZ} from '@site/src/lib/growthLms';
+import DecimalInput from './DecimalInput';
 import InfantGrowthCalculator from './InfantGrowthCalculator';
 import usePersistentState from './usePersistentState';
 import styles from './widgets.module.css';
@@ -6,9 +9,15 @@ import styles from './widgets.module.css';
 const SCALE_MIN = 10;
 const SCALE_MAX = 40;
 
+const PERCENTILE_95_Z = 1.644853627;
+// CDC 2000 LMS curves are unreliable above the 97th percentile; CDC's extended charts use % of the 95th instead.
+const LMS_PERCENTILE_CEILING = 97;
+
 type CalculatorMode = 'bmi' | 'baby';
+type BmiSex = 'girl' | 'boy';
 
 const isCalculatorMode = (value: unknown): value is CalculatorMode => value === 'bmi' || value === 'baby';
+const isBmiSex = (value: unknown): value is BmiSex => value === 'girl' || value === 'boy';
 const isFiniteNumber = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
 
 function getAdultCategory(bmi: number): string {
@@ -16,6 +25,14 @@ function getAdultCategory(bmi: number): string {
   if (bmi < 25) return 'Healthy-weight range';
   if (bmi < 30) return 'Overweight range';
   return 'Obesity range';
+}
+
+function getChildCategory(percentile: number, percentOf95th: number): string {
+  if (percentile < 5) return 'Underweight range (below the 5th percentile)';
+  if (percentile < 85) return 'Healthy-weight range (5th to below 85th)';
+  if (percentile < 95) return 'Overweight range (85th to below 95th)';
+  if (percentOf95th >= 120) return 'Severe obesity range (120%+ of the 95th percentile)';
+  return 'Obesity range (95th percentile or above)';
 }
 
 export default function BMICalculator(): React.ReactElement {
@@ -26,11 +43,19 @@ export default function BMICalculator(): React.ReactElement {
   const [age, setAge] = usePersistentState('calculator:body-measures:bmi:age', 30, isFiniteNumber);
   const [height, setHeight] = usePersistentState('calculator:body-measures:bmi:height', 175, isFiniteNumber);
   const [weight, setWeight] = usePersistentState('calculator:body-measures:bmi:weight', 70, isFiniteNumber);
+  const [sex, setSex] = usePersistentState<BmiSex>('calculator:body-measures:bmi:sex', 'girl', isBmiSex);
 
   const valid = age >= 2 && age <= 120 && height >= 50 && height <= 250
     && weight >= 10 && weight <= 400;
   const bmi = valid ? weight / ((height / 100) ** 2) : null;
   const adult = age >= 20;
+  const child = bmi !== null && !adult ? (() => {
+    const ageMonths = age * 12;
+    const rows = sex === 'girl' ? bmiForAgeGirl : bmiForAgeBoy;
+    const percentile = percentileFor(rows, ageMonths, bmi);
+    const percentOf95th = (bmi / valueAtZ(interpolate(rows, ageMonths), PERCENTILE_95_Z)) * 100;
+    return {percentile, percentOf95th};
+  })() : null;
   const marker = bmi === null
     ? 0
     : Math.min(100, Math.max(0, ((bmi - SCALE_MIN) / (SCALE_MAX - SCALE_MIN)) * 100));
@@ -46,13 +71,26 @@ export default function BMICalculator(): React.ReactElement {
       </div>
 
       {mode === 'baby' ? <InfantGrowthCalculator /> : <>
+      {age < 20 && (
+        <fieldset className={`${styles.segmentedField} ${styles.bmiSexField}`}>
+          <legend>Sex used by CDC BMI-for-age chart (ages 2-19)</legend>
+          <div className={styles.buttonRow}>
+            {(['girl', 'boy'] as const).map((option) => (
+              <button key={option} type="button"
+                className={sex === option ? styles.activeButton : styles.button}
+                aria-pressed={sex === option} onClick={() => setSex(option)}>
+                {option === 'girl' ? 'Girl' : 'Boy'}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      )}
       <div className={styles.practiceGrid}>
         <label className={styles.control} htmlFor={ageId}>
           Age (years)
           <span className={styles.numericControlRow}>
-            <input id={ageId} type="number" min="2" max="120" step="0.1" value={age}
-              onChange={(event) => setAge(Number(event.target.value))} />
-            <input type="range" min="2" max="120" step="0.1" value={age}
+            <DecimalInput id={ageId} value={age} onChange={setAge} />
+            <input type="range" min="2" max="120" step="0.1" value={Number.isFinite(age) ? age : 2}
               aria-label="Age slider"
               onChange={(event) => setAge(Number(event.target.value))} />
           </span>
@@ -60,9 +98,8 @@ export default function BMICalculator(): React.ReactElement {
         <label className={styles.control} htmlFor={heightId}>
           Height (cm)
           <span className={styles.numericControlRow}>
-            <input id={heightId} type="number" min="30" max="250" step="0.1" value={height}
-              onChange={(event) => setHeight(Number(event.target.value))} />
-            <input type="range" min="30" max="250" step="0.1" value={height}
+            <DecimalInput id={heightId} value={height} onChange={setHeight} />
+            <input type="range" min="30" max="250" step="0.1" value={Number.isFinite(height) ? height : 30}
               aria-label="Height slider"
               onChange={(event) => setHeight(Number(event.target.value))} />
           </span>
@@ -70,9 +107,8 @@ export default function BMICalculator(): React.ReactElement {
         <label className={styles.control} htmlFor={weightId}>
           Weight (kg)
           <span className={styles.numericControlRow}>
-            <input id={weightId} type="number" min="1" max="400" step="0.1" value={weight}
-              onChange={(event) => setWeight(Number(event.target.value))} />
-            <input type="range" min="1" max="400" step="0.1" value={weight}
+            <DecimalInput id={weightId} value={weight} onChange={setWeight} />
+            <input type="range" min="1" max="400" step="0.1" value={Number.isFinite(weight) ? weight : 1}
               aria-label="Weight slider"
               onChange={(event) => setWeight(Number(event.target.value))} />
           </span>
@@ -85,17 +121,25 @@ export default function BMICalculator(): React.ReactElement {
         </p>
       ) : (
         <div aria-live="polite">
-          <div className={styles.bmiResultGrid}>
+          <div className={child ? `${styles.bmiResultGrid} ${styles.bmiResultGridThree}` : styles.bmiResultGrid}>
             <div>
               <span className={styles.bmiResultLabel}>BMI</span>
               <strong className={styles.bmiResultValue}>{bmi.toFixed(1)}</strong>
             </div>
+            {child && (
+              <div>
+                <span className={styles.bmiResultLabel}>BMI-for-age percentile</span>
+                <strong className={styles.bmiResultValue}>
+                  {child.percentile > LMS_PERCENTILE_CEILING ? `>${LMS_PERCENTILE_CEILING}th` : formatPercentile(child.percentile)}
+                </strong>
+              </div>
+            )}
             <div>
-              <span className={styles.bmiResultLabel}>{adult ? 'Adult screening range' : 'Interpretation'}</span>
+              <span className={styles.bmiResultLabel}>{adult ? 'Adult screening range' : 'CDC screening range'}</span>
               <strong className={styles.bmiResultText}>
                 {adult
                   ? getAdultCategory(bmi)
-                  : 'Use an age- and sex-specific BMI growth reference'}
+                  : child && getChildCategory(child.percentile, child.percentOf95th)}
               </strong>
             </div>
           </div>
@@ -118,12 +162,18 @@ export default function BMICalculator(): React.ReactElement {
           )}
 
           <div className={styles.bmiPercentileNote}>
-            <strong>Population percentile: not calculated</strong>
-            <p>
-              {adult
-                ? 'Adult BMI is interpreted with fixed screening thresholds, not an age percentile.'
-                : 'A valid percentile for ages 2-19 requires age in months, sex-specific reference data, and an official growth chart. Age, height, and weight alone are not enough.'}
-            </p>
+            {adult ? <>
+              <strong>Population percentile: not calculated</strong>
+              <p>Adult BMI is interpreted with fixed screening thresholds, not an age percentile.</p>
+            </> : child && <>
+              <strong>CDC BMI-for-age, {sex === 'girl' ? 'girls' : 'boys'} at {(age * 12).toFixed(0)} months</strong>
+              <p>
+                Percentile is calculated from the CDC 2000 BMI-for-age LMS reference, interpolated at the exact age.
+                {child.percentile >= 95
+                  ? ` This BMI is ${child.percentOf95th.toFixed(0)}% of the 95th percentile; above the 97th, CDC uses this measure because the 2000 curves understate extreme values.`
+                  : ' One measurement is a snapshot; the trend across repeated measurements matters more.'}
+              </p>
+            </>}
           </div>
         </div>
       )}
