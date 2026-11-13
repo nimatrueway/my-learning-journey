@@ -123,6 +123,9 @@ against future feelings — one mechanism wearing several costumes:
 - **Foreboding joy:** downplaying a win so its loss won't sting ([Part VI](/courses/performance-foundations/part-6-letting-success-count))
 - **The fraud narrative:** “I never deserved it” as a pre-written explanation
   for future failure ([Part VII](/courses/performance-foundations/part-7-imposter-syndrome))
+- **Moralized flaw-first framing:** putting the downside in sentence one so
+  nobody can accuse you of spin or naivety
+  ([Part XIX](/courses/performance-foundations/part-19-leading-with-the-bad-news))
 
 **The counter-move:** notice the insurance purchase, then check the premium
 against the payout. The dread, dampened joy, and self-discounting are paid

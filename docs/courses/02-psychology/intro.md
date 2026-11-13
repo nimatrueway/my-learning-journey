@@ -16,7 +16,7 @@ directing attention, building confidence, handling difficult emotions, and
 relating to other people without abandoning your own boundaries. Ambitious
 work matters here, but so do relationships, recovery, and life outside work.
 
-It includes eighteen practical lessons and an optional supplement reference:
+It includes nineteen practical lessons and an optional supplement reference:
 
 1. Strengthening focus and staying with effortful work.
 2. Acting despite fear of failure or embarrassment.
@@ -46,7 +46,10 @@ It includes eighteen practical lessons and an optional supplement reference:
     autonomy without treating a need for relief as failed adulthood.
 18. Recognizing small-stakes status contests and redirecting effort toward
     meaningful, bounded projects without ignoring real harms.
-19. Evaluating supplements cautiously as optional support, not as substitutes
+19. Understanding why leading with bad news can feel more honest than starting
+    with good news, why habitual flaw-first framing backfires, and how to
+    practice proportionate candor.
+20. Evaluating supplements cautiously as optional support, not as substitutes
     for sleep, nutrition, exercise, or appropriate medical care.
 
 The aim is not constant intensity. It is to build repeatable ways to direct
@@ -86,6 +89,7 @@ early — it is the canonical home of the moves every lesson leans on (~5 min).
 16. [Feeling Disliked at Work](/courses/performance-foundations/part-16-feeling-disliked-at-work) — ~11 min, including practice
 17. [When Adult Life Feels Like an Endless Shift](/courses/performance-foundations/part-17-responsibility-overload) — ~12 min, including 5 minutes of practice
 18. [Choosing Which Games to Play](/courses/performance-foundations/part-18-choosing-your-games) — ~12 min, including 5 minutes of practice
+19. [Leading With the Bad News](/courses/performance-foundations/part-19-leading-with-the-bad-news) — ~14 min, including 4 minutes of practice
 
 Optional: [Supplement Reference](/courses/performance-foundations/supplement-reference) — ~8 min, skimmable
 

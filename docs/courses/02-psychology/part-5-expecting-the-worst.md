@@ -69,6 +69,9 @@ state:
 
 You pull your own expectations down so reality can never catch you off guard.
 The premium on this insurance policy is paid in advance, every day, in dread.
+When that same expectation-lowering reflex shapes how you announce mixed news
+to other people, continue with
+[Leading With the Bad News](/courses/performance-foundations/part-19-leading-with-the-bad-news).
 
 <details>
 <summary>🧠 Affective forecasting and contrast (optional)</summary>

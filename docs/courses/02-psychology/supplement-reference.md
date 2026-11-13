@@ -1,6 +1,6 @@
 ---
 slug: /courses/performance-foundations/supplement-reference
-sidebar_position: 21
+sidebar_position: 22
 title: Supplement Reference
 ---
 

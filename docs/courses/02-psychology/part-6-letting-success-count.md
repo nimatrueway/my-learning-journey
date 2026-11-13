@@ -92,7 +92,9 @@ today:
 
 Downplaying acts as psychological camouflage — it signals to others (and
 reminds yourself) to keep expectations low, preserving a safe zone with less
-pressure to perform.
+pressure to perform. If you also feel compelled to state the catch first
+whenever sharing mixed news so nobody suspects you of spin, see
+[Leading With the Bad News](/courses/performance-foundations/part-19-leading-with-the-bad-news).
 
 ## 4. Retroactive Goalpost Shifting
 

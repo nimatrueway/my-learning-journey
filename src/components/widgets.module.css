@@ -174,9 +174,17 @@
   min-height: 26rem;
 }
 
+.mixedNewsResult {
+  min-height: 23rem;
+}
+
 @media (max-width: 600px) {
   .socialInterpretationResult {
     min-height: 34rem;
+  }
+
+  .mixedNewsResult {
+    min-height: 39rem;
   }
 }
 
