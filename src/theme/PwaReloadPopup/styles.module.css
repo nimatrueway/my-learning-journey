@@ -20,6 +20,7 @@
   flex-direction: column;
   align-items: stretch;
   gap: 0.5rem;
+  padding-right: 3rem;
 }
 
 .download progress {
@@ -28,7 +29,6 @@
 }
 
 .close {
-  display: none;
   position: absolute;
   top: 0;
   right: 0;
@@ -37,14 +37,4 @@
   font-size: 1.4rem;
   line-height: 1;
   color: inherit;
-}
-
-@media (max-width: 996px) {
-  .download {
-    padding-right: 3rem;
-  }
-
-  .close {
-    display: block;
-  }
 }
