@@ -48,13 +48,13 @@ const REGISTRY_FILE = 'docs/notes/authors.json';
 const SCRYPT = {N: 2 ** 15, r: 8, p: 1, keylen: 64, maxmem: 64 * 1024 * 1024};
 
 const spanPattern = new RegExp(
-  `^(?:${escapeRegExp(START)}|${escapeRegExp(LEGACY_START)})\\n([\\s\\S]*?)\\n(?:${escapeRegExp(END)}|${escapeRegExp(LEGACY_END)})\\n?`,
+  `^([ \\t]*)(?:${escapeRegExp(START)}|${escapeRegExp(LEGACY_START)})\\n([\\s\\S]*?)\\n[ \\t]*(?:${escapeRegExp(END)}|${escapeRegExp(LEGACY_END)})\\n?`,
   'gm',
 );
 // Matches both the current format (author+length+label+payload) and the legacy
 // format (label+payload, pre-author). Legacy spans unlock with a warning.
-const lockedPattern = /^<Locked\s+author="([^"]*)"\s+length="(\d+)"\s+label="([^"]*)"\s+payload="([^"]+)"\s*\/>\n?/gm;
-const legacyLockedPattern = /^<Locked\s+label="([^"]*)"\s+payload="([^"]+)"\s*\/>\n?/gm;
+const lockedPattern = /^([ \t]*)<Locked\s+author="([^"]*)"\s+length="(\d+)"\s+label="([^"]*)"\s+payload="([^"]+)"\s*\/>\n?/gm;
+const legacyLockedPattern = /^([ \t]*)<Locked\s+label="([^"]*)"\s+payload="([^"]+)"\s*\/>\n?/gm;
 
 function escapeRegExp(text) {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -165,9 +165,12 @@ function checkVerifier(password, entry) {
 function lockFile(file, password, author, label) {
   const original = readFileSync(file, 'utf8');
   let count = 0;
-  const updated = original.replace(spanPattern, (_match, body) => {
+  const updated = original.replace(spanPattern, (_match, indent, body) => {
     count += 1;
-    return `${encryptSpan(body, password, author, label)}\n`;
+    const stripped = indent
+      ? body.split('\n').map((line) => (line.startsWith(indent) ? line.slice(indent.length) : line)).join('\n')
+      : body;
+    return `${indent}${encryptSpan(stripped, password, author, label)}\n`;
   });
   if (count === 0) {
     console.log(`${file}: no ${START} spans found; nothing changed.`);
@@ -182,21 +185,27 @@ function unlockFile(file, password) {
   const original = readFileSync(file, 'utf8');
   let count = 0;
   let failed = 0;
-  const updated = original.replace(lockedPattern, (match, author, _length, label, payload) => {
+  const updated = original.replace(lockedPattern, (match, indent, author, _length, label, payload) => {
     try {
       const plaintext = decryptPayload(payload, password);
+      const reindented = indent
+        ? plaintext.split('\n').map((line) => (line ? `${indent}${line}` : line)).join('\n')
+        : plaintext;
       count += 1;
-      return `${START}\n${plaintext}\n${END}\n`;
+      return `${indent}${START}\n${reindented}\n${indent}${END}\n`;
     } catch {
       failed += 1;
       console.error(`${file}: could not decrypt a "${label}" span by "${author}" (wrong password or corrupted payload).`);
       return match;
     }
-  }).replace(legacyLockedPattern, (match, label, payload) => {
+  }).replace(legacyLockedPattern, (match, indent, label, payload) => {
     try {
       const plaintext = decryptPayload(payload, password);
+      const reindented = indent
+        ? plaintext.split('\n').map((line) => (line ? `${indent}${line}` : line)).join('\n')
+        : plaintext;
       count += 1;
-      return `${START}\n${plaintext}\n${END}\n`;
+      return `${indent}${START}\n${reindented}\n${indent}${END}\n`;
     } catch {
       failed += 1;
       console.error(`${file}: could not decrypt a legacy "${label}" span (wrong password or corrupted payload).`);

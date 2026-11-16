@@ -16,7 +16,7 @@ directing attention, building confidence, handling difficult emotions, and
 relating to other people without abandoning your own boundaries. Ambitious
 work matters here, but so do relationships, recovery, and life outside work.
 
-It includes nineteen practical lessons and an optional supplement reference:
+It includes twenty practical lessons and an optional supplement reference:
 
 1. Strengthening focus and staying with effortful work.
 2. Acting despite fear of failure or embarrassment.
@@ -49,7 +49,11 @@ It includes nineteen practical lessons and an optional supplement reference:
 19. Understanding why leading with bad news can feel more honest than starting
     with good news, why habitual flaw-first framing backfires, and how to
     practice proportionate candor.
-20. Evaluating supplements cautiously as optional support, not as substitutes
+20. Understanding why excitement after good news, frustration with stuck
+    tasks, extreme boredom, and late-night work depletion can all trigger the
+    same pull toward meme feeds and short stimulating videos, and how to rewire
+    each trigger upstream.
+21. Evaluating supplements cautiously as optional support, not as substitutes
     for sleep, nutrition, exercise, or appropriate medical care.
 
 The aim is not constant intensity. It is to build repeatable ways to direct
@@ -90,6 +94,7 @@ early — it is the canonical home of the moves every lesson leans on (~5 min).
 17. [When Adult Life Feels Like an Endless Shift](/courses/performance-foundations/part-17-responsibility-overload) — ~12 min, including 5 minutes of practice
 18. [Choosing Which Games to Play](/courses/performance-foundations/part-18-choosing-your-games) — ~12 min, including 5 minutes of practice
 19. [Leading With the Bad News](/courses/performance-foundations/part-19-leading-with-the-bad-news) — ~14 min, including 4 minutes of practice
+20. [Meme Feeds, Short Videos, and Emotional Autopilot](/courses/performance-foundations/part-20-meme-feeds-and-emotional-autopilot) — ~17 min, including 4 minutes of practice
 
 Optional: [Supplement Reference](/courses/performance-foundations/supplement-reference) — ~8 min, skimmable
 

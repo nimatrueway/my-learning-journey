@@ -11,6 +11,7 @@ import {
   watchUnlock,
   type Scope,
 } from '../lib/writerVault';
+import {parseLockedContent} from '../lib/lockedMarkdown';
 import styles from './writerVault.module.css';
 
 export interface LockedProps {
@@ -37,7 +38,8 @@ export default function Locked({payload, author = 'writer', length = 120, label 
   const [capsLock, setCapsLock] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const mask = useMemo(() => blobMask(length), [length]);
+  const isModuleSize = length >= 1500;
+  const mask = useMemo(() => blobMask(isModuleSize ? 320 : length), [isModuleSize, length]);
 
   const openModal = () => {
     setError(null);
@@ -51,11 +53,20 @@ export default function Locked({payload, author = 'writer', length = 120, label 
   };
 
   if (vault.checking) {
-    return <span className={styles.blobChecking} role="status">🔒…</span>;
+    return isModuleSize
+      ? <div className={styles.lockedModuleCard} role="status">🔒 Checking writer vault…</div>
+      : <span className={styles.blobChecking} role="status">🔒…</span>;
   }
 
   if (vault.unlockedAuthors.has(author)) {
-    return <UnlockedInline payload={payload} author={author} onLogout={() => vault.logout(author)} />;
+    return (
+      <UnlockedContent
+        payload={payload}
+        author={author}
+        isModuleSize={isModuleSize}
+        onLogout={() => vault.logout(author)}
+      />
+    );
   }
 
   const submit = async (event: React.FormEvent) => {
@@ -68,6 +79,88 @@ export default function Locked({payload, author = 'writer', length = 120, label 
       setError('Wrong password, or this unlock belongs to a different browser.');
     }
   };
+
+  const modal = modalOpen && (
+    <Modal onClose={() => setModalOpen(false)}>
+      <form className={styles.modalForm} onSubmit={submit}>
+        <h3 className={styles.modalTitle}>🔒 Encrypted by {author}</h3>
+        <p className={styles.modalBody}>
+          This {label} content was written by <strong>{author}</strong> and is
+          encrypted. What is your password, {author}?
+        </p>
+        <div className={styles.passwordWrap}>
+          <input
+            className={styles.passwordInput}
+            type={showPassword ? 'text' : 'password'}
+            value={vault.passwordInput}
+            onChange={(event) => vault.setPasswordInput(event.target.value)}
+            onKeyDown={trackCapsLock}
+            onKeyUp={trackCapsLock}
+            onClick={trackCapsLock}
+            placeholder={`Password for ${author}`}
+            aria-label={`Password for ${author}`}
+            autoComplete="off"
+            autoFocus
+          />
+          <button
+            className={styles.eyeButton}
+            type="button"
+            onClick={() => setShowPassword((shown) => !shown)}
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            aria-pressed={showPassword}
+            title={showPassword ? 'Hide password' : 'Show password'}
+          >
+            {showPassword ? '🙈' : '👁️'}
+          </button>
+        </div>
+        {capsLock && (
+          <p className={styles.capsWarning} role="status">⇪ Caps Lock is on</p>
+        )}
+        <p className={styles.scopeRow}>
+          Keep unlocked for{' '}
+          <select
+            className={styles.scopeSelect}
+            value={vault.scope}
+            onChange={(event) => vault.setScope(event.target.value as Scope)}
+            aria-label="How long to keep the unlock"
+          >
+            {SCOPES.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </p>
+        <div className={styles.modalActions}>
+          <button className={styles.button} type="submit">Unlock</button>
+          <button className={styles.buttonGhost} type="button" onClick={() => setModalOpen(false)}>Cancel</button>
+          {vault.recordedAuthors.has(author) && (
+            <button className={styles.buttonGhost} type="button" onClick={() => vault.logout(author)}>Log out</button>
+          )}
+        </div>
+        {error && <p className={styles.error} role="alert">{error}</p>}
+      </form>
+    </Modal>
+  );
+
+  if (isModuleSize) {
+    return (
+      <>
+        <div className={styles.lockedModuleCard}>
+          <div className={styles.lockedModuleHeader}>
+            <span>🔒 Encrypted by {author}</span>
+            <button className={styles.button} type="button" onClick={openModal}>
+              Unlock
+            </button>
+          </div>
+          <div className={styles.lockedModulePreview} onClick={openModal} role="presentation">
+            <span className={styles.blob}>
+              <span className={styles.blobText} aria-hidden="true">{mask}</span>
+            </span>
+          </div>
+        </div>
+        {modal}
+      </>
+    );
+  }
 
   return (
     <>
@@ -87,85 +180,26 @@ export default function Locked({payload, author = 'writer', length = 120, label 
       >
         <span className={styles.blobText} aria-hidden="true">{mask}</span>
       </span>
-      {modalOpen && (
-        <Modal onClose={() => setModalOpen(false)}>
-          <form className={styles.modalForm} onSubmit={submit}>
-            <h3 className={styles.modalTitle}>🔒 Encrypted by {author}</h3>
-            <p className={styles.modalBody}>
-              This {label} span was written by <strong>{author}</strong> and is
-              encrypted. What is your password, {author}?
-            </p>
-            <div className={styles.passwordWrap}>
-              <input
-                className={styles.passwordInput}
-                type={showPassword ? 'text' : 'password'}
-                value={vault.passwordInput}
-                onChange={(event) => vault.setPasswordInput(event.target.value)}
-                onKeyDown={trackCapsLock}
-                onKeyUp={trackCapsLock}
-                onClick={trackCapsLock}
-                placeholder={`Password for ${author}`}
-                aria-label={`Password for ${author}`}
-                autoComplete="off"
-                autoFocus
-              />
-              <button
-                className={styles.eyeButton}
-                type="button"
-                onClick={() => setShowPassword((shown) => !shown)}
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-                aria-pressed={showPassword}
-                title={showPassword ? 'Hide password' : 'Show password'}
-              >
-                {showPassword ? '🙈' : '👁️'}
-              </button>
-            </div>
-            {capsLock && (
-              <p className={styles.capsWarning} role="status">⇪ Caps Lock is on</p>
-            )}
-            <p className={styles.scopeRow}>
-              Keep unlocked for{' '}
-              <select
-                className={styles.scopeSelect}
-                value={vault.scope}
-                onChange={(event) => vault.setScope(event.target.value as Scope)}
-                aria-label="How long to keep the unlock"
-              >
-                {SCOPES.map((option) => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
-                ))}
-              </select>
-            </p>
-            <div className={styles.modalActions}>
-              <button className={styles.button} type="submit">Unlock</button>
-              <button className={styles.buttonGhost} type="button" onClick={() => setModalOpen(false)}>Cancel</button>
-              {vault.recordedAuthors.has(author) && (
-                <button className={styles.buttonGhost} type="button" onClick={() => vault.logout(author)}>Log out</button>
-              )}
-            </div>
-            {error && <p className={styles.error} role="alert">{error}</p>}
-          </form>
-        </Modal>
-      )}
+      {modal}
     </>
   );
 }
 
-interface UnlockedInlineProps {
+interface UnlockedContentProps {
   payload: string;
   author: string;
+  isModuleSize: boolean;
   onLogout: () => void;
 }
 
 /** Unlocked view: decrypts the payload with this author's stored password. */
-function UnlockedInline({payload, author, onLogout}: UnlockedInlineProps): React.ReactElement {
+function UnlockedContent({payload, author, isModuleSize, onLogout}: UnlockedContentProps): React.ReactElement {
   const [text, setText] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     getStoredUnlock(author).then((password) => {
       if (password === null) {
-        // Record vanished or no longer matches this browser.
         if (!cancelled) onLogout();
         return;
       }
@@ -173,9 +207,6 @@ function UnlockedInline({payload, author, onLogout}: UnlockedInlineProps): React
         if (!cancelled) setText(decrypted);
       });
     }).catch(() => {
-      // The stored unlock no longer decrypts this payload (expired mid-flight,
-      // corrupted record, or the author changed password). Drop this author's
-      // record and show the blob again; other authors stay unlocked.
       if (!cancelled) onLogout();
     });
     return () => {
@@ -183,12 +214,49 @@ function UnlockedInline({payload, author, onLogout}: UnlockedInlineProps): React
     };
   }, [payload, author, onLogout]);
 
-  if (text === null) {
-    return <span className={styles.blobChecking} role="status">🔓…</span>;
+  const parsed = useMemo(() => (text !== null ? parseLockedContent(text) : null), [text]);
+
+  useEffect(() => {
+    if (!parsed?.title) return undefined;
+    const headingEl = document.querySelector('article header h1, article h1');
+    const prevHeading = headingEl?.textContent ?? null;
+    const prevDocTitle = document.title;
+    if (headingEl) headingEl.textContent = parsed.title;
+    document.title = `${parsed.title} | My Learning Journey`;
+    return () => {
+      if (headingEl && prevHeading !== null) headingEl.textContent = prevHeading;
+      document.title = prevDocTitle;
+    };
+  }, [parsed?.title]);
+
+  if (parsed === null) {
+    return isModuleSize
+      ? <div className={styles.lockedModuleCard} role="status">🔓 Decrypting module…</div>
+      : <span className={styles.blobChecking} role="status">🔓…</span>;
   }
+
+  if (parsed.isBlock) {
+    return (
+      <div className={styles.unlockedBlock}>
+        <div className={styles.unlockedBlockBar}>
+          <span>🔓 Unlocked ({author})</span>
+          <button
+            className={styles.logoutLink}
+            type="button"
+            onClick={onLogout}
+            title="Remove the stored password from this browser"
+          >
+            🔒 log out
+          </button>
+        </div>
+        {parsed.nodes}
+      </div>
+    );
+  }
+
   return (
     <span className={styles.unlockedInline}>
-      <span className={styles.unlockedText}>{text}</span>
+      <span className={styles.unlockedText}>{parsed.nodes}</span>
       <button
         className={styles.logoutLink}
         type="button"
@@ -266,6 +334,7 @@ function useWriterVault(): WriterVaultContextValue {
 }
 
 export function WriterVaultProvider({children}: {children: React.ReactNode}): React.ReactElement {
+  const existing = useContext(WriterVaultContext);
   const [checking, setChecking] = useState(true);
   const [unlockedAuthors, setUnlockedAuthors] = useState<ReadonlySet<string>>(new Set());
   const [recordedAuthors, setRecordedAuthors] = useState<ReadonlySet<string>>(new Set());
@@ -317,6 +386,10 @@ export function WriterVaultProvider({children}: {children: React.ReactNode}): Re
     () => ({checking, unlockedAuthors, recordedAuthors, passwordInput, setPasswordInput, scope, setScope, unlockWith, logout}),
     [checking, unlockedAuthors, recordedAuthors, passwordInput, scope, unlockWith, logout],
   );
+
+  if (existing) {
+    return <>{children}</>;
+  }
 
   return (
     <WriterVaultContext.Provider value={value}>

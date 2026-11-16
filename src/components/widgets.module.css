@@ -178,6 +178,10 @@
   min-height: 23rem;
 }
 
+.matrixLabResult {
+  min-height: 25.5rem;
+}
+
 @media (max-width: 600px) {
   .socialInterpretationResult {
     min-height: 34rem;
@@ -185,6 +189,10 @@
 
   .mixedNewsResult {
     min-height: 39rem;
+  }
+
+  .matrixLabResult {
+    min-height: 46rem;
   }
 }
 

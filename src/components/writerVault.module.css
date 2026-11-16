@@ -88,6 +88,47 @@
   white-space: pre-wrap;
 }
 
+.lockedModuleCard {
+  margin: 1.25rem 0;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 3px;
+  background: var(--ifm-background-surface-color);
+}
+
+.lockedModuleHeader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+  font-size: 0.92rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.lockedModulePreview {
+  cursor: pointer;
+  line-height: 1.7;
+}
+
+.unlockedBlock {
+  margin-top: 0.5rem;
+}
+
+.unlockedBlockBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 3px;
+  background: var(--ifm-background-surface-color);
+  font-size: 0.82rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
 .logoutLink {
   margin-left: 0.4rem;
   font: inherit;
